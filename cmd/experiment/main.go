@@ -16,8 +16,8 @@ import (
 func main() {
 	// 命令行参数
 	testCasesPath := flag.String("cases", "testdata/cases.json", "测试案例JSON文件路径")
-	ragOutput := flag.String("rag-output", "experiment_rag_results.csv", "RAG实验结果输出文件")
-	directOutput := flag.String("direct-output", "experiment_direct_results.csv", "直接LLM实验结果输出文件")
+	ragOutput := flag.String("rag-output", "results/experiment_rag_results.csv", "RAG实验结果输出文件")
+	directOutput := flag.String("direct-output", "results/experiment_direct_results.csv", "直接LLM实验结果输出文件")
 	skipRAG := flag.Bool("skip-rag", false, "跳过RAG实验")
 	skipDirect := flag.Bool("skip-direct", false, "跳过直接LLM实验")
 	flag.Parse()
@@ -83,8 +83,8 @@ func main() {
 		} else {
 			log.Printf("✅ RAG实验完成，共运行 %d 次测试", len(ragResults))
 			experiment.ExportToCSV(ragResults, *ragOutput)
-			experiment.ExportToJSON(ragResults, "experiment_rag_results.json")
-			log.Printf("✅ 结果已导出至 %s 和 experiment_rag_results.json", *ragOutput)
+			experiment.ExportToJSON(ragResults, "results/experiment_rag_results.json")
+			log.Printf("✅ 结果已导出至 %s 和 results/experiment_rag_results.json", *ragOutput)
 		}
 	}
 
@@ -100,8 +100,8 @@ func main() {
 		} else {
 			log.Printf("✅ 直接LLM实验完成，共运行 %d 次测试", len(directResults))
 			experiment.ExportToCSV(directResults, *directOutput)
-			experiment.ExportToJSON(directResults, "experiment_direct_results.json")
-			log.Printf("✅ 结果已导出至 %s 和 experiment_direct_results.json", *directOutput)
+			experiment.ExportToJSON(directResults, "results/experiment_direct_results.json")
+			log.Printf("✅ 结果已导出至 %s 和 results/experiment_direct_results.json", *directOutput)
 		}
 	}
 

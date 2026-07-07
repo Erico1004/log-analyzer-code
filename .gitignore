@@ -13,11 +13,8 @@
 # 日志
 *.log
 
-# 测试数据（可选，根据需求调整）
+# 测试数据
 testdata/*.log
-
-# 审查报告（本地产物）
-demo_review_report.md
 
 # WorkBuddy 工作区
 .workbuddy/
