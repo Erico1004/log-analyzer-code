@@ -37,7 +37,6 @@ func InitDB() error {
 	// AutoMigrate：自动建表/更新表结构，demo可复现
 	if err := DB.AutoMigrate(
 		&model.KnowledgeBase{},
-		&model.DiagnosisResult{},
 		&model.DiagnosisHistory{},
 		&model.UserFeedback{},
 	); err != nil {
