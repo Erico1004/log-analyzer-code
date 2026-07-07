@@ -4,13 +4,13 @@
     "category": "OOM",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "系统物理内存耗尽，触发OOM Killer机制，导致HAProxy进程被强制终止。根本原因是内存泄漏或内存配置不足，结合日志中vector进程（可能为HAProxy的向量处理模块）被kill，以及systemd-journald缓存刷新，表明内存压力持续累积。",
+    "predicted_cause": "系统物理内存耗尽，导致内核OOM Killer强制终止了vector进程（haproxy的子进程），以释放内存资源。根本原因是haproxy或相关服务内存泄漏，或系统内存配置不足，无法满足当前负载需求。",
     "expected_cause": "B2ts_v2 VM内存耗尽，触发OOM Killer终止了日志转发进程(vector)。",
     "is_correct": false,
     "confidence": 0.9,
-    "latency_ms": 7186,
+    "latency_ms": 5930,
     "knowledge_used": 0,
-    "tokens_used": 746
+    "tokens_used": 705
   },
   {
     "case_id": "case_001",
@@ -21,35 +21,35 @@
     "expected_cause": "B2ts_v2 VM内存耗尽，触发OOM Killer终止了日志转发进程(vector)。",
     "is_correct": false,
     "confidence": 0.95,
-    "latency_ms": 2471,
+    "latency_ms": 2318,
     "knowledge_used": 0,
-    "tokens_used": 475
+    "tokens_used": 477
   },
   {
     "case_id": "case_001",
     "category": "OOM",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "系统物理内存耗尽，导致OOM Killer强制终止了vector进程（PID 1293），以释放内存资源。",
+    "predicted_cause": "系统物理内存耗尽，导致OOM Killer强制终止vector进程以释放内存",
     "expected_cause": "B2ts_v2 VM内存耗尽，触发OOM Killer终止了日志转发进程(vector)。",
     "is_correct": false,
     "confidence": 0.9,
-    "latency_ms": 7190,
+    "latency_ms": 5636,
     "knowledge_used": 0,
-    "tokens_used": 754
+    "tokens_used": 675
   },
   {
     "case_id": "case_002",
     "category": "OOM",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "Trello应用的工作进程（Worker 5678）因内存泄漏或内存配置不足，导致进程内存使用超过系统限制，被Linux内核OOM Killer强制终止，进而引发CPU阈值未达标而无法触发自动扩缩容的连锁故障。",
+    "predicted_cause": "Trello工作进程内存泄漏或内存配置不足，导致进程内存使用超过限制，触发内核OOM Killer终止进程，同时由于内存耗尽导致CPU阈值无法满足，自动扩缩容失败。",
     "expected_cause": "Trello服务在业务高峰期因内存超限(OOM)崩溃，且基于CPU利用率的自动扩展策略未能触发。",
     "is_correct": false,
-    "confidence": 0.95,
-    "latency_ms": 6848,
+    "confidence": 0.9,
+    "latency_ms": 5584,
     "knowledge_used": 0,
-    "tokens_used": 674
+    "tokens_used": 625
   },
   {
     "case_id": "case_002",
@@ -60,22 +60,22 @@
     "expected_cause": "Trello服务在业务高峰期因内存超限(OOM)崩溃，且基于CPU利用率的自动扩展策略未能触发。",
     "is_correct": false,
     "confidence": 0.95,
-    "latency_ms": 2999,
+    "latency_ms": 2768,
     "knowledge_used": 0,
-    "tokens_used": 474
+    "tokens_used": 478
   },
   {
     "case_id": "case_002",
     "category": "OOM",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "Trello工作进程因内存泄漏或内存配置不足导致OOM（内存溢出），进而触发系统OOM Killer终止进程，而自动扩缩容机制因CPU阈值未达标未能及时响应，最终服务不可用。",
+    "predicted_cause": "Trello工作进程因内存泄漏或内存配置不足导致OOM（内存溢出），进而触发系统OOM Killer终止进程，同时由于CPU使用率未达到自动扩缩容阈值，系统未能通过扩容缓解内存压力。",
     "expected_cause": "Trello服务在业务高峰期因内存超限(OOM)崩溃，且基于CPU利用率的自动扩展策略未能触发。",
     "is_correct": false,
     "confidence": 0.9,
-    "latency_ms": 6984,
+    "latency_ms": 6730,
     "knowledge_used": 0,
-    "tokens_used": 770
+    "tokens_used": 764
   },
   {
     "case_id": "case_003",
@@ -85,10 +85,10 @@
     "predicted_cause": "DNS客户端解析失败导致系统核心转储并重启，根本原因是DNS服务器配置错误或网络连接问题，使得无法解析域名'www.cisco.com'，触发致命错误。",
     "expected_cause": "Cisco交换机DNS客户端因解析特定域名失败触发致命错误，导致设备核心转储并反复重启。",
     "is_correct": true,
-    "confidence": 0.85,
-    "latency_ms": 4875,
+    "confidence": 0.9,
+    "latency_ms": 5461,
     "knowledge_used": 0,
-    "tokens_used": 550
+    "tokens_used": 626
   },
   {
     "case_id": "case_003",
@@ -99,35 +99,35 @@
     "expected_cause": "Cisco交换机DNS客户端因解析特定域名失败触发致命错误，导致设备核心转储并反复重启。",
     "is_correct": false,
     "confidence": 0.92,
-    "latency_ms": 2758,
+    "latency_ms": 2147,
     "knowledge_used": 0,
-    "tokens_used": 511
+    "tokens_used": 463
   },
   {
     "case_id": "case_003",
     "category": "网络",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "DNS客户端在解析'www.cisco.com'时失败，导致系统触发核心转储并重启，根本原因可能是DNS服务器不可达、网络配置错误或DNS客户端软件缺陷。",
+    "predicted_cause": "DNS客户端在解析'www.cisco.com'时失败，触发了致命错误，导致系统生成核心转储并重启。",
     "expected_cause": "Cisco交换机DNS客户端因解析特定域名失败触发致命错误，导致设备核心转储并反复重启。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 7040,
+    "latency_ms": 5266,
     "knowledge_used": 0,
-    "tokens_used": 808
+    "tokens_used": 684
   },
   {
     "case_id": "case_004",
     "category": "网络",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "InfluxDB Cloud 认证服务不可用，导致微服务因缺少服务账户令牌而无法完成认证，最终造成写入/查询 API 完全失败。",
+    "predicted_cause": "InfluxDB Cloud 认证服务不可用，导致微服务因缺少服务账户令牌而无法完成认证，进而引发写入/查询 API 完全失败。",
     "expected_cause": "Kubernetes 1.29+ 升级后 ServiceAccount token 未自动生成，导致微服务间认证失败，写入/查询API不可用。",
     "is_correct": false,
-    "confidence": 0.95,
-    "latency_ms": 4458,
+    "confidence": 0.9,
+    "latency_ms": 4124,
     "knowledge_used": 0,
-    "tokens_used": 602
+    "tokens_used": 517
   },
   {
     "case_id": "case_004",
@@ -138,22 +138,22 @@
     "expected_cause": "Kubernetes 1.29+ 升级后 ServiceAccount token 未自动生成，导致微服务间认证失败，写入/查询API不可用。",
     "is_correct": false,
     "confidence": 0.92,
-    "latency_ms": 2439,
+    "latency_ms": 2771,
     "knowledge_used": 0,
-    "tokens_used": 451
+    "tokens_used": 468
   },
   {
     "case_id": "case_004",
     "category": "网络",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "InfluxDB Cloud 认证服务不可用，导致微服务因缺少服务账户令牌而认证失败，最终引发写入/查询 API 100% 故障。",
+    "predicted_cause": "InfluxDB Cloud 认证服务不可用，导致微服务因缺少服务账户令牌而认证失败，进而引发写入/查询 API 100% 故障。",
     "expected_cause": "Kubernetes 1.29+ 升级后 ServiceAccount token 未自动生成，导致微服务间认证失败，写入/查询API不可用。",
     "is_correct": false,
     "confidence": 0.9,
-    "latency_ms": 4821,
+    "latency_ms": 6002,
     "knowledge_used": 0,
-    "tokens_used": 623
+    "tokens_used": 709
   },
   {
     "case_id": "case_005",
@@ -164,35 +164,35 @@
     "expected_cause": "RAID5阵列中两块硬盘先后离线，因热备盘未正确配置激活，导致阵列崩溃，Oracle数据库文件损坏。",
     "is_correct": false,
     "confidence": 0.95,
-    "latency_ms": 4949,
+    "latency_ms": 7197,
     "knowledge_used": 0,
-    "tokens_used": 594
+    "tokens_used": 695
   },
   {
     "case_id": "case_005",
     "category": "代码缺陷",
     "mode": "DIRECT",
     "strategy": "FEW_SHOT",
-    "predicted_cause": "RAID5阵列中两块物理磁盘同时离线导致阵列失效，进而引发Oracle数据库无法访问数据文件",
+    "predicted_cause": "RAID5阵列中两块物理磁盘同时离线导致阵列失效，进而引发Oracle数据库数据文件无法访问",
     "expected_cause": "RAID5阵列中两块硬盘先后离线，因热备盘未正确配置激活，导致阵列崩溃，Oracle数据库文件损坏。",
     "is_correct": false,
     "confidence": 0.95,
-    "latency_ms": 3749,
+    "latency_ms": 3359,
     "knowledge_used": 0,
-    "tokens_used": 556
+    "tokens_used": 538
   },
   {
     "case_id": "case_005",
     "category": "代码缺陷",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "RAID5阵列中两块物理磁盘（Disk 2和Disk 3）同时离线，导致RAID5阵列失效，进而引发Oracle数据库无法访问数据文件1（系统表空间文件），数据库实例崩溃。",
+    "predicted_cause": "RAID5阵列中两块物理磁盘（Disk 2和Disk 3）同时离线，导致RAID5阵列失效，进而引发Oracle数据库无法访问数据文件1（系统表空间文件）。",
     "expected_cause": "RAID5阵列中两块硬盘先后离线，因热备盘未正确配置激活，导致阵列崩溃，Oracle数据库文件损坏。",
     "is_correct": false,
     "confidence": 0.95,
-    "latency_ms": 8274,
+    "latency_ms": 7116,
     "knowledge_used": 0,
-    "tokens_used": 928
+    "tokens_used": 828
   },
   {
     "case_id": "case_006",
@@ -203,48 +203,48 @@
     "expected_cause": "TwistLock Defender 重启干扰 LVM 锁文件操作，导致 VG-Manager 陷入死循环，以每秒 26,000 行的速率刷爆磁盘。",
     "is_correct": false,
     "confidence": 0.85,
-    "latency_ms": 6351,
+    "latency_ms": 7294,
     "knowledge_used": 0,
-    "tokens_used": 690
+    "tokens_used": 735
   },
   {
     "case_id": "case_006",
     "category": "代码缺陷",
     "mode": "DIRECT",
     "strategy": "FEW_SHOT",
-    "predicted_cause": "文件锁竞争导致进程阻塞，进而引发磁盘空间耗尽和OVN数据库损坏",
+    "predicted_cause": "锁文件竞争导致进程阻塞，进而引发磁盘空间耗尽和OVN数据库损坏",
     "expected_cause": "TwistLock Defender 重启干扰 LVM 锁文件操作，导致 VG-Manager 陷入死循环，以每秒 26,000 行的速率刷爆磁盘。",
     "is_correct": false,
     "confidence": 0.92,
-    "latency_ms": 3150,
+    "latency_ms": 3081,
     "knowledge_used": 0,
-    "tokens_used": 512
+    "tokens_used": 505
   },
   {
     "case_id": "case_006",
     "category": "代码缺陷",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "vgmanager.lock文件被长时间占用，导致锁等待日志重复出现，最终引发磁盘空间耗尽和OVN数据库损坏。",
+    "predicted_cause": "vgmanager.lock文件被长时间占用，导致节点磁盘空间耗尽，进而引发OVN数据库损坏",
     "expected_cause": "TwistLock Defender 重启干扰 LVM 锁文件操作，导致 VG-Manager 陷入死循环，以每秒 26,000 行的速率刷爆磁盘。",
     "is_correct": false,
     "confidence": 0.85,
-    "latency_ms": 5329,
+    "latency_ms": 6970,
     "knowledge_used": 0,
-    "tokens_used": 717
+    "tokens_used": 788
   },
   {
     "case_id": "case_007",
     "category": "连接池",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "Apex One日志发送配置文件损坏，导致日志发送失败，进而引发Trend Vision One数据摄取管道因连接被拒绝而中断，最终造成Apex One控制台显示空白页面。",
+    "predicted_cause": "Apex One日志发送配置文件损坏，导致日志无法正常发送至Trend Vision One的数据摄取管道，进而引发管道连接拒绝错误，最终造成Apex One控制台显示空白页面。",
     "expected_cause": "Apex One 日志发送配置文件损坏，导致数据上报连接被拒绝，Vision One 控制台页面空白。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 4285,
+    "latency_ms": 5546,
     "knowledge_used": 0,
-    "tokens_used": 577
+    "tokens_used": 652
   },
   {
     "case_id": "case_007",
@@ -255,35 +255,35 @@
     "expected_cause": "Apex One 日志发送配置文件损坏，导致数据上报连接被拒绝，Vision One 控制台页面空白。",
     "is_correct": false,
     "confidence": 0.85,
-    "latency_ms": 2583,
+    "latency_ms": 2278,
     "knowledge_used": 0,
-    "tokens_used": 481
+    "tokens_used": 488
   },
   {
     "case_id": "case_007",
     "category": "连接池",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "Apex One日志发送配置文件损坏导致日志发送失败，进而引发Trend Vision One数据摄取管道连接被拒，最终造成Apex One控制台显示空白页面。",
+    "predicted_cause": "Apex One日志发送配置文件损坏，导致日志发送失败，进而引发Trend Vision One数据摄取管道连接被拒，最终Apex One控制台显示空白页。",
     "expected_cause": "Apex One 日志发送配置文件损坏，导致数据上报连接被拒绝，Vision One 控制台页面空白。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 3542,
+    "latency_ms": 4812,
     "knowledge_used": 0,
-    "tokens_used": 585
+    "tokens_used": 645
   },
   {
     "case_id": "case_008",
     "category": "连接池",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "etcd集群性能下降或网络分区导致kube-apiserver无法正常访问etcd，引发API服务不可用",
+    "predicted_cause": "etcd集群性能瓶颈或网络延迟导致kube-apiserver无法正常访问etcd，进而引发API服务不可用和错误预算燃烧。",
     "expected_cause": "AKS 集群自动升级后，残留的孤立 node leases 导致 etcd 查询延迟飙升，API Server 就绪探针超时并返回 500。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 5437,
+    "latency_ms": 5091,
     "knowledge_used": 0,
-    "tokens_used": 673
+    "tokens_used": 640
   },
   {
     "case_id": "case_008",
@@ -294,22 +294,22 @@
     "expected_cause": "AKS 集群自动升级后，残留的孤立 node leases 导致 etcd 查询延迟飙升，API Server 就绪探针超时并返回 500。",
     "is_correct": true,
     "confidence": 0.92,
-    "latency_ms": 2634,
+    "latency_ms": 2677,
     "knowledge_used": 0,
-    "tokens_used": 506
+    "tokens_used": 471
   },
   {
     "case_id": "case_008",
     "category": "连接池",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "etcd集群不可用或响应超时，导致kube-apiserver无法正常访问etcd，进而引发API服务故障和告警",
+    "predicted_cause": "etcd集群不可用或响应超时，导致kube-apiserver无法正常访问etcd存储，进而引发API服务故障和错误预算燃烧告警。",
     "expected_cause": "AKS 集群自动升级后，残留的孤立 node leases 导致 etcd 查询延迟飙升，API Server 就绪探针超时并返回 500。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 6844,
+    "latency_ms": 6639,
     "knowledge_used": 0,
-    "tokens_used": 839
+    "tokens_used": 803
   },
   {
     "case_id": "case_009",
@@ -320,61 +320,61 @@
     "expected_cause": "安装 2026 年 1 月累积更新 KB5073722 后，TiWorker.exe 内存泄漏导致 NTFS 索引损坏，系统陷入 CHKDSK 无限修复循环。",
     "is_correct": false,
     "confidence": 0,
-    "latency_ms": 6422,
+    "latency_ms": 5356,
     "knowledge_used": 0,
-    "tokens_used": 792
+    "tokens_used": 680
   },
   {
     "case_id": "case_009",
     "category": "磁盘",
     "mode": "DIRECT",
     "strategy": "FEW_SHOT",
-    "predicted_cause": "解析失败",
+    "predicted_cause": "NTFS文件系统元数据损坏，导致磁盘检查循环重启",
     "expected_cause": "安装 2026 年 1 月累积更新 KB5073722 后，TiWorker.exe 内存泄漏导致 NTFS 索引损坏，系统陷入 CHKDSK 无限修复循环。",
-    "is_correct": false,
-    "confidence": 0,
-    "latency_ms": 3449,
+    "is_correct": true,
+    "confidence": 0.92,
+    "latency_ms": 3185,
     "knowledge_used": 0,
-    "tokens_used": 559
+    "tokens_used": 539
   },
   {
     "case_id": "case_009",
     "category": "磁盘",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "NTFS文件系统元数据损坏，具体为$I30索引分配属性在目录\\Windows\\System32\\SMI\\Store\\Machine中发生损坏，导致系统关键文件访问异常，触发磁盘检查并进入CHKDSK重启循环。",
+    "predicted_cause": "NTFS文件系统元数据损坏，具体为$I30索引分配属性在系统关键目录中发生损坏，导致磁盘一致性错误（Event ID 55），系统自动触发CHKDSK修复循环。",
     "expected_cause": "安装 2026 年 1 月累积更新 KB5073722 后，TiWorker.exe 内存泄漏导致 NTFS 索引损坏，系统陷入 CHKDSK 无限修复循环。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 7140,
+    "latency_ms": 6570,
     "knowledge_used": 0,
-    "tokens_used": 909
+    "tokens_used": 788
   },
   {
     "case_id": "case_010",
     "category": "磁盘",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "SDP1服务器缓存模块写穿透（write-through）故障导致缓存模块失效，进而触发紧急维护停机。",
+    "predicted_cause": "SDP1服务器缓存模块硬件故障，导致写穿透（write-through）失败，进而触发紧急维护停机。",
     "expected_cause": "A-SMGCS 系统 SDP1 服务器缓存模块异常，导致数据写入失败，健康指示灯告警。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 4074,
+    "latency_ms": 4522,
     "knowledge_used": 0,
-    "tokens_used": 530
+    "tokens_used": 551
   },
   {
     "case_id": "case_010",
     "category": "磁盘",
     "mode": "DIRECT",
     "strategy": "FEW_SHOT",
-    "predicted_cause": "SDP1服务器缓存模块硬件故障或固件异常导致写穿透失败",
+    "predicted_cause": "SDP1服务器缓存模块硬件故障导致写穿透失败",
     "expected_cause": "A-SMGCS 系统 SDP1 服务器缓存模块异常，导致数据写入失败，健康指示灯告警。",
     "is_correct": true,
-    "confidence": 0.85,
-    "latency_ms": 2392,
+    "confidence": 0.92,
+    "latency_ms": 2448,
     "knowledge_used": 0,
-    "tokens_used": 476
+    "tokens_used": 487
   },
   {
     "case_id": "case_010",
@@ -385,9 +385,9 @@
     "expected_cause": "A-SMGCS 系统 SDP1 服务器缓存模块异常，导致数据写入失败，健康指示灯告警。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 5154,
+    "latency_ms": 4800,
     "knowledge_used": 0,
-    "tokens_used": 724
+    "tokens_used": 649
   },
   {
     "case_id": "case_011",
@@ -398,9 +398,9 @@
     "expected_cause": "Trello 后端服务因内存耗尽而崩溃，导致网关返回 502 错误，且自动扩展策略因仅基于 CPU 未能触发。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 4307,
+    "latency_ms": 4942,
     "knowledge_used": 0,
-    "tokens_used": 520
+    "tokens_used": 597
   },
   {
     "case_id": "case_011",
@@ -411,61 +411,61 @@
     "expected_cause": "Trello 后端服务因内存耗尽而崩溃，导致网关返回 502 错误，且自动扩展策略因仅基于 CPU 未能触发。",
     "is_correct": false,
     "confidence": 0.92,
-    "latency_ms": 3000,
+    "latency_ms": 2793,
     "knowledge_used": 0,
-    "tokens_used": 500
+    "tokens_used": 506
   },
   {
     "case_id": "case_011",
     "category": "HTTP",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "后端服务因内存压力导致崩溃，进而触发上游代理返回502错误，最终导致Auto Scaling扩容失败。",
+    "predicted_cause": "后端服务因内存压力导致崩溃，进而引发上游服务器无法连接和502错误，最终触发Auto Scaling失败。",
     "expected_cause": "Trello 后端服务因内存耗尽而崩溃，导致网关返回 502 错误，且自动扩展策略因仅基于 CPU 未能触发。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 5003,
+    "latency_ms": 4849,
     "knowledge_used": 0,
-    "tokens_used": 639
+    "tokens_used": 660
   },
   {
     "case_id": "case_012",
     "category": "HTTP",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "AKS集群中4/6的API Server实例的/readyz端点返回500错误，导致Prometheus监控到KubeAPI错误预算燃烧（5 req/s失败），但集群资源健康状态仍显示为'Available'，表明问题可能源于API Server内部组件（如etcd、控制器管理器）的局部故障或配置错误，而非整个集群不可用。",
+    "predicted_cause": "AKS集群中4/6的API Server实例的/readyz健康检查端点返回500错误，导致Prometheus监控到KubeAPI错误预算燃烧（5 req/s失败），但集群资源健康状态仍显示为'Available'，表明问题可能为API Server实例的部分功能异常或负载不均，而非完全宕机。",
     "expected_cause": "AKS 集群升级后，多个 API Server 实例的 /readyz 探针因内部组件异常返回 500，但负载均衡器掩盖了故障。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 5926,
+    "latency_ms": 4990,
     "knowledge_used": 0,
-    "tokens_used": 731
+    "tokens_used": 604
   },
   {
     "case_id": "case_012",
     "category": "HTTP",
     "mode": "DIRECT",
     "strategy": "FEW_SHOT",
-    "predicted_cause": "AKS集群中部分API服务器实例健康检查失败，导致Prometheus监控到Kubernetes API错误预算燃烧",
+    "predicted_cause": "AKS集群中部分API Server实例健康检查失败，导致Prometheus监控到Kubernetes API错误率上升",
     "expected_cause": "AKS 集群升级后，多个 API Server 实例的 /readyz 探针因内部组件异常返回 500，但负载均衡器掩盖了故障。",
-    "is_correct": false,
+    "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 3493,
+    "latency_ms": 3058,
     "knowledge_used": 0,
-    "tokens_used": 553
+    "tokens_used": 542
   },
   {
     "case_id": "case_012",
     "category": "HTTP",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "AKS API服务器实例中部分实例的健康检查端点/readyz返回500错误，导致Prometheus监控到KubeAPI错误预算燃烧，但整体资源健康状态仍显示可用，表明问题可能源于API服务器实例的局部故障或配置问题，而非集群级故障。",
+    "predicted_cause": "AKS API服务器实例中部分实例（4/6）的/readyz端点返回500错误，导致Prometheus监控到KubeAPI错误预算燃烧，但整体资源健康状态仍显示为'Available'，表明问题可能为API服务器实例的局部健康检查失败或配置错误，而非集群级故障。",
     "expected_cause": "AKS 集群升级后，多个 API Server 实例的 /readyz 探针因内部组件异常返回 500，但负载均衡器掩盖了故障。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 6457,
+    "latency_ms": 6917,
     "knowledge_used": 0,
-    "tokens_used": 774
+    "tokens_used": 788
   },
   {
     "case_id": "case_013",
@@ -475,10 +475,10 @@
     "predicted_cause": "RAID控制器因权限不足无法激活热备盘，导致数据文件无法正常挂载，进而引发Oracle数据库挂载失败。",
     "expected_cause": "RAID 控制器热备盘因配置权限不足未能自动激活，导致阵列降级后崩溃，Oracle 数据文件访问被拒绝。",
     "is_correct": true,
-    "confidence": 0.9,
-    "latency_ms": 4690,
+    "confidence": 0.85,
+    "latency_ms": 5744,
     "knowledge_used": 0,
-    "tokens_used": 594
+    "tokens_used": 622
   },
   {
     "case_id": "case_013",
@@ -489,217 +489,217 @@
     "expected_cause": "RAID 控制器热备盘因配置权限不足未能自动激活，导致阵列降级后崩溃，Oracle 数据文件访问被拒绝。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 2587,
+    "latency_ms": 2784,
     "knowledge_used": 0,
-    "tokens_used": 477
+    "tokens_used": 502
   },
   {
     "case_id": "case_013",
     "category": "权限",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "RAID控制器因权限不足无法激活热备盘，导致数据文件无法写入，进而引发Oracle数据库挂载失败。",
+    "predicted_cause": "RAID控制器因权限不足无法激活热备盘，导致数据文件无法访问，进而引发Oracle数据库挂载失败。",
     "expected_cause": "RAID 控制器热备盘因配置权限不足未能自动激活，导致阵列降级后崩溃，Oracle 数据文件访问被拒绝。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 6529,
+    "latency_ms": 7177,
     "knowledge_used": 0,
-    "tokens_used": 777
+    "tokens_used": 801
   },
   {
     "case_id": "case_014",
     "category": "权限",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "Kubernetes 集群中默认命名空间的服务账户令牌缺失或配置错误，导致 InfluxDB 无法通过服务账户进行身份验证，进而引发写入 API 授权失败。",
+    "predicted_cause": "Kubernetes 默认命名空间中缺少服务账户令牌，导致 InfluxDB 无法验证服务账户身份，进而引发写入 API 授权失败。",
     "expected_cause": "Kubernetes 升级后未自动生成 ServiceAccount token，导致 InfluxDB 微服务认证失败，权限被拒绝。",
     "is_correct": true,
-    "confidence": 0.9,
-    "latency_ms": 5264,
+    "confidence": 0.95,
+    "latency_ms": 4734,
     "knowledge_used": 0,
-    "tokens_used": 704
+    "tokens_used": 687
   },
   {
     "case_id": "case_014",
     "category": "权限",
     "mode": "DIRECT",
     "strategy": "FEW_SHOT",
-    "predicted_cause": "InfluxDB服务账户认证失败，Kubernetes中默认命名空间缺少服务账户令牌",
+    "predicted_cause": "InfluxDB服务账户认证失败，Kubernetes中缺少默认命名空间的服务账户令牌",
     "expected_cause": "Kubernetes 升级后未自动生成 ServiceAccount token，导致 InfluxDB 微服务认证失败，权限被拒绝。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 2335,
+    "latency_ms": 3241,
     "knowledge_used": 0,
-    "tokens_used": 455
+    "tokens_used": 560
   },
   {
     "case_id": "case_014",
     "category": "权限",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "Kubernetes 默认命名空间中服务账户令牌缺失或配置错误，导致 InfluxDB 无法通过服务账户认证，进而引发写入 API 授权失败。",
+    "predicted_cause": "Kubernetes 默认命名空间的服务账户令牌缺失或无效，导致 InfluxDB 无法通过服务账户认证，进而引发写入 API 授权失败。",
     "expected_cause": "Kubernetes 升级后未自动生成 ServiceAccount token，导致 InfluxDB 微服务认证失败，权限被拒绝。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 5401,
+    "latency_ms": 5312,
     "knowledge_used": 0,
-    "tokens_used": 798
+    "tokens_used": 703
   },
   {
     "case_id": "case_015",
     "category": "数据库",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "Oracle数据库系统表空间的数据文件'/data/orcl/system01.dbf'无法被识别或锁定，导致数据库实例崩溃。可能原因包括文件系统损坏、磁盘故障、文件权限错误或文件被意外删除/移动。",
-    "expected_cause": "RAID5 阵列崩溃导致 Oracle 系统表空间文件 (system01.dbf) 损坏，数据库无法启动。",
-    "is_correct": true,
-    "confidence": 0.9,
-    "latency_ms": 5220,
-    "knowledge_used": 0,
-    "tokens_used": 699
-  },
-  {
-    "case_id": "case_015",
-    "category": "数据库",
-    "mode": "DIRECT",
-    "strategy": "FEW_SHOT",
-    "predicted_cause": "Oracle系统数据文件system01.dbf无法识别或锁定，导致数据库实例终止",
+    "predicted_cause": "Oracle数据库无法识别或锁定系统表空间数据文件system01.dbf，导致数据库实例异常终止，需要恢复操作。",
     "expected_cause": "RAID5 阵列崩溃导致 Oracle 系统表空间文件 (system01.dbf) 损坏，数据库无法启动。",
     "is_correct": true,
     "confidence": 0.95,
-    "latency_ms": 1934,
+    "latency_ms": 4702,
     "knowledge_used": 0,
-    "tokens_used": 431
+    "tokens_used": 624
+  },
+  {
+    "case_id": "case_015",
+    "category": "数据库",
+    "mode": "DIRECT",
+    "strategy": "FEW_SHOT",
+    "predicted_cause": "Oracle数据库系统表空间文件system01.dbf无法识别或锁定",
+    "expected_cause": "RAID5 阵列崩溃导致 Oracle 系统表空间文件 (system01.dbf) 损坏，数据库无法启动。",
+    "is_correct": true,
+    "confidence": 0.95,
+    "latency_ms": 1929,
+    "knowledge_used": 0,
+    "tokens_used": 434
   },
   {
     "case_id": "case_015",
     "category": "数据库",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "Oracle数据库系统文件system01.dbf无法被识别或锁定，导致数据库实例终止，需要进行恢复操作。",
+    "predicted_cause": "Oracle数据库系统表空间数据文件'/data/orcl/system01.dbf'无法被识别或锁定，导致数据库实例终止，需要恢复。",
     "expected_cause": "RAID5 阵列崩溃导致 Oracle 系统表空间文件 (system01.dbf) 损坏，数据库无法启动。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 4182,
+    "latency_ms": 5313,
     "knowledge_used": 0,
-    "tokens_used": 574
+    "tokens_used": 702
   },
   {
     "case_id": "case_016",
     "category": "数据库",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "OVN南向数据库（OVN_Southbound DB）文件损坏，导致OpenShift集群网络组件无法正常读取数据库，进而引发集群网络降级。",
+    "predicted_cause": "OVN南向数据库（OVN_Southbound DB）文件损坏，导致OpenShift集群网络功能降级。",
+    "expected_cause": "节点磁盘被 VG-Manager 日志写满，导致 OVN 数据库文件损坏，集群网络瘫痪。",
+    "is_correct": true,
+    "confidence": 0.95,
+    "latency_ms": 6256,
+    "knowledge_used": 0,
+    "tokens_used": 727
+  },
+  {
+    "case_id": "case_016",
+    "category": "数据库",
+    "mode": "DIRECT",
+    "strategy": "FEW_SHOT",
+    "predicted_cause": "OVN南向数据库损坏",
+    "expected_cause": "节点磁盘被 VG-Manager 日志写满，导致 OVN 数据库文件损坏，集群网络瘫痪。",
+    "is_correct": false,
+    "confidence": 0.92,
+    "latency_ms": 1999,
+    "knowledge_used": 0,
+    "tokens_used": 436
+  },
+  {
+    "case_id": "case_016",
+    "category": "数据库",
+    "mode": "DIRECT",
+    "strategy": "COT",
+    "predicted_cause": "OVN南向数据库文件损坏，导致OVN服务无法正常读取数据库，进而引发OpenShift集群网络功能降级。",
     "expected_cause": "节点磁盘被 VG-Manager 日志写满，导致 OVN 数据库文件损坏，集群网络瘫痪。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 5799,
+    "latency_ms": 6374,
     "knowledge_used": 0,
-    "tokens_used": 706
-  },
-  {
-    "case_id": "case_016",
-    "category": "数据库",
-    "mode": "DIRECT",
-    "strategy": "FEW_SHOT",
-    "predicted_cause": "OVN南向数据库损坏导致OpenShift集群网络降级",
-    "expected_cause": "节点磁盘被 VG-Manager 日志写满，导致 OVN 数据库文件损坏，集群网络瘫痪。",
-    "is_correct": true,
-    "confidence": 0.92,
-    "latency_ms": 3670,
-    "knowledge_used": 0,
-    "tokens_used": 544
-  },
-  {
-    "case_id": "case_016",
-    "category": "数据库",
-    "mode": "DIRECT",
-    "strategy": "COT",
-    "predicted_cause": "OVN Southbound 数据库文件损坏，导致 OVN 无法正常读取数据，进而引发 OpenShift 集群网络功能降级。",
-    "expected_cause": "节点磁盘被 VG-Manager 日志写满，导致 OVN 数据库文件损坏，集群网络瘫痪。",
-    "is_correct": true,
-    "confidence": 0.85,
-    "latency_ms": 7122,
-    "knowledge_used": 0,
-    "tokens_used": 889
+    "tokens_used": 763
   },
   {
     "case_id": "case_017",
     "category": "CPU",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "AWS EC2实例（t2/t3系列）CPU积分耗尽，导致CPU性能被限制，进而引发HAProxy高CPU使用率和rsyslog磁盘I/O阻塞。",
+    "predicted_cause": "AWS EC2实例（t2/t3系列）CPU积分耗尽导致性能受限，进而引发HAProxy高CPU使用率和rsyslog磁盘I/O阻塞的连锁故障。",
     "expected_cause": "B2ts_v2 VM 因 CPU 积分耗尽导致性能受限，HAProxy 请求处理变慢，引发连接超时。",
     "is_correct": false,
-    "confidence": 0.9,
-    "latency_ms": 4972,
+    "confidence": 0.95,
+    "latency_ms": 5716,
     "knowledge_used": 0,
-    "tokens_used": 635
+    "tokens_used": 645
   },
   {
     "case_id": "case_017",
     "category": "CPU",
     "mode": "DIRECT",
     "strategy": "FEW_SHOT",
-    "predicted_cause": "CPU资源耗尽，可能由磁盘I/O阻塞或突发负载导致",
+    "predicted_cause": "CPU资源耗尽，可能由磁盘I/O阻塞导致",
     "expected_cause": "B2ts_v2 VM 因 CPU 积分耗尽导致性能受限，HAProxy 请求处理变慢，引发连接超时。",
     "is_correct": false,
-    "confidence": 0.92,
-    "latency_ms": 2630,
+    "confidence": 0.85,
+    "latency_ms": 2486,
     "knowledge_used": 0,
-    "tokens_used": 466
+    "tokens_used": 459
   },
   {
     "case_id": "case_017",
     "category": "CPU",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "CPU资源耗尽导致系统性能全面下降，进而引发HAProxy高CPU使用率和rsyslog磁盘I/O阻塞",
+    "predicted_cause": "CPU资源耗尽导致性能瓶颈，进而引发HAProxy高CPU使用率和rsyslog磁盘I/O阻塞",
     "expected_cause": "B2ts_v2 VM 因 CPU 积分耗尽导致性能受限，HAProxy 请求处理变慢，引发连接超时。",
     "is_correct": false,
     "confidence": 0.85,
-    "latency_ms": 5527,
+    "latency_ms": 4765,
     "knowledge_used": 0,
-    "tokens_used": 686
+    "tokens_used": 613
   },
   {
     "case_id": "case_018",
     "category": "CPU",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "DNS解析循环导致CPU过载，触发DNSC任务核心转储，最终引发交换机CPU异常重启",
+    "predicted_cause": "DNS解析循环导致CPU过载，触发核心转储（core dump），最终引发交换机CPU异常重启。",
     "expected_cause": "Cisco 交换机 DNS 解析死循环导致 CPU 占用过高，触发致命异常并反复重启。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 4268,
+    "latency_ms": 4758,
     "knowledge_used": 0,
-    "tokens_used": 521
+    "tokens_used": 577
   },
   {
     "case_id": "case_018",
     "category": "CPU",
     "mode": "DIRECT",
     "strategy": "FEW_SHOT",
-    "predicted_cause": "DNS解析循环导致CPU过载，触发核心转储和交换机致命异常重启",
+    "predicted_cause": "DNS解析循环导致CPU过载，触发核心转储和致命异常，最终导致交换机重启",
     "expected_cause": "Cisco 交换机 DNS 解析死循环导致 CPU 占用过高，触发致命异常并反复重启。",
     "is_correct": true,
     "confidence": 0.92,
-    "latency_ms": 2546,
+    "latency_ms": 2409,
     "knowledge_used": 0,
-    "tokens_used": 493
+    "tokens_used": 464
   },
   {
     "case_id": "case_018",
     "category": "CPU",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "DNS解析循环导致CPU过载，进而触发核心转储和交换机致命异常重启",
+    "predicted_cause": "DNS解析循环导致CPU过载，触发核心转储，最终引发交换机致命CPU异常重启",
     "expected_cause": "Cisco 交换机 DNS 解析死循环导致 CPU 占用过高，触发致命异常并反复重启。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 4761,
+    "latency_ms": 4828,
     "knowledge_used": 0,
-    "tokens_used": 597
+    "tokens_used": 582
   },
   {
     "case_id": "case_019",
@@ -710,9 +710,9 @@
     "expected_cause": "Apex One 日志发送配置文件损坏或参数无效，导致数据上报失败，控制台显示异常。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 3909,
+    "latency_ms": 4150,
     "knowledge_used": 0,
-    "tokens_used": 511
+    "tokens_used": 554
   },
   {
     "case_id": "case_019",
@@ -723,35 +723,35 @@
     "expected_cause": "Apex One 日志发送配置文件损坏或参数无效，导致数据上报失败，控制台显示异常。",
     "is_correct": false,
     "confidence": 0.85,
-    "latency_ms": 2057,
+    "latency_ms": 1568,
     "knowledge_used": 0,
-    "tokens_used": 406
+    "tokens_used": 401
   },
   {
     "case_id": "case_019",
     "category": "配置",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "日志发送配置文件中存在无效参数，导致Apex One无法解析配置，从而回退到仅本地日志记录模式。",
+    "predicted_cause": "日志发送配置文件（log sending config）中存在无效参数，导致Apex One无法解析配置，从而回退到仅本地日志记录模式。",
     "expected_cause": "Apex One 日志发送配置文件损坏或参数无效，导致数据上报失败，控制台显示异常。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 5630,
+    "latency_ms": 4801,
     "knowledge_used": 0,
-    "tokens_used": 715
+    "tokens_used": 634
   },
   {
     "case_id": "case_020",
     "category": "配置",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "AKS自动节点镜像升级过程中，新节点尝试注册时与旧节点名称冲突，导致kubelet注册失败，并产生etcd中的孤立节点租约。",
+    "predicted_cause": "AKS自动节点镜像升级过程中，新节点尝试注册时与旧节点名称冲突，导致kubelet注册失败，并产生孤儿节点租约。",
     "expected_cause": "AKS 自动升级后，旧节点未正确注销，导致 etcd 中残留孤立租约 (orphaned leases)，引发注册冲突和性能问题。",
-    "is_correct": true,
+    "is_correct": false,
     "confidence": 0.9,
-    "latency_ms": 4577,
+    "latency_ms": 4380,
     "knowledge_used": 0,
-    "tokens_used": 626
+    "tokens_used": 586
   },
   {
     "case_id": "case_020",
@@ -762,7 +762,7 @@
     "expected_cause": "AKS 自动升级后，旧节点未正确注销，导致 etcd 中残留孤立租约 (orphaned leases)，引发注册冲突和性能问题。",
     "is_correct": false,
     "confidence": 0.85,
-    "latency_ms": 2150,
+    "latency_ms": 1928,
     "knowledge_used": 0,
     "tokens_used": 424
   },
@@ -771,13 +771,13 @@
     "category": "配置",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "AKS自动节点镜像升级过程中，新节点尝试注册时与旧节点名称冲突，导致kubelet注册失败，进而产生孤立节点租约。",
+    "predicted_cause": "AKS自动节点镜像升级过程中，新节点尝试注册时使用了与旧节点相同的名称，导致kubelet注册失败，进而产生孤立节点租约。",
     "expected_cause": "AKS 自动升级后，旧节点未正确注销，导致 etcd 中残留孤立租约 (orphaned leases)，引发注册冲突和性能问题。",
     "is_correct": false,
     "confidence": 0.85,
-    "latency_ms": 4830,
+    "latency_ms": 5741,
     "knowledge_used": 0,
-    "tokens_used": 646
+    "tokens_used": 714
   },
   {
     "case_id": "case_021",
@@ -788,35 +788,35 @@
     "expected_cause": "Windows 更新 KB5073722 安装期间 TiWorker.exe 发生内存泄漏，最终导致 NTFS 文件系统损坏。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 4475,
+    "latency_ms": 3928,
     "knowledge_used": 0,
-    "tokens_used": 572
+    "tokens_used": 527
   },
   {
     "case_id": "case_021",
     "category": "OOM",
     "mode": "DIRECT",
     "strategy": "FEW_SHOT",
-    "predicted_cause": "Windows更新KB5073722导致内存损坏和文件系统错误",
+    "predicted_cause": "Windows更新KB5073722安装后触发内存损坏，导致NTFS文件系统错误",
     "expected_cause": "Windows 更新 KB5073722 安装期间 TiWorker.exe 发生内存泄漏，最终导致 NTFS 文件系统损坏。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 1955,
+    "latency_ms": 2202,
     "knowledge_used": 0,
-    "tokens_used": 414
+    "tokens_used": 466
   },
   {
     "case_id": "case_021",
     "category": "OOM",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "Windows更新KB5073722安装过程中触发了内存泄漏（RADAR_PRE_LEAK_64），导致系统内存资源耗尽，进而引发NTFS文件系统内存损坏错误。",
+    "predicted_cause": "Windows更新KB5073722安装过程中触发了内存泄漏，进而导致NTFS文件系统损坏",
     "expected_cause": "Windows 更新 KB5073722 安装期间 TiWorker.exe 发生内存泄漏，最终导致 NTFS 文件系统损坏。",
     "is_correct": true,
     "confidence": 0.85,
-    "latency_ms": 5264,
+    "latency_ms": 5664,
     "knowledge_used": 0,
-    "tokens_used": 711
+    "tokens_used": 706
   },
   {
     "case_id": "case_022",
@@ -827,9 +827,9 @@
     "expected_cause": "Cisco 交换机因无法解析默认 NTP 服务器域名，触发 DNS 客户端缺陷，导致设备反复崩溃。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 4178,
+    "latency_ms": 4717,
     "knowledge_used": 0,
-    "tokens_used": 546
+    "tokens_used": 593
   },
   {
     "case_id": "case_022",
@@ -840,35 +840,35 @@
     "expected_cause": "Cisco 交换机因无法解析默认 NTP 服务器域名，触发 DNS 客户端缺陷，导致设备反复崩溃。",
     "is_correct": true,
     "confidence": 0.92,
-    "latency_ms": 2448,
+    "latency_ms": 2856,
     "knowledge_used": 0,
-    "tokens_used": 474
+    "tokens_used": 466
   },
   {
     "case_id": "case_022",
     "category": "网络",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "DNS服务器故障或网络连接问题导致DNS解析失败，进而影响NTP时间同步",
+    "predicted_cause": "DNS服务器故障或网络连接问题导致无法解析NTP服务器域名",
     "expected_cause": "Cisco 交换机因无法解析默认 NTP 服务器域名，触发 DNS 客户端缺陷，导致设备反复崩溃。",
     "is_correct": true,
-    "confidence": 0.85,
-    "latency_ms": 5033,
+    "confidence": 0.9,
+    "latency_ms": 5307,
     "knowledge_used": 0,
-    "tokens_used": 692
+    "tokens_used": 665
   },
   {
     "case_id": "case_023",
     "category": "磁盘",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "VG-Manager 日志文件无限增长，导致磁盘空间被完全占满（100%），进而引发系统关键进程（如VG-Manager）因无法写入日志而陷入死锁等待状态。",
+    "predicted_cause": "VG-Manager 日志文件无限制增长，导致磁盘空间被完全占满（100%），进而引发系统关键进程（如VG-Manager）因无法写入日志而挂起或等待锁释放。",
     "expected_cause": "VG-Manager 在获取 LVM 锁失败后陷入死循环，以每秒 26,000 条的速度生成日志，迅速耗尽磁盘空间。",
     "is_correct": true,
     "confidence": 0.95,
-    "latency_ms": 4698,
+    "latency_ms": 4597,
     "knowledge_used": 0,
-    "tokens_used": 599
+    "tokens_used": 592
   },
   {
     "case_id": "case_023",
@@ -879,9 +879,9 @@
     "expected_cause": "VG-Manager 在获取 LVM 锁失败后陷入死循环，以每秒 26,000 条的速度生成日志，迅速耗尽磁盘空间。",
     "is_correct": true,
     "confidence": 0.95,
-    "latency_ms": 2407,
+    "latency_ms": 2518,
     "knowledge_used": 0,
-    "tokens_used": 444
+    "tokens_used": 456
   },
   {
     "case_id": "case_023",
@@ -891,23 +891,23 @@
     "predicted_cause": "VG-Manager日志文件无限制增长，导致磁盘空间被完全占满（100%），进而引发系统级故障。",
     "expected_cause": "VG-Manager 在获取 LVM 锁失败后陷入死循环，以每秒 26,000 条的速度生成日志，迅速耗尽磁盘空间。",
     "is_correct": true,
-    "confidence": 0.9,
-    "latency_ms": 6587,
+    "confidence": 0.95,
+    "latency_ms": 6436,
     "knowledge_used": 0,
-    "tokens_used": 775
+    "tokens_used": 784
   },
   {
     "case_id": "case_024",
     "category": "HTTP",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "InfluxDB认证后端服务不可用，导致查询服务中断，影响EU-Central-1区域所有查询请求。",
+    "predicted_cause": "InfluxDB认证后端服务不可达，导致查询服务不可用，进而引发所有查询失败。",
     "expected_cause": "InfluxDB Cloud 因认证服务故障导致所有查询请求失败，返回 503 错误。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 5112,
+    "latency_ms": 4558,
     "knowledge_used": 0,
-    "tokens_used": 612
+    "tokens_used": 591
   },
   {
     "case_id": "case_024",
@@ -918,35 +918,35 @@
     "expected_cause": "InfluxDB Cloud 因认证服务故障导致所有查询请求失败，返回 503 错误。",
     "is_correct": true,
     "confidence": 0.92,
-    "latency_ms": 2300,
+    "latency_ms": 2341,
     "knowledge_used": 0,
-    "tokens_used": 428
+    "tokens_used": 445
   },
   {
     "case_id": "case_024",
     "category": "HTTP",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "InfluxDB认证后端服务故障或网络中断，导致查询服务不可用，进而引发所有查询失败。",
+    "predicted_cause": "InfluxDB认证后端服务故障或网络中断，导致查询服务不可用",
     "expected_cause": "InfluxDB Cloud 因认证服务故障导致所有查询请求失败，返回 503 错误。",
     "is_correct": true,
     "confidence": 0.9,
-    "latency_ms": 4756,
+    "latency_ms": 4188,
     "knowledge_used": 0,
-    "tokens_used": 641
+    "tokens_used": 570
   },
   {
     "case_id": "case_025",
     "category": "权限",
     "mode": "DIRECT",
     "strategy": "ZERO_SHOT",
-    "predicted_cause": "系统内存不足，导致OOM Killer（内存溢出杀手）进程被触发，强制杀死了vector服务进程。",
+    "predicted_cause": "系统内存不足，导致内核OOM Killer（内存溢出杀手）强制终止了vector服务进程。",
     "expected_cause": "Linux 内核因系统内存不足，调用 OOM Killer 强制终止了 vector 进程，释放内存。",
     "is_correct": true,
     "confidence": 0.95,
-    "latency_ms": 5059,
+    "latency_ms": 4630,
     "knowledge_used": 0,
-    "tokens_used": 607
+    "tokens_used": 672
   },
   {
     "case_id": "case_025",
@@ -957,21 +957,21 @@
     "expected_cause": "Linux 内核因系统内存不足，调用 OOM Killer 强制终止了 vector 进程，释放内存。",
     "is_correct": true,
     "confidence": 0.95,
-    "latency_ms": 2354,
+    "latency_ms": 2601,
     "knowledge_used": 0,
-    "tokens_used": 453
+    "tokens_used": 481
   },
   {
     "case_id": "case_025",
     "category": "权限",
     "mode": "DIRECT",
     "strategy": "COT",
-    "predicted_cause": "vector进程因系统内存不足被OOM Killer强制终止",
+    "predicted_cause": "vector服务进程因系统内存不足被OOM Killer强制终止",
     "expected_cause": "Linux 内核因系统内存不足，调用 OOM Killer 强制终止了 vector 进程，释放内存。",
     "is_correct": true,
     "confidence": 0.95,
-    "latency_ms": 5444,
+    "latency_ms": 5543,
     "knowledge_used": 0,
-    "tokens_used": 680
+    "tokens_used": 721
   }
 ]
