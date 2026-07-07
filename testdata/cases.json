@@ -1,0 +1,177 @@
+[
+  {
+    "id": "case_001",
+    "category": "OOM",
+    "log": "2025-09-17 14:54:22 ERROR [haproxy] out of memory: Kill process 1293 (vector) score 980 or sacrifice child\n2025-09-17 14:54:22 KERNEL: vector invoked oom-killer: gfp_mask=0x201da, order=0, oom_score_adj=0\n2025-09-17 14:54:23 systemd-journald[343]: Under memory pressure, flushing caches.",
+    "expected_root_cause": "B2ts_v2 VM内存耗尽，触发OOM Killer终止了日志转发进程(vector)。",
+    "expected_keywords": ["OOM", "memory pressure", "B2ts_v2", "swap"]
+  },
+  {
+    "id": "case_002",
+    "category": "OOM",
+    "log": "2026-02-09 07:15:10 ERROR [Trello] Worker process exceeded memory limit.\n2026-02-09 07:15:10 KERNEL: Worker 5678 killed due to Out-Of-Memory (OOM) error.\n2026-02-09 07:15:11 Scaling failed: CPU threshold not met while memory exhausted.",
+    "expected_root_cause": "Trello服务在业务高峰期因内存超限(OOM)崩溃，且基于CPU利用率的自动扩展策略未能触发。",
+    "expected_keywords": ["OOM", "Auto Scaling", "memory limit", "CPU threshold"]
+  },
+  {
+    "id": "case_003",
+    "category": "网络",
+    "log": "2026-01-08 02:15:30 %DNS_CLIENT-F-SRCADDRFAIL: Result is 2. Failed to identify address for specified name ‘www.cisco.com’.\n2026-01-08 02:15:31 %DNS_CLIENT-F-COREDUMP: Core dump generated. System rebooting.\n2026-01-08 02:20:15 %SYS-5-RESTART: System restart due to fatal DNS client error.",
+    "expected_root_cause": "Cisco交换机DNS客户端因解析特定域名失败触发致命错误，导致设备核心转储并反复重启。",
+    "expected_keywords": ["DNS", "core dump", "Cisco", "reboot loop", "1.1.1.1"]
+  },
+  {
+    "id": "case_004",
+    "category": "网络",
+    "log": "2025-05-28 15:09:00 UTC ERROR [InfluxDB Cloud] Authentication service unreachable.\n2025-05-28 15:09:05 WARN  [InfluxDB Cloud] Microservices failed to authenticate: missing service account token.\n2025-05-28 15:09:10 ERROR [InfluxDB] Write/Query API failure rates at 100%.",
+    "expected_root_cause": "Kubernetes 1.29+ 升级后 ServiceAccount token 未自动生成，导致微服务间认证失败，写入/查询API不可用。",
+    "expected_keywords": ["Kubernetes", "authentication", "token", "503", "InfluxDB"]
+  },
+  {
+    "id": "case_005",
+    "category": "代码缺陷",
+    "log": "2025-09-05 08:30:15 ERROR [RAID_Controller] Physical Disk 2 offline. Hot spare not activated.\n2025-09-05 08:30:16 ERROR [RAID_Controller] Physical Disk 3 offline. RAID5 Array failed.\n2025-09-05 08:30:17 Oracle DB: ORA-01157: cannot identify/lock data file 1 - see DBWR trace file.",
+    "expected_root_cause": "RAID5阵列中两块硬盘先后离线，因热备盘未正确配置激活，导致阵列崩溃，Oracle数据库文件损坏。",
+    "expected_keywords": ["RAID5", "hot spare", "disk offline", "ORA-01157", "NullPointer"]
+  },
+  {
+    "id": "case_006",
+    "category": "代码缺陷",
+    "log": "2025-08-07 15:26:26 {\"level\":\"info\",\"msg\":\"Waiting for lock to be released\",\"lockFile\":\"/var/lock/vgmanager/vgmanager.lock\"}\n... [repeated 259,221 times in 10 seconds] ...\n2025-08-07 16:00:00 CRITICAL: Node disk space exhausted. OVN DB corruption.",
+    "expected_root_cause": "TwistLock Defender 重启干扰 LVM 锁文件操作，导致 VG-Manager 陷入死循环，以每秒 26,000 行的速率刷爆磁盘。",
+    "expected_keywords": ["infinite loop", "lock contention", "disk full", "Prisma Cloud", "OpenShift"]
+  },
+  {
+    "id": "case_007",
+    "category": "连接池",
+    "log": "2025-05-05 02:00:00 UTC WARN  [Apex One] Log sending configuration file corrupted.\n2025-05-05 02:01:00 ERROR [Trend Vision One] Data ingestion pipeline failed: Connection refused.\n2025-05-05 02:05:00 INFO  [Apex One] Console showing blank pages due to log sending failure.",
+    "expected_root_cause": "Apex One 日志发送配置文件损坏，导致数据上报连接被拒绝，Vision One 控制台页面空白。",
+    "expected_keywords": ["Connection refused", "configuration file", "pipeline", "log sender"]
+  },
+  {
+    "id": "case_008",
+    "category": "连接池",
+    "log": "2026-04-09 00:15:00 WARN  [kube-apiserver] /readyz probe failed: etcd timeout.\n2026-04-09 00:15:05 ERROR [kube-apiserver] List leases failed: context deadline exceeded.\n2026-04-09 00:15:10 CRITICAL: KubeAPIErrorBudgetBurn alert firing.",
+    "expected_root_cause": "AKS 集群自动升级后，残留的孤立 node leases 导致 etcd 查询延迟飙升，API Server 就绪探针超时并返回 500。",
+    "expected_keywords": ["AKS", "etcd", "timeout", "node leases", "connection pool", "500"]
+  },
+  {
+    "id": "case_009",
+    "category": "磁盘",
+    "log": "2026-01-26 04:02:00 ERROR [NTFS] Event ID 55: Corruption discovered on volume C:.\n2026-01-26 04:02:01 WARN  [NTFS] $I30:$INDEX_ALLOCATION corruption in directory \\Windows\\System32\\SMI\\Store\\Machine.\n2026-01-26 04:02:02 CRITICAL: Disk check required. Rebooting into CHKDSK loop.",
+    "expected_root_cause": "安装 2026 年 1 月累积更新 KB5073722 后，TiWorker.exe 内存泄漏导致 NTFS 索引损坏，系统陷入 CHKDSK 无限修复循环。",
+    "expected_keywords": ["NTFS", "corruption", "KB5073722", "CHKDSK", "boot loop", "disk check"]
+  },
+  {
+    "id": "case_010",
+    "category": "磁盘",
+    "log": "2025-09-27 01:00:00 ERROR [SDP1] Server cache module fault detected.\n2025-09-27 01:00:05 WARN  [SDP1] Health indicator LED abnormal: Cache module write-through failure.\n2025-09-27 01:30:00 INFO  [A-SMGCS] SDP1 service stopped for emergency maintenance.",
+    "expected_root_cause": "A-SMGCS 系统 SDP1 服务器缓存模块异常，导致数据写入失败，健康指示灯告警。",
+    "expected_keywords": ["cache module", "disk fault", "server health", "emergency stop", "hardware"]
+  },
+  {
+    "id": "case_011",
+    "category": "HTTP",
+    "log": "2026-02-09 07:12:00 UTC WARN  [Trello] Upstream server temporarily unavailable.\n2026-02-09 07:12:15 ERROR [Trello] 502 Bad Gateway: Cannot connect to backend service.\n2026-02-09 07:15:00 CRITICAL: Auto Scaling failed due to memory pressure.",
+    "expected_root_cause": "Trello 后端服务因内存耗尽而崩溃，导致网关返回 502 错误，且自动扩展策略因仅基于 CPU 未能触发。",
+    "expected_keywords": ["502", "Bad Gateway", "Auto Scaling", "memory"]
+  },
+  {
+    "id": "case_012",
+    "category": "HTTP",
+    "log": "2026-04-12 08:00:00 WARN  [AKS] /readyz endpoint returning 500 for 4 of 6 API server instances.\n2026-04-12 08:00:05 ERROR [Prometheus] KubeAPIErrorBudgetBurn CRITICAL: 5 req/s failing.\n2026-04-12 08:00:10 INFO  [AKS] Resource Health remains 'Available'.",
+    "expected_root_cause": "AKS 集群升级后，多个 API Server 实例的 /readyz 探针因内部组件异常返回 500，但负载均衡器掩盖了故障。",
+    "expected_keywords": ["500", "Internal Server Error", "AKS", "/readyz", "API Server"]
+  },
+  {
+    "id": "case_013",
+    "category": "权限",
+    "log": "2025-09-05 14:00:00 ERROR [RAID_Controller] Hot spare disk activation failed.\n2025-09-05 14:00:01 WARN  [RAID_Controller] Insufficient privileges to enable hot spare feature.\n2025-09-05 14:00:02 INFO  [Oracle] Database mount failed: Permission denied on datafile.",
+    "expected_root_cause": "RAID 控制器热备盘因配置权限不足未能自动激活，导致阵列降级后崩溃，Oracle 数据文件访问被拒绝。",
+    "expected_keywords": ["Permission denied", "activation failed", "insufficient privileges", "RAID"]
+  },
+  {
+    "id": "case_014",
+    "category": "权限",
+    "log": "2025-05-28 15:09:00 UTC ERROR [InfluxDB] Failed to authenticate service account.\n2025-05-28 15:09:01 WARN  [Kubernetes] Missing service account token for default namespace.\n2025-05-28 15:09:02 ERROR [InfluxDB] Write API authorization failed.",
+    "expected_root_cause": "Kubernetes 升级后未自动生成 ServiceAccount token，导致 InfluxDB 微服务认证失败，权限被拒绝。",
+    "expected_keywords": ["authentication", "Permission denied", "ServiceAccount", "token", "RBAC"]
+  },
+  {
+    "id": "case_015",
+    "category": "数据库",
+    "log": "2025-09-05 08:30:20 Oracle DB: ORA-01157: cannot identify/lock data file 1.\n2025-09-05 08:30:21 Oracle DB: ORA-01110: data file 1: '/data/orcl/system01.dbf'.\n2025-09-05 08:30:22 ALERT: Database instance terminated. Recovery needed.",
+    "expected_root_cause": "RAID5 阵列崩溃导致 Oracle 系统表空间文件 (system01.dbf) 损坏，数据库无法启动。",
+    "expected_keywords": ["ORA-01157", "system01.dbf", "corruption", "recovery", "backup"]
+  },
+  {
+    "id": "case_016",
+    "category": "数据库",
+    "log": "2025-08-07 16:00:00 CRITICAL [OVN] Database corruption detected.\n2025-08-07 16:00:01 ERROR [OVN] Unable to read from OVN_Southbound DB.\n2025-08-07 16:00:02 WARN  [OpenShift] Cluster networking degraded: OVN DB corrupted.",
+    "expected_root_cause": "节点磁盘被 VG-Manager 日志写满，导致 OVN 数据库文件损坏，集群网络瘫痪。",
+    "expected_keywords": ["OVN", "database corruption", "disk full", "OpenShift", "SDN"]
+  },
+  {
+    "id": "case_017",
+    "category": "CPU",
+    "log": "2025-09-17 14:45:00 WARN  [B2ts_v2] CPU credits exhausted. Performance throttled.\n2025-09-17 14:45:10 ERROR [HAProxy] High CPU usage detected: 100%.\n2025-09-17 14:45:20 WARN  [rsyslog] Disk I/O blocked, CPU waiting for I/O.",
+    "expected_root_cause": "B2ts_v2 VM 因 CPU 积分耗尽导致性能受限，HAProxy 请求处理变慢，引发连接超时。",
+    "expected_keywords": ["CPU", "throttled", "B2ts_v2", "high usage", "credits"]
+  },
+  {
+    "id": "case_018",
+    "category": "CPU",
+    "log": "2026-01-08 02:20:00 WARN  [CBS250] High CPU utilization during DNS resolution loop.\n2026-01-08 02:20:05 ERROR [CBS250] Core dump triggered by DNSC task.\n2026-01-08 02:20:10 CRITICAL: Switch rebooted due to fatal CPU exception.",
+    "expected_root_cause": "Cisco 交换机 DNS 解析死循环导致 CPU 占用过高，触发致命异常并反复重启。",
+    "expected_keywords": ["CPU", "DNS", "loop", "Cisco", "core dump"]
+  },
+  {
+    "id": "case_019",
+    "category": "配置",
+    "log": "2025-05-05 02:00:00 WARN  [Apex One] Log configuration mismatch.\n2025-05-05 02:00:05 ERROR [Apex One] Failed to parse log sending config: Invalid parameter.\n2025-05-05 02:00:10 INFO  [Apex One] Defaulting to local logging only.",
+    "expected_root_cause": "Apex One 日志发送配置文件损坏或参数无效，导致数据上报失败，控制台显示异常。",
+    "expected_keywords": ["configuration", "invalid parameter", "parse error", "log config"]
+  },
+  {
+    "id": "case_020",
+    "category": "配置",
+    "log": "2026-04-09 00:00:00 INFO  [AKS] Starting automatic node image upgrade.\n2026-04-09 00:05:00 ERROR [kubelet] Failed to register node: node name already exists.\n2026-04-09 00:05:10 WARN  [AKS] Orphaned node leases detected in etcd.",
+    "expected_root_cause": "AKS 自动升级后，旧节点未正确注销，导致 etcd 中残留孤立租约 (orphaned leases)，引发注册冲突和性能问题。",
+    "expected_keywords": ["orphaned", "lease", "upgrade", "node registration", "AKS", "etcd"]
+  },
+  {
+    "id": "case_021",
+    "category": "OOM",
+    "log": "2026-01-25 11:32:00 INFO  [WindowsUpdate] Installing KB5073722.\n2026-01-25 12:46:00 WARN  [TiWorker] RADAR_PRE_LEAK_64 detected.\n2026-01-26 04:02:00 ERROR [NTFS] Memory corruption leading to file system error.",
+    "expected_root_cause": "Windows 更新 KB5073722 安装期间 TiWorker.exe 发生内存泄漏，最终导致 NTFS 文件系统损坏。",
+    "expected_keywords": ["memory leak", "TiWorker", "KB5073722", "NTFS", "OOM"]
+  },
+  {
+    "id": "case_022",
+    "category": "网络",
+    "log": "2026-01-08 02:15:00 WARN  [CBS250] Failed to resolve time-pnp.cisco.com.\n2026-01-08 02:15:01 ERROR [CBS250] DNS lookup failed: Server failure.\n2026-01-08 02:15:02 INFO  [CBS250] Removing default SNTP server to stabilize.",
+    "expected_root_cause": "Cisco 交换机因无法解析默认 NTP 服务器域名，触发 DNS 客户端缺陷，导致设备反复崩溃。",
+    "expected_keywords": ["DNS", "NTP", "time-pnp.cisco.com", "lookup failed", "Cisco"]
+  },
+  {
+    "id": "case_023",
+    "category": "磁盘",
+    "log": "2025-08-12 21:24:23 INFO  [VG-Manager] Waiting for lock to be released...\n... [259,221 lines] ...\n2025-08-12 21:24:33 CRITICAL: Disk usage 100%. VG-Manager logs exceed 233GB.",
+    "expected_root_cause": "VG-Manager 在获取 LVM 锁失败后陷入死循环，以每秒 26,000 条的速度生成日志，迅速耗尽磁盘空间。",
+    "expected_keywords": ["disk full", "log flood", "LVM", "lock", "100%"]
+  },
+  {
+    "id": "case_024",
+    "category": "HTTP",
+    "log": "2025-05-28 15:09:00 UTC WARN  [InfluxDB] Query service unavailable.\n2025-05-28 15:09:05 ERROR [InfluxDB] 503 Service Unavailable: Authentication backend unreachable.\n2025-05-28 15:09:10 CRITICAL: All queries failing across EU-Central-1.",
+    "expected_root_cause": "InfluxDB Cloud 因认证服务故障导致所有查询请求失败，返回 503 错误。",
+    "expected_keywords": ["503", "Service Unavailable", "authentication", "InfluxDB", "query"]
+  },
+  {
+    "id": "case_025",
+    "category": "权限",
+    "log": "2025-09-17 14:54:22 KERNEL: vector invoked oom-killer: gfp_mask=0x201da.\n2025-09-17 14:54:23 systemd[1]: vector.service: Main process exited, code=killed, status=9/KILL.\n2025-09-17 14:54:24 systemd[1]: vector.service: Failed with result 'oom-kill'.",
+    "expected_root_cause": "Linux 内核因系统内存不足，调用 OOM Killer 强制终止了 vector 进程，释放内存。",
+    "expected_keywords": ["oom-killer", "Permission denied", "KILL", "systemd", "memory pressure"]
+  }
+]

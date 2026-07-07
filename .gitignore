@@ -1,0 +1,30 @@
+# 环境变量
+.env
+
+# 二进制文件
+/log-analyzer
+/log-analyzer.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# 日志
+*.log
+
+# 测试数据（可选，根据需求调整）
+testdata/*.log
+
+# 审查报告（本地产物）
+demo_review_report.md
+
+# WorkBuddy 工作区
+.workbuddy/
+
+# 二进制产物
+*.exe
+
+# 系统文件
+.DS_Store
+Thumbs.db

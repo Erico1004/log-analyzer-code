@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>运维日志智能分析系统 | 矩阵式 AIOps</title>
+  <style>
+    /* ========== 全局重置与字体 ========== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', 'Monaco', 'Fira Code', monospace;
+      background: #000;
+      color: #00ff00;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ========== 代码雨背景 ========== */
+    #matrix-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    /* ========== 主容器（浮在背景之上） ========== */
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      backdrop-filter: blur(2px);
+    }
+
+    /* ========== 头部 ========== */
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      border-bottom: 1px solid #00ff0040;
+      text-shadow: 0 0 10px #00ff00;
+    }
+
+    .header h1 {
+      color: #00ff00;
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    .header p {
+      color: #00cc00;
+      font-size: 1.1rem;
+      margin-top: 10px;
+      letter-spacing: 2px;
+      opacity: 0.9;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00; }
+      to { text-shadow: 0 0 15px #00ff00, 0 0 30px #00ff00; }
+    }
+
+    /* ========== 主内容区：两列布局 ========== */
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ========== 卡片样式：半透明黑色玻璃效果 ========== */
+    .card {
+      background: rgba(0, 20, 0, 0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid #00ff0060;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(0, 255, 0, 0.2), inset 0 0 10px rgba(0, 255, 0, 0.1);
+      padding: 24px;
+      transition: all 0.3s;
+    }
+
+    .card:hover {
+      border-color: #00ff00;
+      box-shadow: 0 0 40px rgba(0, 255, 0, 0.3), inset 0 0 15px rgba(0, 255, 0, 0.2);
+    }
+
+    .card-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #00ff00;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #00ff0060;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    /* ========== 策略选择器 ========== */
+    .strategy-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .strategy-btn {
+      flex: 1;
+      padding: 10px;
+      background: rgba(0, 40, 0, 0.8);
+      border: 1px solid #00ff0060;
+      color: #00cc00;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-family: inherit;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .strategy-btn.active {
+      border-color: #00ff00;
+      background: #00ff0020;
+      color: #00ff00;
+      box-shadow: 0 0 15px #00ff0060;
+    }
+
+    .strategy-btn:hover {
+      background: #00ff0010;
+      border-color: #00ff00;
+    }
+
+    /* ========== RAG 开关（特殊样式） ========== */
+    .rag-switch-container {
+      margin: 15px 0;
+      padding: 15px;
+      background: rgba(0, 30, 0, 0.6);
+      border-radius: 8px;
+      border-left: 4px solid #00ff00;
+      backdrop-filter: blur(4px);
+    }
+
+    .rag-switch-container label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: #00ff00;
+    }
+
+    .rag-switch-container input {
+      margin-right: 12px;
+      transform: scale(1.4);
+      accent-color: #00ff00;
+    }
+
+    .rag-badge {
+      margin-left: 12px;
+      padding: 2px 10px;
+      background: #00ff0020;
+      border: 1px solid #00ff00;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #00ff00;
+    }
+
+    /* ========== 示例标签（小型，科技感） ========== */
+    .examples {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 10px 0 15px 0;
+    }
+
+    .example-tag {
+      padding: 5px 12px;
+      background: rgba(0, 30, 0, 0.8);
+      color: #00ff00;
+      border: 1px solid #00ff0060;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .example-tag:hover {
+      background: #00ff00;
+      color: #000;
+      border-color: #00ff00;
+      box-shadow: 0 0 15px #00ff00;
+    }
+
+    /* ========== 文本输入框 ========== */
+    .log-textarea {
+      width: 100%;
+      min-height: 350px;
+      padding: 16px;
+      font-family: 'Courier New', 'Monaco', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #00ff00;
+      background: rgba(0, 10, 0, 0.9);
+      border: 1px solid #00ff0060;
+      border-radius: 8px;
+      resize: vertical;
+      transition: all 0.3s;
+      caret-color: #00ff00;
+    }
+
+    .log-textarea:focus {
+      outline: none;
+      border-color: #00ff00;
+      background: #001a00;
+      box-shadow: 0 0 20px #00ff0040, inset 0 0 10px #00ff0020;
+    }
+
+    .log-textarea::placeholder {
+      color: #008800;
+      opacity: 0.6;
+    }
+
+    /* ========== 按钮 ========== */
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 500;
+      border: 1px solid #00ff00;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      background: rgba(0, 20, 0, 0.9);
+      color: #00ff00;
+    }
+
+    .btn-primary {
+      background: #00ff0020;
+      color: #00ff00;
+      flex: 1;
+      box-shadow: 0 0 15px #00ff0040;
+    }
+
+    .btn-primary:hover {
+      background: #00ff00;
+      color: #000;
+      box-shadow: 0 0 30px #00ff00;
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #00cc00;
+      border-color: #00cc0060;
+    }
+
+    .btn-secondary:hover {
+      background: #00ff0010;
+      border-color: #00ff00;
+      color: #00ff00;
+    }
+
+    /* ========== 结果展示区 ========== */
+    .result-area {
+      height: 100%;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+      color: #00ff00;
+    }
+
+    .loading.active {
+      display: block;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid #003300;
+      border-top-color: #00ff00;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+      box-shadow: 0 0 20px #00ff00;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .diagnosis-result {
+      display: none;
+    }
+
+    .diagnosis-result.active {
+      display: block;
+    }
+
+    .result-section {
+      margin-bottom: 20px;
+    }
+
+    .result-label {
+      font-weight: 600;
+      color: #00ff00;
+      margin-bottom: 8px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 5px #00ff00;
+    }
+
+    .result-content {
+      background: rgba(0, 15, 0, 0.8);
+      padding: 16px;
+      border-radius: 6px;
+      border-left: 4px solid #00ff00;
+      color: #00cc00;
+      line-height: 1.6;
+    }
+
+    .confidence-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .confidence-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #00ff00;
+      text-shadow: 0 0 10px #00ff00;
+    }
+
+    .confidence-fill {
+      flex: 1;
+      height: 10px;
+      background: #003300;
+      border-radius: 5px;
+      overflow: hidden;
+      border: 1px solid #00ff0060;
+    }
+
+    .confidence-fill-inner {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff00, #00aa00);
+      border-radius: 5px;
+      transition: width 0.5s;
+      box-shadow: 0 0 10px #00ff00;
+    }
+
+    .steps-list {
+      list-style: none;
+    }
+
+    .steps-list li {
+      padding: 10px 0;
+      padding-left: 28px;
+      position: relative;
+      border-bottom: 1px solid #00ff0030;
+      color: #00cc00;
+    }
+
+    .steps-list li:last-child {
+      border-bottom: none;
+    }
+
+    .steps-list li::before {
+      content: ">";
+      position: absolute;
+      left: 4px;
+      color: #00ff00;
+      font-weight: bold;
+      text-shadow: 0 0 5px #00ff00;
+    }
+
+    .metadata {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #00ff0040;
+      font-size: 12px;
+      color: #008800;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .feedback-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .error-message {
+      background: #330000;
+      color: #ff4444;
+      padding: 16px;
+      border-radius: 6px;
+      border-left: 4px solid #ff0000;
+      display: none;
+    }
+
+    .error-message.active {
+      display: block;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #006600;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+<!-- 代码雨 Canvas -->
+<canvas id="matrix-canvas"></canvas>
+
+<div class="container">
+  <!-- 头部 -->
+  <header class="header">
+    <h1>🔍 LOG ANALYZER // AIOps</h1>
+    <p>> 基于大语言模型 & RAG 检索增强 | 矩阵式智能诊断_</p>
+  </header>
+
+  <!-- 主内容 -->
+  <div class="main-content">
+    <!-- 左侧：输入区域 -->
+    <div class="card">
+      <div class="card-title">
+        <span>📋 > INPUT_LOG_STREAM</span>
+      </div>
+      <div class="input-area">
+
+        <!-- 策略选择器 -->
+        <div class="strategy-selector">
+          <button class="strategy-btn active" data-strategy="ZERO_SHOT">ZERO_SHOT</button>
+          <button class="strategy-btn" data-strategy="FEW_SHOT">FEW_SHOT</button>
+          <button class="strategy-btn" data-strategy="COT">CoT_CHAIN</button>
+        </div>
+
+        <!-- RAG 增强开关 -->
+        <div class="rag-switch-container">
+          <label>
+            <input type="checkbox" id="ragMode" checked>
+            <span style="font-weight: 600;">ENABLE_RAG_ENHANCEMENT</span>
+            <span class="rag-badge">ACTIVE</span>
+          </label>
+          <div style="font-size: 11px; margin-top: 5px; color: #008800;">> 关闭后将使用纯 LLM 基线模式 (用于对比实验)</div>
+        </div>
+
+        <!-- 示例快速填充 (小型) -->
+        <div class="examples">
+          <span class="example-tag" data-example="oom">[OOM]</span>
+          <span class="example-tag" data-example="connection">[REFUSED]</span>
+          <span class="example-tag" data-example="null">[NPE]</span>
+          <span class="example-tag" data-example="timeout">[TIMEOUT]</span>
+          <span class="example-tag" data-example="disk">[DISK_FULL]</span>
+        </div>
+
+        <textarea id="logInput" class="log-textarea" placeholder="> 粘贴运维日志 / 选择下方示例..."></textarea>
+
+        <div class="toolbar">
+          <button id="analyzeBtn" class="btn btn-primary">
+            <span>🚀</span> EXECUTE_ANALYSIS
+          </button>
+          <button id="clearBtn" class="btn btn-secondary">
+            <span>🗑️</span> CLEAR
+          </button>
+          <button id="pasteBtn" class="btn btn-secondary">
+            <span>📋</span> PASTE
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：结果区域 -->
+    <div class="card">
+      <div class="card-title">
+        <span>📊 > DIAGNOSIS_REPORT</span>
+      </div>
+      <div class="result-area">
+        <div id="loading" class="loading">
+          <div class="spinner"></div>
+          <p>> ANALYZING LOG STREAM...</p>
+          <p style="font-size: 12px; margin-top: 10px; opacity: 0.7;">RETRIEVING KNOWLEDGE BASE // CALLING DEEPSEEK API</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <div id="diagnosisResult" class="diagnosis-result">
+          <div class="result-section">
+            <div class="result-label">> ROOT_CAUSE</div>
+            <div id="rootCause" class="result-content"></div>
+          </div>
+
+          <div class="result-section">
+            <div class="result-label">> CONFIDENCE_LEVEL</div>
+            <div class="confidence-bar">
+              <span id="confidenceValue" class="confidence-value">0%</span>
+              <div class="confidence-fill">
+                <div id="confidenceFill" class="confidence-fill-inner" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-section">
+            <div class="result-label">> ANALYSIS_TRACE</div>
+            <div id="analysisProcess" class="result-content"></div>
+          </div>
+
+          <div class="result-section">
+            <div class="result-label">> RESOLUTION_STEPS</div>
+            <ul id="solutionSteps" class="steps-list result-content"></ul>
+          </div>
+
+          <div id="metadata" class="metadata"></div>
+
+          <!-- 反馈按钮 -->
+          <div class="feedback-buttons">
+            <button id="feedbackCorrect" class="btn btn-secondary" style="flex:1;">✅ CORRECT</button>
+            <button id="feedbackWrong" class="btn btn-secondary" style="flex:1;">❌ INCORRECT</button>
+          </div>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+          <div style="font-size: 48px; margin-bottom: 16px;">&gt;_</div>
+          <p>> AWAITING INPUT... // 请在左侧输入日志并执行分析_</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ========== 代码雨效果 ==========
+  (function() {
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    let columns = [];
+    let fontSize = 16;
+    let drops = [];
+
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&{}[]()/\\<>*+-=:.!?";
+
+    function resizeCanvas() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+
+      const columnCount = Math.floor(width / fontSize) + 1;
+      drops = [];
+      for (let i = 0; i < columnCount; i++) {
+        drops[i] = Math.random() * -100;
+      }
+    }
+
+    function draw() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.fillStyle = '#0F0';
+      ctx.font = fontSize + 'px "Courier New", Monaco, monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        // 随机亮度变化
+        const brightness = Math.random() * 40 + 60;
+        ctx.fillStyle = `rgb(0, ${brightness + 100}, 0)`;
+        ctx.fillText(text, x, y);
+
+        // 头部更亮
+        ctx.fillStyle = '#0F0';
+        ctx.fillText(text, x, y - fontSize);
+
+        if (y > height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+    });
+
+    resizeCanvas();
+    setInterval(draw, 50);
+  })();
+
+  // ========== 业务逻辑 ==========
+  const examples = {
+    oom: `2024-01-15 10:23:45 ERROR [main] com.example.App - Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
+2024-01-15 10:23:45 ERROR [main] com.example.App -     at com.example.DataProcessor.process(DataProcessor.java:42)
+2024-01-15 10:23:45 ERROR [main] com.example.App -     at com.example.BatchJob.execute(BatchJob.java:128)
+2024-01-15 10:23:46 INFO  [main] com.example.App - JVM Memory: max=2048M, used=2046M, free=2M`,
+    connection: `2024-01-15 14:32:10 ERROR [nio-8080-exec-1] c.e.c.UserController - Failed to fetch user data
+java.net.ConnectException: Connection refused: connect
+    at java.net.PlainSocketImpl.socketConnect(Native Method)
+Caused by: com.mysql.jdbc.exceptions.jdbc4.CommunicationsException: Communications link failure`,
+    null: `2024-01-15 09:15:22 ERROR [http-nio-8080-exec-3] c.e.s.OrderService - Order processing failed for orderId: 12345
+java.lang.NullPointerException: Cannot invoke "com.example.entity.User.getAddress()" because "user" is null
+    at com.example.service.OrderService.processOrder(OrderService.java:156)`,
+    timeout: `2024-01-15 16:45:30 WARN  [scheduling-1] o.s.c.r.s.SimpleRetryPolicy - Retry failed for operation: getRemoteData
+java.net.SocketTimeoutException: Read timed out
+    at java.net.SocketInputStream.socketRead0(Native Method)
+    at com.example.client.RemoteServiceClient.fetchData(RemoteServiceClient.java:78)`,
+    disk: `2024-01-15 03:22:15 ERROR [FileWriter-1] o.a.k.s.FileWriter - Failed to write record to log file
+java.io.IOException: No space left on device
+    at java.io.FileOutputStream.writeBytes(Native Method)
+2024-01-15 03:22:16 CRIT [monitor] system.monitor - Filesystem /data usage: 99.8%`
+  };
+
+  // DOM元素
+  const logInput = document.getElementById('logInput');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const pasteBtn = document.getElementById('pasteBtn');
+  const loading = document.getElementById('loading');
+  const errorMessage = document.getElementById('errorMessage');
+  const diagnosisResult = document.getElementById('diagnosisResult');
+  const emptyState = document.getElementById('emptyState');
+
+  const rootCause = document.getElementById('rootCause');
+  const confidenceValue = document.getElementById('confidenceValue');
+  const confidenceFill = document.getElementById('confidenceFill');
+  const analysisProcess = document.getElementById('analysisProcess');
+  const solutionSteps = document.getElementById('solutionSteps');
+  const metadata = document.getElementById('metadata');
+
+  let currentStrategy = 'FEW_SHOT';
+  let currentSessionId = '';
+
+  // 策略切换
+  document.querySelectorAll('.strategy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.strategy-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentStrategy = btn.dataset.strategy;
+    });
+  });
+
+  // 示例点击
+  document.querySelectorAll('.example-tag').forEach(tag => {
+    tag.addEventListener('click', () => {
+      const type = tag.dataset.example;
+      if (examples[type]) {
+        logInput.value = examples[type];
+      }
+    });
+  });
+
+  function hideAll() {
+    loading.classList.remove('active');
+    errorMessage.classList.remove('active');
+    diagnosisResult.classList.remove('active');
+    emptyState.style.display = 'none';
+  }
+
+  function showLoading() {
+    hideAll();
+    loading.classList.add('active');
+    analyzeBtn.disabled = true;
+  }
+
+  function showError(msg) {
+    hideAll();
+    errorMessage.textContent = '> ERROR: ' + msg;
+    errorMessage.classList.add('active');
+    analyzeBtn.disabled = false;
+  }
+
+  function showResult(data) {
+    hideAll();
+    const d = data.diagnosis;
+    const m = data.metadata;
+
+    rootCause.textContent = d.root_cause || 'NULL';
+
+    const conf = (d.confidence || 0) * 100;
+    confidenceValue.textContent = conf.toFixed(1) + '%';
+    confidenceFill.style.width = conf + '%';
+
+    analysisProcess.textContent = d.analysis_process || 'NULL';
+
+    solutionSteps.innerHTML = '';
+    if (d.solution_steps && d.solution_steps.length > 0) {
+      d.solution_steps.forEach(step => {
+        const li = document.createElement('li');
+        li.textContent = step;
+        solutionSteps.appendChild(li);
+      });
+    } else {
+      const li = document.createElement('li');
+      li.textContent = 'NO_STEPS_PROVIDED';
+      solutionSteps.appendChild(li);
+    }
+
+    const modeBadge = m.mode === 'RAG'
+            ? '<span style="background: #00ff0020; border:1px solid #00ff00; padding:2px 6px;">RAG_ENHANCED</span>'
+            : '<span style="background: #ff660020; border:1px solid #ff6600; color:#ffaa00; padding:2px 6px;">LLM_BASELINE</span>';
+
+    metadata.innerHTML = `
+        ${modeBadge} | SESSION: ${m.session_id?.substring(0,8) || 'N/A'} | LATENCY: ${m.latency_ms}ms | STRATEGY: ${m.prompt_strategy} | KNOWLEDGE_ITEMS: ${m.knowledge_used || 0}
+      `;
+
+    diagnosisResult.classList.add('active');
+    analyzeBtn.disabled = false;
+  }
+
+  async function analyze() {
+    const content = logInput.value.trim();
+    if (content.length < 10) {
+      alert('> INPUT_ERROR: 日志内容过短');
+      return;
+    }
+
+    showLoading();
+
+    try {
+      const useRAG = document.getElementById('ragMode').checked;
+
+      const response = await fetch('/api/diagnose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: content,
+          strategy: currentStrategy,
+          use_rag: useRAG
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'API_FAILURE');
+
+      currentSessionId = data.metadata.session_id;
+      showResult(data);
+    } catch (err) {
+      showError(err.message);
+    }
+  }
+
+  async function sendFeedback(value) {
+    if (!currentSessionId) {
+      alert('> NO_ACTIVE_SESSION');
+      return;
+    }
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: currentSessionId, feedback: value })
+      });
+      alert('> FEEDBACK_RECORDED');
+    } catch (err) {
+      alert('> FEEDBACK_FAILED');
+    }
+  }
+
+  // 事件绑定
+  analyzeBtn.addEventListener('click', analyze);
+  clearBtn.addEventListener('click', () => {
+    logInput.value = '';
+    hideAll();
+    emptyState.style.display = 'block';
+  });
+  pasteBtn.addEventListener('click', async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      logInput.value = text;
+    } catch (err) {
+      alert('> CLIPBOARD_ACCESS_DENIED');
+    }
+  });
+
+  document.getElementById('feedbackCorrect').addEventListener('click', () => sendFeedback(1));
+  document.getElementById('feedbackWrong').addEventListener('click', () => sendFeedback(0));
+
+  logInput.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+      e.preventDefault();
+      analyze();
+    }
+  });
+
+  // 初始状态
+  emptyState.style.display = 'block';
+</script>
+</body>
+</html>
