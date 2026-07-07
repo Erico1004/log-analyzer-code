@@ -1,76 +1,76 @@
 case_id,category,mode,strategy,predicted_cause,expected_cause,is_correct,confidence,latency_ms,knowledge_used,tokens_used
-case_001,OOM,DIRECT,ZERO_SHOT,"系统物理内存耗尽，触发OOM Killer机制，导致HAProxy进程被强制终止。根本原因是内存泄漏或内存配置不足，结合日志中'Under memory pressure, flushing caches'表明系统已处于严重内存压力状态。",B2ts_v2 VM内存耗尽，触发OOM Killer终止了日志转发进程(vector)。,true,0.9500,8458,0,715
-case_001,OOM,DIRECT,FEW_SHOT,系统物理内存耗尽，触发OOM Killer机制,B2ts_v2 VM内存耗尽，触发OOM Killer终止了日志转发进程(vector)。,false,0.9500,3106,0,486
-case_001,OOM,DIRECT,COT,系统物理内存耗尽，导致OOM Killer强制终止高内存占用进程（vector）以释放内存,B2ts_v2 VM内存耗尽，触发OOM Killer终止了日志转发进程(vector)。,false,0.9000,7696,0,654
-case_002,OOM,DIRECT,ZERO_SHOT,Trello工作进程因内存泄漏或内存配置不足导致OOM（Out-Of-Memory）被内核杀死，同时自动扩缩容策略仅基于CPU阈值，未考虑内存使用率，导致在内存耗尽时无法触发扩容，形成资源瓶颈。,Trello服务在业务高峰期因内存超限(OOM)崩溃，且基于CPU利用率的自动扩展策略未能触发。,false,0.9500,7322,0,614
-case_002,OOM,DIRECT,FEW_SHOT,工作进程内存使用超过系统限制，触发OOM Killer导致进程被终止,Trello服务在业务高峰期因内存超限(OOM)崩溃，且基于CPU利用率的自动扩展策略未能触发。,false,0.9500,3414,0,443
-case_002,OOM,DIRECT,COT,Trello工作进程因内存泄漏或内存配置不足导致OOM（内存溢出），进而触发系统OOM Killer终止进程，而自动扩缩容机制因CPU阈值未达标而未能及时响应，最终导致服务不可用。,Trello服务在业务高峰期因内存超限(OOM)崩溃，且基于CPU利用率的自动扩展策略未能触发。,false,0.9000,9673,0,775
-case_003,网络,DIRECT,ZERO_SHOT,DNS客户端解析失败导致系统核心转储并重启。具体原因为DNS客户端在解析'www.cisco.com'时无法获取源地址（SRCADDRFAIL），触发致命错误，进而产生核心转储并引发系统重启。,Cisco交换机DNS客户端因解析特定域名失败触发致命错误，导致设备核心转储并反复重启。,true,0.9000,9577,0,766
-case_003,网络,DIRECT,FEW_SHOT,DNS客户端解析失败导致系统核心转储并重启,Cisco交换机DNS客户端因解析特定域名失败触发致命错误，导致设备核心转储并反复重启。,false,0.9200,3463,0,502
-case_003,网络,DIRECT,COT,DNS客户端在解析'www.cisco.com'时失败，导致内部错误触发核心转储和系统重启。,Cisco交换机DNS客户端因解析特定域名失败触发致命错误，导致设备核心转储并反复重启。,true,0.8500,7131,0,692
-case_004,网络,DIRECT,ZERO_SHOT,InfluxDB Cloud 认证服务不可用，导致微服务因缺少服务账户令牌而无法完成身份验证，最终造成写入/查询 API 完全失败。,Kubernetes 1.29+ 升级后 ServiceAccount token 未自动生成，导致微服务间认证失败，写入/查询API不可用。,false,0.9000,6020,0,582
-case_004,网络,DIRECT,FEW_SHOT,InfluxDB Cloud认证服务不可用，导致微服务认证失败，进而引发API故障,Kubernetes 1.29+ 升级后 ServiceAccount token 未自动生成，导致微服务间认证失败，写入/查询API不可用。,false,0.9200,2893,0,473
-case_004,网络,DIRECT,COT,InfluxDB Cloud 认证服务不可用，导致微服务认证失败，进而引发写入/查询 API 完全故障,Kubernetes 1.29+ 升级后 ServiceAccount token 未自动生成，导致微服务间认证失败，写入/查询API不可用。,false,0.9000,8573,0,707
-case_005,代码缺陷,DIRECT,ZERO_SHOT,RAID5阵列中两块物理磁盘同时离线，导致阵列失效，进而引发Oracle数据库无法访问数据文件1（系统表空间文件），数据库实例崩溃。,RAID5阵列中两块硬盘先后离线，因热备盘未正确配置激活，导致阵列崩溃，Oracle数据库文件损坏。,false,0.9500,9218,0,695
-case_005,代码缺陷,DIRECT,FEW_SHOT,RAID5阵列中两块物理磁盘同时离线导致阵列失效，进而引发Oracle数据库无法访问数据文件,RAID5阵列中两块硬盘先后离线，因热备盘未正确配置激活，导致阵列崩溃，Oracle数据库文件损坏。,false,0.9500,3567,0,518
-case_005,代码缺陷,DIRECT,COT,RAID5阵列中两块物理磁盘（Disk 2和Disk 3）同时离线，导致RAID5阵列失效，进而引发Oracle数据库无法访问数据文件1（系统表空间文件），数据库实例崩溃。,RAID5阵列中两块硬盘先后离线，因热备盘未正确配置激活，导致阵列崩溃，Oracle数据库文件损坏。,false,0.9000,9923,0,823
-case_006,代码缺陷,DIRECT,ZERO_SHOT,LVM卷管理器锁文件竞争导致OVN数据库写入失败，进而引发磁盘空间耗尽和数据库损坏,"TwistLock Defender 重启干扰 LVM 锁文件操作，导致 VG-Manager 陷入死循环，以每秒 26,000 行的速率刷爆磁盘。",false,0.8500,9904,0,754
-case_006,代码缺陷,DIRECT,FEW_SHOT,文件锁竞争导致进程阻塞，进而引发磁盘空间耗尽和OVN数据库损坏,"TwistLock Defender 重启干扰 LVM 锁文件操作，导致 VG-Manager 陷入死循环，以每秒 26,000 行的速率刷爆磁盘。",false,0.9200,4131,0,512
-case_006,代码缺陷,DIRECT,COT,vgmanager.lock文件长时间无法获取锁，导致节点磁盘空间耗尽，进而引发OVN数据库损坏,"TwistLock Defender 重启干扰 LVM 锁文件操作，导致 VG-Manager 陷入死循环，以每秒 26,000 行的速率刷爆磁盘。",false,0.9000,9830,0,789
-case_007,连接池,DIRECT,ZERO_SHOT,Apex One日志发送配置文件损坏，导致日志无法正常发送至Trend Vision One的数据摄取管道，进而引发连接拒绝错误和控制台空白页面。,Apex One 日志发送配置文件损坏，导致数据上报连接被拒绝，Vision One 控制台页面空白。,true,0.8500,7082,0,612
-case_007,连接池,DIRECT,FEW_SHOT,日志发送配置文件损坏导致数据管道连接被拒绝,Apex One 日志发送配置文件损坏，导致数据上报连接被拒绝，Vision One 控制台页面空白。,false,0.8500,3255,0,473
-case_007,连接池,DIRECT,COT,Apex One日志发送配置文件损坏导致日志发送失败，进而引发Trend Vision One数据摄取管道连接被拒绝，最终导致Apex One控制台显示空白页面。,Apex One 日志发送配置文件损坏，导致数据上报连接被拒绝，Vision One 控制台页面空白。,true,0.8500,7323,0,644
-case_008,连接池,DIRECT,ZERO_SHOT,etcd集群性能下降或不可用，导致kube-apiserver健康检查超时，进而引发API错误预算燃烧告警。,AKS 集群自动升级后，残留的孤立 node leases 导致 etcd 查询延迟飙升，API Server 就绪探针超时并返回 500。,true,0.9000,6890,0,636
-case_008,连接池,DIRECT,FEW_SHOT,etcd集群响应超时导致kube-apiserver健康检查失败,AKS 集群自动升级后，残留的孤立 node leases 导致 etcd 查询延迟飙升，API Server 就绪探针超时并返回 500。,true,0.9200,3330,0,484
-case_008,连接池,DIRECT,COT,etcd集群性能下降或不可用，导致kube-apiserver健康检查超时和API调用失败,AKS 集群自动升级后，残留的孤立 node leases 导致 etcd 查询延迟飙升，API Server 就绪探针超时并返回 500。,true,0.9000,10699,0,912
-case_009,磁盘,DIRECT,ZERO_SHOT,解析失败,安装 2026 年 1 月累积更新 KB5073722 后，TiWorker.exe 内存泄漏导致 NTFS 索引损坏，系统陷入 CHKDSK 无限修复循环。,false,0.0000,10307,0,803
-case_009,磁盘,DIRECT,FEW_SHOT,解析失败,安装 2026 年 1 月累积更新 KB5073722 后，TiWorker.exe 内存泄漏导致 NTFS 索引损坏，系统陷入 CHKDSK 无限修复循环。,false,0.0000,3128,0,466
-case_009,磁盘,DIRECT,COT,NTFS文件系统元数据损坏，具体为$I30索引分配属性在系统关键目录中发生损坏，导致系统触发自动修复循环。,安装 2026 年 1 月累积更新 KB5073722 后，TiWorker.exe 内存泄漏导致 NTFS 索引损坏，系统陷入 CHKDSK 无限修复循环。,true,0.8500,9461,0,795
-case_010,磁盘,DIRECT,ZERO_SHOT,SDP1服务器缓存模块硬件故障，导致写穿透（write-through）操作失败，进而触发紧急维护停机。,A-SMGCS 系统 SDP1 服务器缓存模块异常，导致数据写入失败，健康指示灯告警。,true,0.9000,5862,0,548
-case_010,磁盘,DIRECT,FEW_SHOT,SDP1服务器缓存模块硬件故障或固件异常导致写穿透失败,A-SMGCS 系统 SDP1 服务器缓存模块异常，导致数据写入失败，健康指示灯告警。,true,0.9200,3656,0,487
-case_010,磁盘,DIRECT,COT,SDP1服务器缓存模块硬件故障，具体表现为写穿透失败，导致缓存模块异常，最终触发紧急维护停机。,A-SMGCS 系统 SDP1 服务器缓存模块异常，导致数据写入失败，健康指示灯告警。,true,0.9500,8847,0,796
-case_011,HTTP,DIRECT,ZERO_SHOT,后端服务因内存压力导致自动扩展失败，进而引发上游服务器不可用和502错误。,Trello 后端服务因内存耗尽而崩溃，导致网关返回 502 错误，且自动扩展策略因仅基于 CPU 未能触发。,false,0.9000,6428,0,550
-case_011,HTTP,DIRECT,FEW_SHOT,后端服务因内存压力导致自动扩展失败，进而引发上游服务器不可用和502错误,Trello 后端服务因内存耗尽而崩溃，导致网关返回 502 错误，且自动扩展策略因仅基于 CPU 未能触发。,false,0.9200,3948,0,469
-case_011,HTTP,DIRECT,COT,后端服务因内存压力导致崩溃，进而引发上游服务器不可用和502错误，最终触发Auto Scaling失败。,Trello 后端服务因内存耗尽而崩溃，导致网关返回 502 错误，且自动扩展策略因仅基于 CPU 未能触发。,true,0.8500,9404,0,821
-case_012,HTTP,DIRECT,ZERO_SHOT,AKS集群中部分API Server实例（4/6）的/readyz健康检查端点返回500错误，导致Prometheus监控到KubeAPI错误预算燃烧（5 req/s失败），但集群资源健康状态仍显示为'Available'，表明故障可能源于API Server内部组件（如etcd、认证插件或控制器）的局部异常，而非全局不可用。,AKS 集群升级后，多个 API Server 实例的 /readyz 探针因内部组件异常返回 500，但负载均衡器掩盖了故障。,true,0.8500,8964,0,743
-case_012,HTTP,DIRECT,FEW_SHOT,AKS集群中部分API Server实例健康检查失败，导致Prometheus监控到Kubernetes API错误率上升,AKS 集群升级后，多个 API Server 实例的 /readyz 探针因内部组件异常返回 500，但负载均衡器掩盖了故障。,true,0.8500,3822,0,532
-case_012,HTTP,DIRECT,COT,AKS集群中4/6的API Server实例的/readyz健康检查端点返回500错误，导致Prometheus监控到KubeAPI错误预算燃烧（ErrorBudgetBurn）告警，但集群资源健康状态仍显示为可用。,AKS 集群升级后，多个 API Server 实例的 /readyz 探针因内部组件异常返回 500，但负载均衡器掩盖了故障。,true,0.8500,10110,0,839
-case_013,权限,DIRECT,ZERO_SHOT,RAID控制器因权限不足无法激活热备盘，导致数据文件无法正常挂载，Oracle数据库启动失败。,RAID 控制器热备盘因配置权限不足未能自动激活，导致阵列降级后崩溃，Oracle 数据文件访问被拒绝。,true,0.8500,7568,0,639
-case_013,权限,DIRECT,FEW_SHOT,RAID控制器权限不足导致热备盘激活失败，进而引发Oracle数据库数据文件权限问题,RAID 控制器热备盘因配置权限不足未能自动激活，导致阵列降级后崩溃，Oracle 数据文件访问被拒绝。,true,0.8500,2784,0,462
-case_013,权限,DIRECT,COT,RAID控制器因权限不足无法激活热备盘，导致数据文件无法访问，进而引发Oracle数据库挂载失败。,RAID 控制器热备盘因配置权限不足未能自动激活，导致阵列降级后崩溃，Oracle 数据文件访问被拒绝。,true,0.8500,8764,0,711
-case_014,权限,DIRECT,ZERO_SHOT,Kubernetes 默认命名空间中缺少服务账户令牌，导致 InfluxDB 无法通过服务账户进行身份验证，进而引发写入 API 授权失败。,Kubernetes 升级后未自动生成 ServiceAccount token，导致 InfluxDB 微服务认证失败，权限被拒绝。,true,0.9000,6118,0,570
-case_014,权限,DIRECT,FEW_SHOT,InfluxDB服务账户认证失败，Kubernetes命名空间缺少服务账户令牌,Kubernetes 升级后未自动生成 ServiceAccount token，导致 InfluxDB 微服务认证失败，权限被拒绝。,true,0.8500,3826,0,500
-case_014,权限,DIRECT,COT,Kubernetes 默认命名空间的服务账户令牌缺失或无效，导致 InfluxDB 无法通过服务账户认证，进而引发写入 API 授权失败。,Kubernetes 升级后未自动生成 ServiceAccount token，导致 InfluxDB 微服务认证失败，权限被拒绝。,true,0.9000,9799,0,806
-case_015,数据库,DIRECT,ZERO_SHOT,Oracle数据库无法识别或锁定系统表空间数据文件system01.dbf，导致数据库实例异常终止，需要恢复。,RAID5 阵列崩溃导致 Oracle 系统表空间文件 (system01.dbf) 损坏，数据库无法启动。,true,0.9500,7550,0,671
-case_015,数据库,DIRECT,FEW_SHOT,Oracle系统数据文件system01.dbf丢失或损坏,RAID5 阵列崩溃导致 Oracle 系统表空间文件 (system01.dbf) 损坏，数据库无法启动。,true,0.9500,2316,0,410
-case_015,数据库,DIRECT,COT,Oracle数据库无法识别或锁定数据文件1（/data/orcl/system01.dbf），导致数据库实例终止，需要进行恢复操作。,RAID5 阵列崩溃导致 Oracle 系统表空间文件 (system01.dbf) 损坏，数据库无法启动。,true,0.9000,8727,0,724
-case_016,数据库,DIRECT,ZERO_SHOT,OVN南向数据库（OVN_Southbound DB）文件损坏，导致OpenShift集群网络组件无法正常读取数据库，进而引发集群网络降级。,节点磁盘被 VG-Manager 日志写满，导致 OVN 数据库文件损坏，集群网络瘫痪。,true,0.9000,8355,0,680
-case_016,数据库,DIRECT,FEW_SHOT,OVN南向数据库损坏导致OpenShift集群网络降级,节点磁盘被 VG-Manager 日志写满，导致 OVN 数据库文件损坏，集群网络瘫痪。,true,0.9200,2547,0,423
-case_016,数据库,DIRECT,COT,OVN Southbound 数据库文件损坏，导致 OVN 无法正常读取数据，进而引发 OpenShift 集群网络功能降级。,节点磁盘被 VG-Manager 日志写满，导致 OVN 数据库文件损坏，集群网络瘫痪。,true,0.8500,9650,0,771
-case_017,CPU,DIRECT,ZERO_SHOT,AWS EC2实例（t2/t3系列）CPU积分耗尽，导致CPU性能被强制限制，进而引发HAProxy进程CPU使用率飙升（100%）和rsyslog磁盘I/O阻塞。,B2ts_v2 VM 因 CPU 积分耗尽导致性能受限，HAProxy 请求处理变慢，引发连接超时。,false,0.9500,8560,0,672
-case_017,CPU,DIRECT,FEW_SHOT,CPU资源耗尽，可能由磁盘I/O阻塞导致,B2ts_v2 VM 因 CPU 积分耗尽导致性能受限，HAProxy 请求处理变慢，引发连接超时。,false,0.9200,3046,0,463
-case_017,CPU,DIRECT,COT,CPU资源耗尽导致系统性能全面下降，触发连锁故障,B2ts_v2 VM 因 CPU 积分耗尽导致性能受限，HAProxy 请求处理变慢，引发连接超时。,false,0.8500,7129,0,621
-case_018,CPU,DIRECT,ZERO_SHOT,DNS解析循环导致CPU过载，触发DNSC任务核心转储，进而引发交换机CPU异常重启,Cisco 交换机 DNS 解析死循环导致 CPU 占用过高，触发致命异常并反复重启。,true,0.8500,6755,0,628
-case_018,CPU,DIRECT,FEW_SHOT,DNS解析循环导致CPU过载，触发核心转储和交换机致命异常重启,Cisco 交换机 DNS 解析死循环导致 CPU 占用过高，触发致命异常并反复重启。,true,0.9200,3896,0,498
-case_018,CPU,DIRECT,COT,DNS解析循环导致CPU过载，进而触发核心转储和交换机致命异常重启,Cisco 交换机 DNS 解析死循环导致 CPU 占用过高，触发致命异常并反复重启。,true,0.8500,5251,0,529
-case_019,配置,DIRECT,ZERO_SHOT,Apex One 日志发送配置文件中存在无效参数，导致配置解析失败，系统回退至仅本地日志记录模式。,Apex One 日志发送配置文件损坏或参数无效，导致数据上报失败，控制台显示异常。,true,0.9000,6022,0,524
-case_019,配置,DIRECT,FEW_SHOT,日志发送配置解析失败，参数无效,Apex One 日志发送配置文件损坏或参数无效，导致数据上报失败，控制台显示异常。,false,0.8500,2207,0,405
-case_019,配置,DIRECT,COT,日志发送配置文件中存在无效参数，导致Apex One无法解析配置，从而回退到仅本地日志记录模式。,Apex One 日志发送配置文件损坏或参数无效，导致数据上报失败，控制台显示异常。,true,0.9000,6072,0,591
-case_020,配置,DIRECT,ZERO_SHOT,AKS自动节点镜像升级过程中，新节点尝试注册时与旧节点名称冲突，导致kubelet注册失败，并产生etcd中的孤立节点租约。,AKS 自动升级后，旧节点未正确注销，导致 etcd 中残留孤立租约 (orphaned leases)，引发注册冲突和性能问题。,true,0.8500,7641,0,655
-case_020,配置,DIRECT,FEW_SHOT,AKS节点升级过程中节点名称冲突导致kubelet注册失败，并产生etcd中孤立节点租约,AKS 自动升级后，旧节点未正确注销，导致 etcd 中残留孤立租约 (orphaned leases)，引发注册冲突和性能问题。,true,0.8500,2935,0,451
-case_020,配置,DIRECT,COT,AKS自动节点镜像升级过程中，新节点尝试注册时与旧节点名称冲突，导致kubelet注册失败，进而产生孤儿节点租约。,AKS 自动升级后，旧节点未正确注销，导致 etcd 中残留孤立租约 (orphaned leases)，引发注册冲突和性能问题。,false,0.8500,8116,0,715
-case_021,OOM,DIRECT,ZERO_SHOT,Windows更新KB5073722安装过程中触发了内存损坏，导致NTFS文件系统错误。,Windows 更新 KB5073722 安装期间 TiWorker.exe 发生内存泄漏，最终导致 NTFS 文件系统损坏。,true,0.8500,5509,0,510
-case_021,OOM,DIRECT,FEW_SHOT,Windows更新过程中NTFS文件系统内存损坏,Windows 更新 KB5073722 安装期间 TiWorker.exe 发生内存泄漏，最终导致 NTFS 文件系统损坏。,true,0.8500,3170,0,469
-case_021,OOM,DIRECT,COT,Windows更新KB5073722安装过程中触发的内存损坏，导致NTFS文件系统错误,Windows 更新 KB5073722 安装期间 TiWorker.exe 发生内存泄漏，最终导致 NTFS 文件系统损坏。,true,0.8500,8055,0,690
-case_022,网络,DIRECT,ZERO_SHOT,DNS服务器故障或网络连接问题导致无法解析SNTP服务器域名time-pnp.cisco.com，进而引发SNTP服务不稳定并移除默认服务器。,Cisco 交换机因无法解析默认 NTP 服务器域名，触发 DNS 客户端缺陷，导致设备反复崩溃。,true,0.9000,8871,0,705
-case_022,网络,DIRECT,FEW_SHOT,DNS解析失败导致NTP时间同步服务异常,Cisco 交换机因无法解析默认 NTP 服务器域名，触发 DNS 客户端缺陷，导致设备反复崩溃。,true,0.9200,2752,0,449
-case_022,网络,DIRECT,COT,DNS服务器故障或网络连接问题导致DNS查询失败，进而影响NTP服务器域名解析,Cisco 交换机因无法解析默认 NTP 服务器域名，触发 DNS 客户端缺陷，导致设备反复崩溃。,true,0.9000,8053,0,676
-case_023,磁盘,DIRECT,ZERO_SHOT,VG-Manager 日志文件无限制增长，导致磁盘空间被完全占满（100%），进而引发系统关键进程（如 VG-Manager）因无法写入日志而陷入死锁或等待状态。,"VG-Manager 在获取 LVM 锁失败后陷入死循环，以每秒 26,000 条的速度生成日志，迅速耗尽磁盘空间。",true,0.9500,7632,0,656
-case_023,磁盘,DIRECT,FEW_SHOT,磁盘空间耗尽导致VG-Manager进程无法释放锁,"VG-Manager 在获取 LVM 锁失败后陷入死循环，以每秒 26,000 条的速度生成日志，迅速耗尽磁盘空间。",true,0.9500,3737,0,467
-case_023,磁盘,DIRECT,COT,VG-Manager 日志文件无限制增长，导致磁盘空间被完全占满（100%），进而引发系统锁等待和关键服务异常。,"VG-Manager 在获取 LVM 锁失败后陷入死循环，以每秒 26,000 条的速度生成日志，迅速耗尽磁盘空间。",true,0.9500,7220,0,657
-case_024,HTTP,DIRECT,ZERO_SHOT,InfluxDB认证后端服务不可达或崩溃，导致查询服务不可用，进而引发所有查询失败。,InfluxDB Cloud 因认证服务故障导致所有查询请求失败，返回 503 错误。,true,0.9500,6373,0,548
-case_024,HTTP,DIRECT,FEW_SHOT,InfluxDB认证后端服务不可用导致查询服务中断,InfluxDB Cloud 因认证服务故障导致所有查询请求失败，返回 503 错误。,true,0.9200,2801,0,448
-case_024,HTTP,DIRECT,COT,InfluxDB认证后端服务不可用，导致查询服务中断,InfluxDB Cloud 因认证服务故障导致所有查询请求失败，返回 503 错误。,true,0.9000,6723,0,602
-case_025,权限,DIRECT,ZERO_SHOT,系统内存不足，导致OOM Killer（内存溢出杀手）进程被触发，强制终止了vector服务进程（PID被kill，信号9）。,Linux 内核因系统内存不足，调用 OOM Killer 强制终止了 vector 进程，释放内存。,true,0.9500,7362,0,658
-case_025,权限,DIRECT,FEW_SHOT,系统内存不足导致OOM Killer杀死了vector进程,Linux 内核因系统内存不足，调用 OOM Killer 强制终止了 vector 进程，释放内存。,true,0.9500,3495,0,492
-case_025,权限,DIRECT,COT,vector进程因内存不足（OOM）被内核OOM Killer强制终止,Linux 内核因系统内存不足，调用 OOM Killer 强制终止了 vector 进程，释放内存。,true,0.9500,7497,0,660
+case_001,OOM,DIRECT,ZERO_SHOT,系统物理内存耗尽，触发OOM Killer机制，导致HAProxy进程被强制终止。根本原因是内存泄漏或内存配置不足，结合日志中vector进程（可能为HAProxy的向量处理模块）被kill，以及systemd-journald缓存刷新，表明内存压力持续累积。,B2ts_v2 VM内存耗尽，触发OOM Killer终止了日志转发进程(vector)。,false,0.9000,7186,0,746
+case_001,OOM,DIRECT,FEW_SHOT,系统物理内存耗尽，触发OOM Killer机制,B2ts_v2 VM内存耗尽，触发OOM Killer终止了日志转发进程(vector)。,false,0.9500,2471,0,475
+case_001,OOM,DIRECT,COT,系统物理内存耗尽，导致OOM Killer强制终止了vector进程（PID 1293），以释放内存资源。,B2ts_v2 VM内存耗尽，触发OOM Killer终止了日志转发进程(vector)。,false,0.9000,7190,0,754
+case_002,OOM,DIRECT,ZERO_SHOT,Trello应用的工作进程（Worker 5678）因内存泄漏或内存配置不足，导致进程内存使用超过系统限制，被Linux内核OOM Killer强制终止，进而引发CPU阈值未达标而无法触发自动扩缩容的连锁故障。,Trello服务在业务高峰期因内存超限(OOM)崩溃，且基于CPU利用率的自动扩展策略未能触发。,false,0.9500,6848,0,674
+case_002,OOM,DIRECT,FEW_SHOT,工作进程内存使用超过限制，被内核OOM Killer终止,Trello服务在业务高峰期因内存超限(OOM)崩溃，且基于CPU利用率的自动扩展策略未能触发。,false,0.9500,2999,0,474
+case_002,OOM,DIRECT,COT,Trello工作进程因内存泄漏或内存配置不足导致OOM（内存溢出），进而触发系统OOM Killer终止进程，而自动扩缩容机制因CPU阈值未达标未能及时响应，最终服务不可用。,Trello服务在业务高峰期因内存超限(OOM)崩溃，且基于CPU利用率的自动扩展策略未能触发。,false,0.9000,6984,0,770
+case_003,网络,DIRECT,ZERO_SHOT,DNS客户端解析失败导致系统核心转储并重启，根本原因是DNS服务器配置错误或网络连接问题，使得无法解析域名'www.cisco.com'，触发致命错误。,Cisco交换机DNS客户端因解析特定域名失败触发致命错误，导致设备核心转储并反复重启。,true,0.8500,4875,0,550
+case_003,网络,DIRECT,FEW_SHOT,DNS客户端解析失败导致系统核心转储并重启,Cisco交换机DNS客户端因解析特定域名失败触发致命错误，导致设备核心转储并反复重启。,false,0.9200,2758,0,511
+case_003,网络,DIRECT,COT,DNS客户端在解析'www.cisco.com'时失败，导致系统触发核心转储并重启，根本原因可能是DNS服务器不可达、网络配置错误或DNS客户端软件缺陷。,Cisco交换机DNS客户端因解析特定域名失败触发致命错误，导致设备核心转储并反复重启。,true,0.8500,7040,0,808
+case_004,网络,DIRECT,ZERO_SHOT,InfluxDB Cloud 认证服务不可用，导致微服务因缺少服务账户令牌而无法完成认证，最终造成写入/查询 API 完全失败。,Kubernetes 1.29+ 升级后 ServiceAccount token 未自动生成，导致微服务间认证失败，写入/查询API不可用。,false,0.9500,4458,0,602
+case_004,网络,DIRECT,FEW_SHOT,InfluxDB Cloud认证服务不可用，导致服务账户令牌缺失，进而引发API完全失败,Kubernetes 1.29+ 升级后 ServiceAccount token 未自动生成，导致微服务间认证失败，写入/查询API不可用。,false,0.9200,2439,0,451
+case_004,网络,DIRECT,COT,InfluxDB Cloud 认证服务不可用，导致微服务因缺少服务账户令牌而认证失败，最终引发写入/查询 API 100% 故障。,Kubernetes 1.29+ 升级后 ServiceAccount token 未自动生成，导致微服务间认证失败，写入/查询API不可用。,false,0.9000,4821,0,623
+case_005,代码缺陷,DIRECT,ZERO_SHOT,RAID5阵列中两块物理磁盘同时离线，导致阵列失效，进而引发Oracle数据库无法访问数据文件1（系统表空间文件），数据库实例崩溃。,RAID5阵列中两块硬盘先后离线，因热备盘未正确配置激活，导致阵列崩溃，Oracle数据库文件损坏。,false,0.9500,4949,0,594
+case_005,代码缺陷,DIRECT,FEW_SHOT,RAID5阵列中两块物理磁盘同时离线导致阵列失效，进而引发Oracle数据库无法访问数据文件,RAID5阵列中两块硬盘先后离线，因热备盘未正确配置激活，导致阵列崩溃，Oracle数据库文件损坏。,false,0.9500,3749,0,556
+case_005,代码缺陷,DIRECT,COT,RAID5阵列中两块物理磁盘（Disk 2和Disk 3）同时离线，导致RAID5阵列失效，进而引发Oracle数据库无法访问数据文件1（系统表空间文件），数据库实例崩溃。,RAID5阵列中两块硬盘先后离线，因热备盘未正确配置激活，导致阵列崩溃，Oracle数据库文件损坏。,false,0.9500,8274,0,928
+case_006,代码缺陷,DIRECT,ZERO_SHOT,LVM卷管理器锁文件竞争导致OVN数据库写入失败，进而引发磁盘空间耗尽和数据库损坏,"TwistLock Defender 重启干扰 LVM 锁文件操作，导致 VG-Manager 陷入死循环，以每秒 26,000 行的速率刷爆磁盘。",false,0.8500,6351,0,690
+case_006,代码缺陷,DIRECT,FEW_SHOT,文件锁竞争导致进程阻塞，进而引发磁盘空间耗尽和OVN数据库损坏,"TwistLock Defender 重启干扰 LVM 锁文件操作，导致 VG-Manager 陷入死循环，以每秒 26,000 行的速率刷爆磁盘。",false,0.9200,3150,0,512
+case_006,代码缺陷,DIRECT,COT,vgmanager.lock文件被长时间占用，导致锁等待日志重复出现，最终引发磁盘空间耗尽和OVN数据库损坏。,"TwistLock Defender 重启干扰 LVM 锁文件操作，导致 VG-Manager 陷入死循环，以每秒 26,000 行的速率刷爆磁盘。",false,0.8500,5329,0,717
+case_007,连接池,DIRECT,ZERO_SHOT,Apex One日志发送配置文件损坏，导致日志发送失败，进而引发Trend Vision One数据摄取管道因连接被拒绝而中断，最终造成Apex One控制台显示空白页面。,Apex One 日志发送配置文件损坏，导致数据上报连接被拒绝，Vision One 控制台页面空白。,true,0.9000,4285,0,577
+case_007,连接池,DIRECT,FEW_SHOT,日志发送配置文件损坏导致数据管道连接被拒绝,Apex One 日志发送配置文件损坏，导致数据上报连接被拒绝，Vision One 控制台页面空白。,false,0.8500,2583,0,481
+case_007,连接池,DIRECT,COT,Apex One日志发送配置文件损坏导致日志发送失败，进而引发Trend Vision One数据摄取管道连接被拒，最终造成Apex One控制台显示空白页面。,Apex One 日志发送配置文件损坏，导致数据上报连接被拒绝，Vision One 控制台页面空白。,true,0.8500,3542,0,585
+case_008,连接池,DIRECT,ZERO_SHOT,etcd集群性能下降或网络分区导致kube-apiserver无法正常访问etcd，引发API服务不可用,AKS 集群自动升级后，残留的孤立 node leases 导致 etcd 查询延迟飙升，API Server 就绪探针超时并返回 500。,true,0.9000,5437,0,673
+case_008,连接池,DIRECT,FEW_SHOT,etcd集群响应超时导致kube-apiserver健康检查失败,AKS 集群自动升级后，残留的孤立 node leases 导致 etcd 查询延迟飙升，API Server 就绪探针超时并返回 500。,true,0.9200,2634,0,506
+case_008,连接池,DIRECT,COT,etcd集群不可用或响应超时，导致kube-apiserver无法正常访问etcd，进而引发API服务故障和告警,AKS 集群自动升级后，残留的孤立 node leases 导致 etcd 查询延迟飙升，API Server 就绪探针超时并返回 500。,true,0.9000,6844,0,839
+case_009,磁盘,DIRECT,ZERO_SHOT,解析失败,安装 2026 年 1 月累积更新 KB5073722 后，TiWorker.exe 内存泄漏导致 NTFS 索引损坏，系统陷入 CHKDSK 无限修复循环。,false,0.0000,6422,0,792
+case_009,磁盘,DIRECT,FEW_SHOT,解析失败,安装 2026 年 1 月累积更新 KB5073722 后，TiWorker.exe 内存泄漏导致 NTFS 索引损坏，系统陷入 CHKDSK 无限修复循环。,false,0.0000,3449,0,559
+case_009,磁盘,DIRECT,COT,NTFS文件系统元数据损坏，具体为$I30索引分配属性在目录\Windows\System32\SMI\Store\Machine中发生损坏，导致系统关键文件访问异常，触发磁盘检查并进入CHKDSK重启循环。,安装 2026 年 1 月累积更新 KB5073722 后，TiWorker.exe 内存泄漏导致 NTFS 索引损坏，系统陷入 CHKDSK 无限修复循环。,true,0.9000,7140,0,909
+case_010,磁盘,DIRECT,ZERO_SHOT,SDP1服务器缓存模块写穿透（write-through）故障导致缓存模块失效，进而触发紧急维护停机。,A-SMGCS 系统 SDP1 服务器缓存模块异常，导致数据写入失败，健康指示灯告警。,true,0.9000,4074,0,530
+case_010,磁盘,DIRECT,FEW_SHOT,SDP1服务器缓存模块硬件故障或固件异常导致写穿透失败,A-SMGCS 系统 SDP1 服务器缓存模块异常，导致数据写入失败，健康指示灯告警。,true,0.8500,2392,0,476
+case_010,磁盘,DIRECT,COT,SDP1服务器的缓存模块硬件故障，导致写穿透失败，进而触发紧急维护停机。,A-SMGCS 系统 SDP1 服务器缓存模块异常，导致数据写入失败，健康指示灯告警。,true,0.9000,5154,0,724
+case_011,HTTP,DIRECT,ZERO_SHOT,后端服务因内存压力导致不可用，进而触发Auto Scaling失败，最终表现为502 Bad Gateway错误。,Trello 后端服务因内存耗尽而崩溃，导致网关返回 502 错误，且自动扩展策略因仅基于 CPU 未能触发。,true,0.8500,4307,0,520
+case_011,HTTP,DIRECT,FEW_SHOT,后端服务因内存压力导致自动扩展失败，进而引发上游服务器不可用和502错误,Trello 后端服务因内存耗尽而崩溃，导致网关返回 502 错误，且自动扩展策略因仅基于 CPU 未能触发。,false,0.9200,3000,0,500
+case_011,HTTP,DIRECT,COT,后端服务因内存压力导致崩溃，进而触发上游代理返回502错误，最终导致Auto Scaling扩容失败。,Trello 后端服务因内存耗尽而崩溃，导致网关返回 502 错误，且自动扩展策略因仅基于 CPU 未能触发。,true,0.9000,5003,0,639
+case_012,HTTP,DIRECT,ZERO_SHOT,AKS集群中4/6的API Server实例的/readyz端点返回500错误，导致Prometheus监控到KubeAPI错误预算燃烧（5 req/s失败），但集群资源健康状态仍显示为'Available'，表明问题可能源于API Server内部组件（如etcd、控制器管理器）的局部故障或配置错误，而非整个集群不可用。,AKS 集群升级后，多个 API Server 实例的 /readyz 探针因内部组件异常返回 500，但负载均衡器掩盖了故障。,true,0.8500,5926,0,731
+case_012,HTTP,DIRECT,FEW_SHOT,AKS集群中部分API服务器实例健康检查失败，导致Prometheus监控到Kubernetes API错误预算燃烧,AKS 集群升级后，多个 API Server 实例的 /readyz 探针因内部组件异常返回 500，但负载均衡器掩盖了故障。,false,0.8500,3493,0,553
+case_012,HTTP,DIRECT,COT,AKS API服务器实例中部分实例的健康检查端点/readyz返回500错误，导致Prometheus监控到KubeAPI错误预算燃烧，但整体资源健康状态仍显示可用，表明问题可能源于API服务器实例的局部故障或配置问题，而非集群级故障。,AKS 集群升级后，多个 API Server 实例的 /readyz 探针因内部组件异常返回 500，但负载均衡器掩盖了故障。,true,0.8500,6457,0,774
+case_013,权限,DIRECT,ZERO_SHOT,RAID控制器因权限不足无法激活热备盘，导致数据文件无法正常挂载，进而引发Oracle数据库挂载失败。,RAID 控制器热备盘因配置权限不足未能自动激活，导致阵列降级后崩溃，Oracle 数据文件访问被拒绝。,true,0.9000,4690,0,594
+case_013,权限,DIRECT,FEW_SHOT,RAID控制器权限不足导致热备盘激活失败，进而引发Oracle数据库数据文件权限问题,RAID 控制器热备盘因配置权限不足未能自动激活，导致阵列降级后崩溃，Oracle 数据文件访问被拒绝。,true,0.8500,2587,0,477
+case_013,权限,DIRECT,COT,RAID控制器因权限不足无法激活热备盘，导致数据文件无法写入，进而引发Oracle数据库挂载失败。,RAID 控制器热备盘因配置权限不足未能自动激活，导致阵列降级后崩溃，Oracle 数据文件访问被拒绝。,true,0.8500,6529,0,777
+case_014,权限,DIRECT,ZERO_SHOT,Kubernetes 集群中默认命名空间的服务账户令牌缺失或配置错误，导致 InfluxDB 无法通过服务账户进行身份验证，进而引发写入 API 授权失败。,Kubernetes 升级后未自动生成 ServiceAccount token，导致 InfluxDB 微服务认证失败，权限被拒绝。,true,0.9000,5264,0,704
+case_014,权限,DIRECT,FEW_SHOT,InfluxDB服务账户认证失败，Kubernetes中默认命名空间缺少服务账户令牌,Kubernetes 升级后未自动生成 ServiceAccount token，导致 InfluxDB 微服务认证失败，权限被拒绝。,true,0.8500,2335,0,455
+case_014,权限,DIRECT,COT,Kubernetes 默认命名空间中服务账户令牌缺失或配置错误，导致 InfluxDB 无法通过服务账户认证，进而引发写入 API 授权失败。,Kubernetes 升级后未自动生成 ServiceAccount token，导致 InfluxDB 微服务认证失败，权限被拒绝。,true,0.9000,5401,0,798
+case_015,数据库,DIRECT,ZERO_SHOT,Oracle数据库系统表空间的数据文件'/data/orcl/system01.dbf'无法被识别或锁定，导致数据库实例崩溃。可能原因包括文件系统损坏、磁盘故障、文件权限错误或文件被意外删除/移动。,RAID5 阵列崩溃导致 Oracle 系统表空间文件 (system01.dbf) 损坏，数据库无法启动。,true,0.9000,5220,0,699
+case_015,数据库,DIRECT,FEW_SHOT,Oracle系统数据文件system01.dbf无法识别或锁定，导致数据库实例终止,RAID5 阵列崩溃导致 Oracle 系统表空间文件 (system01.dbf) 损坏，数据库无法启动。,true,0.9500,1934,0,431
+case_015,数据库,DIRECT,COT,Oracle数据库系统文件system01.dbf无法被识别或锁定，导致数据库实例终止，需要进行恢复操作。,RAID5 阵列崩溃导致 Oracle 系统表空间文件 (system01.dbf) 损坏，数据库无法启动。,true,0.9000,4182,0,574
+case_016,数据库,DIRECT,ZERO_SHOT,OVN南向数据库（OVN_Southbound DB）文件损坏，导致OpenShift集群网络组件无法正常读取数据库，进而引发集群网络降级。,节点磁盘被 VG-Manager 日志写满，导致 OVN 数据库文件损坏，集群网络瘫痪。,true,0.9000,5799,0,706
+case_016,数据库,DIRECT,FEW_SHOT,OVN南向数据库损坏导致OpenShift集群网络降级,节点磁盘被 VG-Manager 日志写满，导致 OVN 数据库文件损坏，集群网络瘫痪。,true,0.9200,3670,0,544
+case_016,数据库,DIRECT,COT,OVN Southbound 数据库文件损坏，导致 OVN 无法正常读取数据，进而引发 OpenShift 集群网络功能降级。,节点磁盘被 VG-Manager 日志写满，导致 OVN 数据库文件损坏，集群网络瘫痪。,true,0.8500,7122,0,889
+case_017,CPU,DIRECT,ZERO_SHOT,AWS EC2实例（t2/t3系列）CPU积分耗尽，导致CPU性能被限制，进而引发HAProxy高CPU使用率和rsyslog磁盘I/O阻塞。,B2ts_v2 VM 因 CPU 积分耗尽导致性能受限，HAProxy 请求处理变慢，引发连接超时。,false,0.9000,4972,0,635
+case_017,CPU,DIRECT,FEW_SHOT,CPU资源耗尽，可能由磁盘I/O阻塞或突发负载导致,B2ts_v2 VM 因 CPU 积分耗尽导致性能受限，HAProxy 请求处理变慢，引发连接超时。,false,0.9200,2630,0,466
+case_017,CPU,DIRECT,COT,CPU资源耗尽导致系统性能全面下降，进而引发HAProxy高CPU使用率和rsyslog磁盘I/O阻塞,B2ts_v2 VM 因 CPU 积分耗尽导致性能受限，HAProxy 请求处理变慢，引发连接超时。,false,0.8500,5527,0,686
+case_018,CPU,DIRECT,ZERO_SHOT,DNS解析循环导致CPU过载，触发DNSC任务核心转储，最终引发交换机CPU异常重启,Cisco 交换机 DNS 解析死循环导致 CPU 占用过高，触发致命异常并反复重启。,true,0.8500,4268,0,521
+case_018,CPU,DIRECT,FEW_SHOT,DNS解析循环导致CPU过载，触发核心转储和交换机致命异常重启,Cisco 交换机 DNS 解析死循环导致 CPU 占用过高，触发致命异常并反复重启。,true,0.9200,2546,0,493
+case_018,CPU,DIRECT,COT,DNS解析循环导致CPU过载，进而触发核心转储和交换机致命异常重启,Cisco 交换机 DNS 解析死循环导致 CPU 占用过高，触发致命异常并反复重启。,true,0.8500,4761,0,597
+case_019,配置,DIRECT,ZERO_SHOT,Apex One 日志发送配置文件中存在无效参数，导致配置解析失败，系统回退至仅本地日志记录模式。,Apex One 日志发送配置文件损坏或参数无效，导致数据上报失败，控制台显示异常。,true,0.9000,3909,0,511
+case_019,配置,DIRECT,FEW_SHOT,日志发送配置解析失败，导致日志配置不匹配,Apex One 日志发送配置文件损坏或参数无效，导致数据上报失败，控制台显示异常。,false,0.8500,2057,0,406
+case_019,配置,DIRECT,COT,日志发送配置文件中存在无效参数，导致Apex One无法解析配置，从而回退到仅本地日志记录模式。,Apex One 日志发送配置文件损坏或参数无效，导致数据上报失败，控制台显示异常。,true,0.9000,5630,0,715
+case_020,配置,DIRECT,ZERO_SHOT,AKS自动节点镜像升级过程中，新节点尝试注册时与旧节点名称冲突，导致kubelet注册失败，并产生etcd中的孤立节点租约。,AKS 自动升级后，旧节点未正确注销，导致 etcd 中残留孤立租约 (orphaned leases)，引发注册冲突和性能问题。,true,0.9000,4577,0,626
+case_020,配置,DIRECT,FEW_SHOT,AKS节点升级过程中节点名称冲突导致kubelet注册失败,AKS 自动升级后，旧节点未正确注销，导致 etcd 中残留孤立租约 (orphaned leases)，引发注册冲突和性能问题。,false,0.8500,2150,0,424
+case_020,配置,DIRECT,COT,AKS自动节点镜像升级过程中，新节点尝试注册时与旧节点名称冲突，导致kubelet注册失败，进而产生孤立节点租约。,AKS 自动升级后，旧节点未正确注销，导致 etcd 中残留孤立租约 (orphaned leases)，引发注册冲突和性能问题。,false,0.8500,4830,0,646
+case_021,OOM,DIRECT,ZERO_SHOT,Windows更新KB5073722安装过程中触发了内存损坏，导致NTFS文件系统错误。,Windows 更新 KB5073722 安装期间 TiWorker.exe 发生内存泄漏，最终导致 NTFS 文件系统损坏。,true,0.8500,4475,0,572
+case_021,OOM,DIRECT,FEW_SHOT,Windows更新KB5073722导致内存损坏和文件系统错误,Windows 更新 KB5073722 安装期间 TiWorker.exe 发生内存泄漏，最终导致 NTFS 文件系统损坏。,true,0.8500,1955,0,414
+case_021,OOM,DIRECT,COT,Windows更新KB5073722安装过程中触发了内存泄漏（RADAR_PRE_LEAK_64），导致系统内存资源耗尽，进而引发NTFS文件系统内存损坏错误。,Windows 更新 KB5073722 安装期间 TiWorker.exe 发生内存泄漏，最终导致 NTFS 文件系统损坏。,true,0.8500,5264,0,711
+case_022,网络,DIRECT,ZERO_SHOT,DNS服务器故障或网络连接问题导致无法解析SNTP服务器域名time-pnp.cisco.com，进而引发SNTP服务异常。,Cisco 交换机因无法解析默认 NTP 服务器域名，触发 DNS 客户端缺陷，导致设备反复崩溃。,true,0.9000,4178,0,546
+case_022,网络,DIRECT,FEW_SHOT,DNS解析失败导致NTP时间同步服务异常,Cisco 交换机因无法解析默认 NTP 服务器域名，触发 DNS 客户端缺陷，导致设备反复崩溃。,true,0.9200,2448,0,474
+case_022,网络,DIRECT,COT,DNS服务器故障或网络连接问题导致DNS解析失败，进而影响NTP时间同步,Cisco 交换机因无法解析默认 NTP 服务器域名，触发 DNS 客户端缺陷，导致设备反复崩溃。,true,0.8500,5033,0,692
+case_023,磁盘,DIRECT,ZERO_SHOT,VG-Manager 日志文件无限增长，导致磁盘空间被完全占满（100%），进而引发系统关键进程（如VG-Manager）因无法写入日志而陷入死锁等待状态。,"VG-Manager 在获取 LVM 锁失败后陷入死循环，以每秒 26,000 条的速度生成日志，迅速耗尽磁盘空间。",true,0.9500,4698,0,599
+case_023,磁盘,DIRECT,FEW_SHOT,磁盘空间耗尽导致VG-Manager进程无法释放锁,"VG-Manager 在获取 LVM 锁失败后陷入死循环，以每秒 26,000 条的速度生成日志，迅速耗尽磁盘空间。",true,0.9500,2407,0,444
+case_023,磁盘,DIRECT,COT,VG-Manager日志文件无限制增长，导致磁盘空间被完全占满（100%），进而引发系统级故障。,"VG-Manager 在获取 LVM 锁失败后陷入死循环，以每秒 26,000 条的速度生成日志，迅速耗尽磁盘空间。",true,0.9000,6587,0,775
+case_024,HTTP,DIRECT,ZERO_SHOT,InfluxDB认证后端服务不可用，导致查询服务中断，影响EU-Central-1区域所有查询请求。,InfluxDB Cloud 因认证服务故障导致所有查询请求失败，返回 503 错误。,true,0.9000,5112,0,612
+case_024,HTTP,DIRECT,FEW_SHOT,InfluxDB认证后端服务不可用导致查询服务全面故障,InfluxDB Cloud 因认证服务故障导致所有查询请求失败，返回 503 错误。,true,0.9200,2300,0,428
+case_024,HTTP,DIRECT,COT,InfluxDB认证后端服务故障或网络中断，导致查询服务不可用，进而引发所有查询失败。,InfluxDB Cloud 因认证服务故障导致所有查询请求失败，返回 503 错误。,true,0.9000,4756,0,641
+case_025,权限,DIRECT,ZERO_SHOT,系统内存不足，导致OOM Killer（内存溢出杀手）进程被触发，强制杀死了vector服务进程。,Linux 内核因系统内存不足，调用 OOM Killer 强制终止了 vector 进程，释放内存。,true,0.9500,5059,0,607
+case_025,权限,DIRECT,FEW_SHOT,系统内存不足导致OOM Killer杀死了vector进程,Linux 内核因系统内存不足，调用 OOM Killer 强制终止了 vector 进程，释放内存。,true,0.9500,2354,0,453
+case_025,权限,DIRECT,COT,vector进程因系统内存不足被OOM Killer强制终止,Linux 内核因系统内存不足，调用 OOM Killer 强制终止了 vector 进程，释放内存。,true,0.9500,5444,0,680
