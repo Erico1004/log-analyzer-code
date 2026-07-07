@@ -7,309 +7,442 @@
   <style>
     /* ===== Design Tokens ===== */
     :root {
-      --bg-primary: #0f172a;
-      --bg-secondary: #1e293b;
-      --bg-tertiary: #334155;
-      --bg-hover: #1e3a5f;
-      --text-primary: #f1f5f9;
+      --bg-root: #0b1120;
+      --bg-primary: #111827;
+      --bg-card: #1a2332;
+      --bg-elevated: #1f2a3a;
+      --bg-input: #0f1a26;
+      --bg-hover: #243447;
+      --text-primary: #edf2f7;
       --text-secondary: #94a3b8;
-      --text-muted: #64748b;
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
-      --accent-soft: rgba(59,130,246,0.12);
-      --success: #10b981;
-      --success-soft: rgba(16,185,129,0.12);
+      --text-muted: #5c6e82;
+      --accent: #4f8cff;
+      --accent-glow: rgba(79,140,255,0.18);
+      --accent-hover: #3b75e6;
+      --accent-soft: rgba(79,140,255,0.10);
+      --success: #34d399;
+      --success-soft: rgba(52,211,153,0.10);
       --warning: #f59e0b;
-      --warning-soft: rgba(245,158,11,0.12);
-      --danger: #ef4444;
-      --danger-soft: rgba(239,68,68,0.12);
-      --border: #334155;
-      --border-light: #1e293b;
-      --radius: 10px;
-      --radius-sm: 6px;
-      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-      --shadow-lg: 0 10px 25px rgba(0,0,0,0.4);
+      --warning-soft: rgba(245,158,11,0.10);
+      --danger: #f8716d;
+      --danger-soft: rgba(248,113,109,0.10);
+      --border: #1e2d42;
+      --border-light: #263548;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-xs: 5px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+      --shadow: 0 2px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.2);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.45);
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
+      --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    * { margin:0; padding:0; box-sizing:border-box; }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-      background: var(--bg-primary);
+      font-family: var(--font);
+      background: var(--bg-root);
       color: var(--text-primary);
       min-height: 100vh;
       line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ===== Layout ===== */
-    .app { max-width:1440px; margin:0 auto; padding:0 24px 40px; }
+    /* ===== Scrollbar ===== */
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    .app { max-width:1340px; margin:0 auto; padding:0 28px 48px; }
 
     /* ===== Header ===== */
     .header {
       display:flex; align-items:center; justify-content:space-between;
-      padding:20px 0; border-bottom:1px solid var(--border);
+      padding:24px 0 20px; border-bottom:1px solid var(--border);
     }
-    .header-brand { display:flex; align-items:center; gap:12px; }
+    .header-brand { display:flex; align-items:center; gap:14px; }
     .header-logo {
-      width:36px; height:36px; background:linear-gradient(135deg, var(--accent), #6366f1);
-      border-radius:8px; display:flex; align-items:center; justify-content:center;
-      font-size:18px; color:#fff;
+      width:42px; height:42px; border-radius:10px;
+      background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
+      display:flex; align-items:center; justify-content:center;
+      font-size:20px; color:#fff; font-weight:700;
+      box-shadow: 0 4px 14px rgba(59,130,246,0.3);
     }
-    .header h1 { font-size:1.35rem; font-weight:700; letter-spacing:-0.3px; }
+    .header-text h1 { font-size:1.3rem; font-weight:700; letter-spacing:-0.3px; line-height:1.2; }
+    .header-text .subtitle { font-size:11.5px; color:var(--text-muted); letter-spacing:0.3px; }
     .header-badge {
-      font-size:11px; padding:3px 10px; border-radius:20px;
-      background:var(--accent-soft); color:var(--accent); font-weight:600;
+      font-size:12px; padding:5px 14px; border-radius:20px; font-weight:600;
+      background: linear-gradient(135deg, var(--accent-soft), rgba(99,102,241,0.10));
+      color: var(--accent); border:1px solid rgba(79,140,255,0.2);
+      letter-spacing:0.3px;
     }
 
     /* ===== Tab Navigation ===== */
-    .tabs { display:flex; gap:4px; margin:20px 0 24px; background:var(--bg-secondary); border-radius:var(--radius); padding:4px; }
-    .tab-btn {
-      flex:1; padding:10px 20px; border:none; border-radius:8px;
-      background:transparent; color:var(--text-secondary); font-size:14px;
-      font-weight:500; cursor:pointer; transition:all 0.2s;
-      display:flex; align-items:center; justify-content:center; gap:8px;
+    .tabs {
+      display:flex; gap:3px; margin:22px 0 28px;
+      background: var(--bg-card); border-radius: var(--radius); padding:5px;
+      border:1px solid var(--border);
     }
-    .tab-btn:hover { color:var(--text-primary); background:var(--bg-tertiary); }
-    .tab-btn.active { background:var(--accent); color:#fff; box-shadow:0 2px 8px rgba(59,130,246,0.4); }
-    .tab-icon { font-size:16px; }
+    .tab-btn {
+      flex:1; padding:11px 22px; border:none; border-radius:9px;
+      background:transparent; color:var(--text-secondary); font-size:13.5px;
+      font-weight:500; cursor:pointer; transition:all var(--transition);
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      font-family:var(--font); white-space:nowrap;
+    }
+    .tab-btn:hover { color:var(--text-primary); background:rgba(255,255,255,0.04); }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--accent), #5670e6);
+      color:#fff; box-shadow:0 3px 12px var(--accent-glow), 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .tab-icon { font-size:15px; opacity:0.85; }
+    .tab-btn.active .tab-icon { opacity:1; }
 
-    /* ===== Tab Content ===== */
     .tab-content { display:none; }
-    .tab-content.active { display:block; }
+    .tab-content.active { display:block; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
 
     /* ===== Cards ===== */
     .card {
-      background:var(--bg-secondary); border:1px solid var(--border);
-      border-radius:var(--radius); padding:24px; margin-bottom:20px;
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:var(--radius); padding:26px; margin-bottom:22px;
       box-shadow:var(--shadow);
+      position:relative;
+    }
+    .card.accent-top::before {
+      content:''; position:absolute; top:0; left:20px; right:20px;
+      height:1px; background:linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity:0.5;
     }
     .card-header {
-      display:flex; align-items:center; justify-content:space-between;
-      margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid var(--border);
+      display:flex; align-items:flex-start; justify-content:space-between;
+      margin-bottom:20px; padding-bottom:16px;
+      border-bottom:1px solid var(--border);
+      gap:16px;
     }
-    .card-title { font-size:1rem; font-weight:600; }
-    .card-subtitle { font-size:12px; color:var(--text-muted); margin-top:2px; }
+    .card-title-row { display:flex; align-items:center; gap:10px; }
+    .card-icon {
+      width:32px; height:32px; border-radius:8px; display:flex;
+      align-items:center; justify-content:center; font-size:15px;
+    }
+    .card-icon.blue { background:var(--accent-soft); color:var(--accent); }
+    .card-icon.green { background:var(--success-soft); color:var(--success); }
+    .card-icon.amber { background:var(--warning-soft); color:var(--warning); }
+    .card-title { font-size:0.95rem; font-weight:600; color:var(--text-primary); }
+    .card-subtitle { font-size:12px; color:var(--text-muted); margin-top:1px; }
 
     /* ===== Buttons ===== */
     .btn {
-      padding:8px 18px; border:none; border-radius:var(--radius-sm); font-size:13px;
-      font-weight:500; cursor:pointer; transition:all 0.2s; display:inline-flex;
-      align-items:center; gap:6px; font-family:inherit;
+      padding:8px 18px; border:none; border-radius:var(--radius-xs); font-size:13px;
+      font-weight:500; cursor:pointer; transition:all var(--transition); display:inline-flex;
+      align-items:center; gap:6px; font-family:var(--font); white-space:nowrap;
     }
-    .btn-primary { background:var(--accent); color:#fff; }
-    .btn-primary:hover { background:var(--accent-hover); transform:translateY(-1px); box-shadow:0 4px 12px rgba(59,130,246,0.3); }
-    .btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none; }
-    .btn-secondary { background:var(--bg-tertiary); color:var(--text-primary); }
-    .btn-secondary:hover { background:#475569; }
-    .btn-success { background:var(--success); color:#fff; }
-    .btn-success:hover { background:#059669; }
-    .btn-danger { background:transparent; color:var(--danger); border:1px solid var(--danger); }
-    .btn-danger:hover { background:var(--danger-soft); }
-    .btn-sm { padding:5px 12px; font-size:12px; }
-    .btn-lg { padding:12px 28px; font-size:15px; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #5670e6); color:#fff;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+    .btn-primary:hover { box-shadow:0 4px 16px var(--accent-glow); transform:translateY(-1px); }
+    .btn-primary:active { transform:translateY(0); }
+    .btn-primary:disabled { opacity:0.45; cursor:not-allowed; transform:none; box-shadow:none; }
+    .btn-secondary {
+      background: var(--bg-elevated); color: var(--text-secondary);
+      border:1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .btn-outline {
+      background: transparent; color: var(--accent); border:1px solid rgba(79,140,255,0.3);
+    }
+    .btn-outline:hover { background: var(--accent-soft); }
+    .btn-danger { background:var(--danger-soft); color:var(--danger); border:1px solid rgba(248,113,109,0.25); }
+    .btn-danger:hover { background: rgba(248,113,109,0.18); }
+    .btn-sm { padding:5px 11px; font-size:11.5px; border-radius:var(--radius-xs); }
+    .btn-lg { padding:13px 28px; font-size:15px; border-radius:var(--radius-sm); }
     .btn-group { display:flex; gap:8px; }
 
     /* ===== Form Controls ===== */
-    .form-group { margin-bottom:14px; }
-    .form-label { display:block; font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.5px; }
-    .form-input, .form-textarea, .form-select {
-      width:100%; padding:10px 14px; background:var(--bg-primary); border:1px solid var(--border);
-      border-radius:var(--radius-sm); color:var(--text-primary); font-size:13px;
-      font-family:inherit; transition:border-color 0.2s; outline:none;
+    .form-group { margin-bottom:16px; }
+    .form-label {
+      display:block; font-size:11px; font-weight:600; color:var(--text-muted);
+      margin-bottom:6px; text-transform:uppercase; letter-spacing:0.6px;
     }
-    .form-input:focus, .form-textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
-    .form-textarea { min-height:280px; font-family:'SF Mono','Fira Code','Cascadia Code',monospace; font-size:13px; line-height:1.7; resize:vertical; }
-    .form-textarea::placeholder { color:var(--text-muted); }
+    .form-input, .form-textarea, .form-select {
+      width:100%; padding:10px 14px; background:var(--bg-input);
+      border:1px solid var(--border); border-radius:var(--radius-xs);
+      color:var(--text-primary); font-size:13px; font-family:var(--font);
+      transition:all var(--transition); outline:none;
+    }
+    .form-input:hover, .form-textarea:hover { border-color: var(--border-light); }
+    .form-input:focus, .form-textarea:focus {
+      border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow);
+    }
+    .form-textarea {
+      min-height:280px; font-family:var(--font-mono); font-size:13px;
+      line-height:1.75; resize:vertical;
+    }
+    .form-textarea::placeholder, .form-input::placeholder { color:var(--text-muted); }
 
     /* ===== Strategy Selector ===== */
-    .strategy-group { display:flex; gap:6px; margin-bottom:14px; }
+    .strategy-group { display:flex; gap:5px; margin-bottom:16px; }
     .strategy-btn {
-      flex:1; padding:8px 12px; border:1px solid var(--border); border-radius:var(--radius-sm);
-      background:var(--bg-primary); color:var(--text-secondary); font-size:12px;
-      font-weight:600; cursor:pointer; transition:all 0.2s; text-align:center;
+      flex:1; padding:9px 14px; border:1px solid var(--border); border-radius:var(--radius-xs);
+      background:var(--bg-input); color:var(--text-secondary); font-size:12px;
+      font-weight:600; cursor:pointer; transition:all var(--transition);
+      text-align:center; font-family:var(--font);
     }
     .strategy-btn:hover { border-color:var(--accent); color:var(--text-primary); }
-    .strategy-btn.active { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
+    .strategy-btn.active {
+      background:var(--accent-soft); border-color:var(--accent); color:var(--accent);
+      box-shadow:0 0 0 1px var(--accent-glow);
+    }
 
     /* ===== Toggle Switch ===== */
     .toggle-row {
       display:flex; align-items:center; justify-content:space-between;
-      padding:12px 16px; background:var(--bg-primary); border-radius:var(--radius-sm);
-      margin-bottom:14px; border:1px solid var(--border);
+      padding:13px 16px; background:var(--bg-input); border-radius:var(--radius-xs);
+      margin-bottom:16px; border:1px solid var(--border);
     }
-    .toggle-label { font-size:13px; font-weight:500; }
-    .toggle-switch { position:relative; width:44px; height:24px; }
+    .toggle-label { font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; }
+    .toggle-emoji { font-size:15px; }
+    .toggle-switch { position:relative; width:46px; height:25px; flex-shrink:0; }
     .toggle-switch input { opacity:0; width:0; height:0; }
     .toggle-slider {
       position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0;
-      background:var(--bg-tertiary); border-radius:24px; transition:0.2s;
+      background:var(--border-light); border-radius:25px; transition:var(--transition);
     }
-    .toggle-slider:before {
-      content:""; position:absolute; height:18px; width:18px; left:3px; bottom:3px;
-      background:#fff; border-radius:50%; transition:0.2s;
+    .toggle-slider::before {
+      content:""; position:absolute; height:19px; width:19px; left:3px; bottom:3px;
+      background:#fff; border-radius:50%; transition:var(--transition);
+      box-shadow:0 1px 3px rgba(0,0,0,0.2);
     }
-    input:checked + .toggle-slider { background:var(--accent); }
-    input:checked + .toggle-slider:before { transform:translateX(20px); }
+    input:checked + .toggle-slider { background: var(--accent); }
+    input:checked + .toggle-slider::before { transform: translateX(21px); }
 
     /* ===== Diagnosis Two-Column ===== */
-    .diag-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-    @media (max-width:960px) { .diag-grid { grid-template-columns:1fr; } }
+    .diag-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; align-items:start; }
+    @media (max-width:1024px) { .diag-grid { grid-template-columns:1fr; } }
 
     /* ===== Diagnosis Result ===== */
-    .result-section { margin-bottom:18px; }
-    .result-label { font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
-    .result-value { font-size:14px; line-height:1.7; color:var(--text-primary); background:var(--bg-primary); padding:14px; border-radius:var(--radius-sm); border-left:3px solid var(--accent); }
-    .result-value.success { border-left-color:var(--success); }
-    .result-value.warning { border-left-color:var(--warning); }
+    .result-block { margin-bottom:20px; }
+    .result-block:last-child { margin-bottom:0; }
+    .result-label {
+      font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;
+      letter-spacing:0.8px; margin-bottom:7px; display:flex; align-items:center; gap:6px;
+    }
+    .result-label .dot { width:6px; height:6px; border-radius:50%; display:inline-block; }
+    .dot.red { background:var(--danger); }
+    .dot.blue { background:var(--accent); }
+    .dot.green { background:var(--success); }
 
-    .confidence-display { display:flex; align-items:center; gap:14px; }
-    .confidence-num { font-size:2rem; font-weight:700; color:var(--accent); min-width:70px; }
-    .confidence-bar { flex:1; height:8px; background:var(--bg-tertiary); border-radius:4px; overflow:hidden; }
-    .confidence-fill { height:100%; background:linear-gradient(90deg,var(--accent),#6366f1); border-radius:4px; transition:width 0.6s ease; }
+    .result-value {
+      font-size:14px; line-height:1.75; color:var(--text-primary);
+      background:var(--bg-input); padding:15px 16px; border-radius:var(--radius-xs);
+      border-left:3px solid var(--accent);
+    }
+    .result-value.root-cause { border-left-color:var(--danger); }
+    .result-value.analysis { border-left-color:var(--accent); }
+
+    .confidence-display { display:flex; align-items:center; gap:16px; }
+    .confidence-ring {
+      position:relative; width:72px; height:72px; flex-shrink:0;
+    }
+    .confidence-ring svg { transform:rotate(-90deg); }
+    .confidence-ring .bg { fill:none; stroke:var(--border); stroke-width:6; }
+    .confidence-ring .fill { fill:none; stroke:var(--accent); stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset 0.8s ease; }
+    .confidence-num {
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      font-size:1.25rem; font-weight:700; color:var(--accent);
+    }
 
     .step-list { list-style:none; }
     .step-list li {
-      padding:10px 0; padding-left:24px; position:relative; border-bottom:1px solid var(--border-light);
-      font-size:14px; color:var(--text-secondary);
+      padding:10px 0 10px 26px; position:relative; border-bottom:1px solid var(--border-light);
+      font-size:13.5px; color:var(--text-secondary);
     }
-    .step-list li:last-child { border-bottom:none; }
+    .step-list li:last-child { border-bottom:none; padding-bottom:0; }
     .step-list li::before {
-      content:"›"; position:absolute; left:4px; color:var(--accent); font-weight:700; font-size:16px;
+      content:''; position:absolute; left:2px; top:16px;
+      width:7px; height:7px; border-radius:50%;
+      background:var(--accent); opacity:0.7;
     }
+    .step-list li:first-child::before { background:var(--danger); opacity:1; }
 
     .meta-row {
-      display:flex; flex-wrap:wrap; gap:12px; padding-top:14px; border-top:1px solid var(--border);
-      font-size:11px; color:var(--text-muted);
+      display:flex; flex-wrap:wrap; gap:10px; padding-top:16px;
+      border-top:1px solid var(--border); font-size:11.5px; color:var(--text-muted);
+      align-items:center;
     }
-    .meta-tag {
-      padding:3px 10px; border-radius:20px; font-weight:600; font-size:11px;
+    .meta-pill {
+      padding:4px 12px; border-radius:20px; font-weight:600; font-size:11px;
+      letter-spacing:0.2px;
     }
-    .meta-tag.rag { background:var(--accent-soft); color:var(--accent); }
-    .meta-tag.direct { background:var(--warning-soft); color:var(--warning); }
+    .meta-pill.rag { background:var(--accent-soft); color:var(--accent); }
+    .meta-pill.direct { background:var(--warning-soft); color:var(--warning); }
 
-    .empty-state {
-      text-align:center; padding:60px 20px;
-    }
-    .empty-icon { font-size:40px; margin-bottom:12px; opacity:0.4; }
-    .empty-text { color:var(--text-muted); font-size:14px; }
+    .empty-state { text-align:center; padding:64px 24px; }
+    .empty-state svg { opacity:0.12; margin-bottom:16px; }
+    .empty-text { color:var(--text-muted); font-size:13.5px; }
+    .empty-hint { color:var(--text-muted); font-size:11.5px; margin-top:6px; opacity:0.7; }
 
     /* ===== Loading ===== */
-    .loading-overlay { display:none; text-align:center; padding:60px 20px; }
+    .loading-overlay { display:none; text-align:center; padding:64px 24px; }
     .loading-overlay.active { display:block; }
-    .spinner {
-      width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--accent);
-      border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px;
+    .pulse-ring {
+      width:44px; height:44px; border-radius:50%; margin:0 auto 18px;
+      background:var(--accent-soft); display:flex; align-items:center;
+      justify-content:center; animation:pulse 1.8s ease infinite;
     }
-    @keyframes spin { to { transform:rotate(360deg); } }
+    .pulse-ring .inner {
+      width:16px; height:16px; border-radius:50%; background:var(--accent);
+    }
+    @keyframes pulse {
+      0% { transform:scale(0.9); opacity:0.6; }
+      50% { transform:scale(1.15); opacity:1; }
+      100% { transform:scale(0.9); opacity:0.6; }
+    }
+    .loading-text { color:var(--text-muted); font-size:13px; }
+    .loading-sub { font-size:11px; color:var(--text-muted); margin-top:5px; opacity:0.7; }
 
     /* ===== Example Tags ===== */
-    .example-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+    .example-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
     .example-tag {
-      padding:4px 10px; background:var(--bg-primary); border:1px solid var(--border);
-      border-radius:var(--radius-sm); font-size:11px; color:var(--text-secondary);
-      cursor:pointer; transition:all 0.2s; font-family:inherit;
+      padding:5px 12px; background:var(--bg-input); border:1px solid var(--border);
+      border-radius:var(--radius-xs); font-size:11.5px; color:var(--text-secondary);
+      cursor:pointer; transition:all var(--transition); font-family:var(--font);
     }
     .example-tag:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
 
     /* ===== Tables ===== */
-    .table-wrap { overflow-x:auto; }
+    .table-wrap { overflow-x:auto; border-radius:var(--radius-xs); }
     table { width:100%; border-collapse:collapse; font-size:13px; }
     thead th {
-      text-align:left; padding:10px 14px; background:var(--bg-primary);
+      text-align:left; padding:11px 14px; background:var(--bg-input);
       color:var(--text-muted); font-weight:600; font-size:11px;
       text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid var(--border);
       white-space:nowrap;
     }
-    tbody td { padding:10px 14px; border-bottom:1px solid var(--border-light); color:var(--text-secondary); }
-    tbody tr { transition:background 0.15s; }
-    tbody tr:hover { background:var(--bg-hover); }
+    thead th:first-child { border-radius:var(--radius-xs) 0 0 0; }
+    thead th:last-child { border-radius:0 var(--radius-xs) 0 0; }
+    tbody td { padding:11px 14px; border-bottom:1px solid var(--border-light); color:var(--text-secondary); }
+    tbody tr { transition:background 0.15s ease; }
+    tbody tr:hover { background:rgba(255,255,255,0.02); }
     tbody tr.clickable { cursor:pointer; }
 
     .badge {
-      display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600;
+      display:inline-flex; align-items:center; gap:4px; padding:3px 10px;
+      border-radius:20px; font-size:11.5px; font-weight:500; white-space:nowrap;
     }
     .badge-blue { background:var(--accent-soft); color:var(--accent); }
     .badge-green { background:var(--success-soft); color:var(--success); }
     .badge-red { background:var(--danger-soft); color:var(--danger); }
-    .badge-gray { background:var(--bg-tertiary); color:var(--text-muted); }
+    .badge-amber { background:var(--warning-soft); color:var(--warning); }
+    .badge-gray { background:var(--bg-elevated); color:var(--text-muted); }
 
     /* ===== Pagination ===== */
-    .pagination { display:flex; align-items:center; justify-content:center; gap:4px; margin-top:16px; }
+    .pagination { display:flex; align-items:center; justify-content:center; gap:4px; margin-top:18px; }
     .page-btn {
-      padding:6px 12px; border:1px solid var(--border); border-radius:var(--radius-sm);
-      background:var(--bg-primary); color:var(--text-secondary); font-size:12px;
-      cursor:pointer; transition:all 0.2s; font-family:inherit;
+      padding:7px 13px; border:1px solid var(--border); border-radius:var(--radius-xs);
+      background:var(--bg-input); color:var(--text-secondary); font-size:12px;
+      cursor:pointer; transition:all var(--transition); font-family:var(--font);
     }
-    .page-btn:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+    .page-btn:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
     .page-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
-    .page-btn:disabled { opacity:0.4; cursor:not-allowed; }
-    .page-info { font-size:12px; color:var(--text-muted); padding:0 10px; }
+    .page-btn:disabled { opacity:0.35; cursor:not-allowed; }
+    .page-info { font-size:12px; color:var(--text-muted); padding:0 12px; }
 
     /* ===== Modal ===== */
     .modal-overlay {
-      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65);
-      z-index:100; align-items:center; justify-content:center;
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7);
+      backdrop-filter:blur(4px); z-index:100; align-items:center; justify-content:center;
     }
-    .modal-overlay.active { display:flex; }
+    .modal-overlay.active { display:flex; animation:fadeIn 0.2s ease; }
     .modal {
-      background:var(--bg-secondary); border:1px solid var(--border);
-      border-radius:var(--radius); padding:28px; max-width:640px; width:90%;
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:var(--radius); padding:30px; max-width:660px; width:92%;
       max-height:85vh; overflow-y:auto; box-shadow:var(--shadow-lg);
     }
-    .modal h3 { font-size:1.1rem; margin-bottom:20px; }
-    .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+    .modal h3 { font-size:1.05rem; font-weight:600; margin-bottom:22px; display:flex; align-items:center; gap:8px; }
+    .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:22px; }
 
     /* ===== Toast ===== */
-    .toast-container { position:fixed; top:20px; right:20px; z-index:200; display:flex; flex-direction:column; gap:8px; }
+    .toast-container { position:fixed; top:24px; right:24px; z-index:200; display:flex; flex-direction:column; gap:8px; }
     .toast {
-      padding:12px 20px; border-radius:var(--radius-sm); font-size:13px; font-weight:500;
-      color:#fff; animation:slideIn 0.3s ease; box-shadow:var(--shadow-lg);
+      padding:13px 20px; border-radius:var(--radius-xs); font-size:13px; font-weight:500;
+      color:#fff; animation:toastIn 0.3s cubic-bezier(0.4,0,0.2,1);
+      box-shadow:var(--shadow-lg); display:flex; align-items:center; gap:8px;
+      max-width:380px;
     }
-    .toast-success { background:var(--success); }
-    .toast-error { background:var(--danger); }
-    @keyframes slideIn { from{opacity:0;transform:translateX(40px);} to{opacity:1;transform:translateX(0);} }
+    .toast-success { background:linear-gradient(135deg, #059669, #10b981); }
+    .toast-error { background:linear-gradient(135deg, #b91c1c, #ef4444); }
+    @keyframes toastIn { from { opacity:0; transform:translateX(50px) scale(0.95); } to { opacity:1; transform:translateX(0) scale(1); } }
 
     /* ===== Stats Cards ===== */
-    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:20px; }
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:22px; }
     .stat-card {
-      background:var(--bg-secondary); border:1px solid var(--border);
-      border-radius:var(--radius); padding:20px; text-align:center;
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:var(--radius); padding:24px; position:relative;
+      overflow:hidden; box-shadow:var(--shadow);
     }
-    .stat-value { font-size:2.2rem; font-weight:800; letter-spacing:-1px; }
-    .stat-value.blue { color:var(--accent); }
-    .stat-value.green { color:var(--success); }
-    .stat-value.amber { color:var(--warning); }
-    .stat-label { font-size:12px; color:var(--text-muted); margin-top:4px; }
+    .stat-card::after {
+      content:''; position:absolute; top:0; right:0; width:80px; height:80px;
+      border-radius:0 0 0 80px; opacity:0.04;
+    }
+    .stat-card.accent::after { background:var(--accent); }
+    .stat-card.success::after { background:var(--success); }
+    .stat-card.warning::after { background:var(--warning); }
+    .stat-icon { font-size:26px; margin-bottom:10px; }
+    .stat-value { font-size:2.4rem; font-weight:800; letter-spacing:-1.5px; line-height:1; }
+    .stat-value.accent { color:var(--accent); }
+    .stat-value.success { color:var(--success); }
+    .stat-value.warning { color:var(--warning); }
+    .stat-value.muted { color:var(--text-muted); }
+    .stat-label { font-size:12px; color:var(--text-muted); margin-top:6px; font-weight:500; }
+    .stat-delta {
+      display:inline-flex; align-items:center; gap:3px; font-size:12px;
+      font-weight:600; margin-top:8px; padding:2px 8px; border-radius:20px;
+    }
+    .stat-delta.up { background:var(--success-soft); color:var(--success); }
+    .stat-delta.info { background:var(--accent-soft); color:var(--accent); }
 
     /* ===== Expandable Row Detail ===== */
-    .detail-row { background:var(--bg-primary); }
-    .detail-row td { padding:16px 20px; }
-    .detail-content { font-size:13px; line-height:1.7; color:var(--text-secondary); }
+    .detail-row { background:var(--bg-input) !important; }
+    .detail-row td { padding:18px 22px !important; }
+    .detail-content { font-size:13px; line-height:1.8; color:var(--text-secondary); }
     .detail-content strong { color:var(--text-primary); }
+    .detail-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; margin-bottom:12px; }
+    .detail-item { }
+    .detail-item .key { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; }
+    .detail-item .val { font-size:13px; color:var(--text-primary); margin-top:2px; }
     .detail-content pre {
-      background:var(--bg-secondary); padding:12px; border-radius:var(--radius-sm);
-      overflow-x:auto; white-space:pre-wrap; font-size:12px; margin:6px 0;
-      border:1px solid var(--border);
+      background:var(--bg-primary); padding:14px; border-radius:var(--radius-xs);
+      overflow-x:auto; white-space:pre-wrap; font-size:12px; margin:8px 0;
+      border:1px solid var(--border); font-family:var(--font-mono);
+      line-height:1.7; color:var(--text-secondary);
     }
 
     /* ===== Search Bar ===== */
-    .search-bar {
-      display:flex; gap:10px; align-items:center;
-    }
+    .search-bar { display:flex; gap:8px; align-items:center; }
     .search-input {
-      flex:1; padding:8px 14px; background:var(--bg-primary); border:1px solid var(--border);
-      border-radius:var(--radius-sm); color:var(--text-primary); font-size:13px;
-      outline:none; font-family:inherit;
+      flex:1; padding:8px 14px; background:var(--bg-input); border:1px solid var(--border);
+      border-radius:var(--radius-xs); color:var(--text-primary); font-size:13px;
+      outline:none; font-family:var(--font); min-width:160px;
     }
-    .search-input:focus { border-color:var(--accent); }
+    .search-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
 
     /* ===== Responsive ===== */
-    @media (max-width:640px) {
-      .header { flex-direction:column; gap:10px; align-items:flex-start; }
+    @media (max-width:768px) {
+      .app { padding:0 14px 32px; }
+      .header { flex-direction:column; gap:12px; align-items:flex-start; }
       .tabs { flex-wrap:wrap; }
-      .tab-btn { flex:1 1 45%; font-size:12px; }
+      .tab-btn { flex:1 1 45%; font-size:12px; padding:9px 14px; }
       .stats-grid { grid-template-columns:1fr 1fr; }
-      .btn-group { flex-wrap:wrap; }
+      .diag-grid { grid-template-columns:1fr; }
+      .card { padding:18px; }
+      .modal { padding:20px; }
+      .search-bar { flex-wrap:wrap; width:100% !important; }
+      .header-badge { display:none; }
     }
   </style>
 </head>
@@ -318,13 +451,13 @@
   <!-- Header -->
   <header class="header">
     <div class="header-brand">
-      <div class="header-logo">◈</div>
-      <div>
+      <div class="header-logo">LA</div>
+      <div class="header-text">
         <h1>LogAnalyzer</h1>
-        <div style="font-size:11px;color:var(--text-muted);">基于 LLM + RAG 的运维日志智能诊断平台</div>
+        <div class="subtitle">基于 LLM+RAG 的智能运维日志诊断引擎</div>
       </div>
     </div>
-    <span class="header-badge">v1.0 Demo</span>
+    <span class="header-badge">v1.0</span>
   </header>
 
   <!-- Tab Navigation -->
@@ -333,7 +466,7 @@
       <span class="tab-icon">🔍</span> 智能诊断
     </button>
     <button class="tab-btn" data-tab="knowledge">
-      <span class="tab-icon">📚</span> 知识库管理
+      <span class="tab-icon">📚</span> 知识库
     </button>
     <button class="tab-btn" data-tab="history">
       <span class="tab-icon">📋</span> 诊断历史
@@ -347,11 +480,16 @@
   <div class="tab-content active" id="tab-diagnosis">
     <div class="diag-grid">
       <!-- Left: Input -->
-      <div class="card">
+      <div class="card accent-top">
         <div class="card-header">
           <div>
-            <div class="card-title">📋 日志输入</div>
-            <div class="card-subtitle">粘贴运维日志或选择示例进行智能分析</div>
+            <div class="card-title-row">
+              <div class="card-icon blue">📄</div>
+              <div>
+                <div class="card-title">日志输入</div>
+                <div class="card-subtitle">粘贴运维日志内容或选择预置示例</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -362,7 +500,9 @@
         </div>
 
         <div class="toggle-row">
-          <span class="toggle-label">🔗 RAG 检索增强</span>
+          <span class="toggle-label">
+            <span class="toggle-emoji">🔗</span> RAG 检索增强
+          </span>
           <label class="toggle-switch">
             <input type="checkbox" id="ragMode" checked>
             <span class="toggle-slider"></span>
@@ -377,68 +517,73 @@
           <button class="example-tag" data-example="disk">Disk Full</button>
         </div>
 
-        <textarea id="logInput" class="form-textarea" placeholder="在此粘贴运维日志内容...&#10;&#10;提示：支持 Ctrl+Enter 快捷分析"></textarea>
+        <textarea id="logInput" class="form-textarea" placeholder="在此粘贴运维日志内容...&#10;&#10;支持 Ctrl+Enter 快捷分析"></textarea>
 
-        <div class="btn-group" style="margin-top:14px;">
+        <div class="btn-group" style="margin-top:16px;">
           <button id="analyzeBtn" class="btn btn-primary btn-lg" style="flex:1;">
-            <span>▶</span> 开始分析
+            开始分析
           </button>
-          <button id="clearBtn" class="btn btn-secondary">
-            <span>✕</span> 清空
-          </button>
-          <button id="pasteBtn" class="btn btn-secondary">
-            <span>📋</span> 粘贴
-          </button>
+          <button id="clearBtn" class="btn btn-secondary">清空</button>
+          <button id="pasteBtn" class="btn btn-secondary">从剪贴板粘贴</button>
         </div>
       </div>
 
       <!-- Right: Result -->
-      <div class="card" id="resultCard">
+      <div class="card accent-top" id="resultCard">
         <div class="card-header">
           <div>
-            <div class="card-title">📊 诊断报告</div>
-            <div class="card-subtitle">AI 分析结果与修复建议</div>
+            <div class="card-title-row">
+              <div class="card-icon green">📊</div>
+              <div>
+                <div class="card-title">诊断报告</div>
+                <div class="card-subtitle">AI 分析结果与修复建议</div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div id="loadingArea" class="loading-overlay">
-          <div class="spinner"></div>
-          <div style="color:var(--text-muted);">正在分析日志...</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">检索知识库 · 调用 DeepSeek · 生成诊断报告</div>
+          <div class="pulse-ring"><div class="inner"></div></div>
+          <div class="loading-text">正在分析日志...</div>
+          <div class="loading-sub">检索知识库 · 调用大模型 · 生成诊断报告</div>
         </div>
 
-        <div id="errorArea" style="display:none;padding:16px;background:var(--danger-soft);border:1px solid var(--danger);border-radius:var(--radius-sm);color:var(--danger);font-size:13px;margin-bottom:14px;"></div>
+        <div id="errorArea" style="display:none;padding:14px 16px;background:var(--danger-soft);border:1px solid rgba(248,113,109,0.3);border-radius:var(--radius-xs);color:var(--danger);font-size:13px;margin-bottom:16px;"></div>
 
         <div id="resultArea" style="display:none;">
-          <div class="result-section">
-            <div class="result-label">🔴 根本原因</div>
-            <div id="rootCause" class="result-value"></div>
+          <div class="result-block">
+            <div class="result-label"><span class="dot red"></span> 根本原因</div>
+            <div id="rootCause" class="result-value root-cause"></div>
           </div>
-          <div class="result-section">
-            <div class="result-label">📈 置信度</div>
+          <div class="result-block">
+            <div class="result-label"><span class="dot blue"></span> 置信度</div>
             <div class="confidence-display">
-              <span id="confidenceValue" class="confidence-num">0%</span>
-              <div class="confidence-bar"><div id="confidenceFill" class="confidence-fill" style="width:0%"></div></div>
+              <div class="confidence-ring">
+                <svg viewBox="0 0 72 72"><circle class="bg" cx="36" cy="36" r="30"/><circle id="confidenceCircle" class="fill" cx="36" cy="36" r="30" stroke-dasharray="188.5" stroke-dashoffset="188.5"/></svg>
+                <span id="confidenceValue" class="confidence-num">0%</span>
+              </div>
+              <span style="font-size:12px;color:var(--text-muted);">基于知识库匹配与模型推断的综合置信度评分</span>
             </div>
           </div>
-          <div class="result-section">
-            <div class="result-label">🔍 分析过程</div>
-            <div id="analysisProcess" class="result-value"></div>
+          <div class="result-block">
+            <div class="result-label"><span class="dot blue"></span> 分析过程</div>
+            <div id="analysisProcess" class="result-value analysis"></div>
           </div>
-          <div class="result-section">
-            <div class="result-label">🛠 修复步骤</div>
+          <div class="result-block">
+            <div class="result-label"><span class="dot green"></span> 修复步骤</div>
             <ul id="solutionSteps" class="step-list result-value"></ul>
           </div>
           <div id="metaRow" class="meta-row"></div>
-          <div class="btn-group" style="margin-top:14px;">
-            <button id="feedbackCorrect" class="btn btn-success btn-sm">✓ 诊断正确</button>
-            <button id="feedbackWrong" class="btn btn-danger btn-sm">✗ 诊断有误</button>
+          <div class="btn-group" style="margin-top:16px;">
+            <button id="feedbackCorrect" class="btn btn-sm" style="background:var(--success-soft);color:var(--success);">诊断正确</button>
+            <button id="feedbackWrong" class="btn btn-sm" style="background:var(--danger-soft);color:var(--danger);">诊断有误</button>
           </div>
         </div>
 
         <div id="emptyState" class="empty-state">
-          <div class="empty-icon">◈</div>
-          <div class="empty-text">等待输入日志... 请在左侧粘贴内容并点击"开始分析"</div>
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="6" y="8" width="36" height="32" rx="3" stroke="currentColor" stroke-width="1.5" opacity="0.4"/><line x1="10" y1="16" x2="22" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/><line x1="10" y1="22" x2="30" y2="22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/><line x1="10" y1="28" x2="26" y2="28" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/><circle cx="36" cy="28" r="6" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"/><line x1="36" y1="25" x2="36" y2="31" stroke="currentColor" stroke-width="1.2" opacity="0.3"/><line x1="33" y1="28" x2="39" y2="28" stroke="currentColor" stroke-width="1.2" opacity="0.3"/></svg>
+          <div class="empty-text">等待输入日志内容</div>
+          <div class="empty-hint">在左侧输入框中粘贴运维日志，点击「开始分析」即可获取智能诊断结果</div>
         </div>
       </div>
     </div>
@@ -446,13 +591,18 @@
 
   <!-- ==================== TAB 2: 知识库管理 ==================== -->
   <div class="tab-content" id="tab-knowledge">
-    <div class="card">
+    <div class="card accent-top">
       <div class="card-header">
         <div>
-          <div class="card-title">📚 知识库条目管理</div>
-          <div class="card-subtitle">管理 RAG 检索使用的运维故障知识</div>
+          <div class="card-title-row">
+            <div class="card-icon blue">📚</div>
+            <div>
+              <div class="card-title">知识库条目</div>
+              <div class="card-subtitle">管理 RAG 检索使用的运维故障决策知识</div>
+            </div>
+          </div>
         </div>
-        <div class="search-bar" style="width:50%;">
+        <div class="search-bar" style="width:55%;">
           <input type="text" id="kbSearch" class="search-input" placeholder="搜索标题、内容、关键词...">
           <button id="kbSearchBtn" class="btn btn-secondary btn-sm">搜索</button>
           <button id="kbAddBtn" class="btn btn-primary btn-sm">＋ 新增条目</button>
@@ -463,14 +613,14 @@
           <thead>
             <tr>
               <th style="width:50px;">ID</th>
-              <th>标题</th>
+              <th>故障标题</th>
               <th style="width:100px;">分类</th>
-              <th>关键词</th>
-              <th style="width:100px;">操作</th>
+              <th style="width:220px;">关键词</th>
+              <th style="width:120px;">操作</th>
             </tr>
           </thead>
           <tbody id="kbTableBody">
-            <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">加载中...</td></tr>
+            <tr><td colspan="5" style="text-align:center;padding:48px;color:var(--text-muted);"><div class="pulse-ring" style="width:28px;height:28px;margin-bottom:12px;"><div class="inner" style="width:10px;height:10px;"></div></div>加载中...</td></tr>
           </tbody>
         </table>
       </div>
@@ -480,29 +630,34 @@
 
   <!-- ==================== TAB 3: 诊断历史 ==================== -->
   <div class="tab-content" id="tab-history">
-    <div class="card">
+    <div class="card accent-top">
       <div class="card-header">
         <div>
-          <div class="card-title">📋 诊断历史记录</div>
-          <div class="card-subtitle">查看所有历史诊断及其结果</div>
+          <div class="card-title-row">
+            <div class="card-icon green">📋</div>
+            <div>
+              <div class="card-title">诊断记录</div>
+              <div class="card-subtitle">所有历史诊断会话及其结果回溯</div>
+            </div>
+          </div>
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="loadHistory()">🔄 刷新</button>
+        <button class="btn btn-secondary btn-sm" onclick="loadHistory()">刷新列表</button>
       </div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th style="width:70px;">ID</th>
-              <th style="width:150px;">时间</th>
+              <th style="width:55px;">ID</th>
+              <th style="width:145px;">诊断时间</th>
               <th>日志摘要</th>
-              <th>诊断结果</th>
-              <th style="width:90px;">策略</th>
-              <th style="width:80px;">Token</th>
-              <th style="width:70px;">耗时</th>
+              <th style="width:200px;">根因结论</th>
+              <th style="width:100px;">策略</th>
+              <th style="width:65px;">Token</th>
+              <th style="width:65px;">耗时</th>
             </tr>
           </thead>
           <tbody id="historyTableBody">
-            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">加载中...</td></tr>
+            <tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text-muted);"><div class="pulse-ring" style="width:28px;height:28px;margin-bottom:12px;"><div class="inner" style="width:10px;height:10px;"></div></div>加载中...</td></tr>
           </tbody>
         </table>
       </div>
@@ -513,51 +668,80 @@
   <!-- ==================== TAB 4: 实验数据 ==================== -->
   <div class="tab-content" id="tab-experiment">
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-value blue">89.3%</div>
+      <div class="stat-card accent">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-value accent">89.3%</div>
         <div class="stat-label">RAG 增强准确率</div>
+        <div class="stat-delta up">↑ 最优策略</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value amber">64.0%</div>
+      <div class="stat-card warning">
+        <div class="stat-icon">📡</div>
+        <div class="stat-value muted">64.0%</div>
         <div class="stat-label">Direct LLM 准确率</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value green">+25.3%</div>
+      <div class="stat-card success">
+        <div class="stat-icon">🚀</div>
+        <div class="stat-value success">+25.3%</div>
         <div class="stat-label">RAG 提升幅度</div>
+        <div class="stat-delta up">25 个测试用例</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value green">100%</div>
-        <div class="stat-label">知识命中率 (75/75)</div>
+      <div class="stat-card accent">
+        <div class="stat-icon">🔍</div>
+        <div class="stat-value success">100%</div>
+        <div class="stat-label">知识命中率</div>
+        <div class="stat-delta info">75 / 75 条检索命中</div>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card accent-top">
       <div class="card-header">
-        <div class="card-title">策略维度对比</div>
+        <div>
+          <div class="card-title-row">
+            <div class="card-icon blue">📈</div>
+            <div class="card-title">策略维度对比</div>
+          </div>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>策略</th><th>RAG 增强</th><th>Direct LLM</th><th>RAG 优势</th></tr>
+            <tr><th>分析策略</th><th>RAG 增强</th><th>Direct LLM</th><th>RAG 优势</th></tr>
           </thead>
           <tbody>
-            <tr><td>Zero-Shot</td><td><span class="badge badge-green">92.0%</span></td><td><span class="badge badge-gray">68.0%</span></td><td><strong style="color:var(--success);">+24.0%</strong></td></tr>
-            <tr><td>Few-Shot</td><td><span class="badge badge-green">80.0%</span></td><td><span class="badge badge-gray">52.0%</span></td><td><strong style="color:var(--success);">+28.0%</strong></td></tr>
-            <tr><td>Chain-of-Thought</td><td><span class="badge badge-green">96.0%</span></td><td><span class="badge badge-gray">72.0%</span></td><td><strong style="color:var(--success);">+24.0%</strong></td></tr>
+            <tr><td><strong>Zero-Shot</strong></td><td><span class="badge badge-green">92.0%</span></td><td><span class="badge badge-gray">68.0%</span></td><td><strong style="color:var(--success);">+24.0%</strong></td></tr>
+            <tr><td><strong>Few-Shot</strong></td><td><span class="badge badge-green">80.0%</span></td><td><span class="badge badge-gray">52.0%</span></td><td><strong style="color:var(--success);">+28.0%</strong></td></tr>
+            <tr><td><strong>Chain-of-Thought</strong></td><td><span class="badge badge-green">96.0%</span></td><td><span class="badge badge-gray">72.0%</span></td><td><strong style="color:var(--success);">+24.0%</strong></td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card accent-top">
       <div class="card-header">
-        <div class="card-title">实验结论</div>
+        <div>
+          <div class="card-title-row">
+            <div class="card-icon green">💡</div>
+            <div class="card-title">实验结论</div>
+          </div>
+        </div>
       </div>
-      <div style="font-size:14px;line-height:2;color:var(--text-secondary);">
-        <p>✅ <strong>RAG 在所有策略下均显著优于 Direct LLM</strong>，平均提升 25.3 个百分点。</p>
-        <p>✅ <strong>CoT + RAG 是最优组合</strong>，准确率达到 96.0%（25 题仅错 1 题）。</p>
-        <p>✅ <strong>混合检索器（FULLTEXT + symptoms LIKE）</strong>使知识命中率从 24% 提升至 100%。</p>
-        <p>✅ <strong>运维决策级知识库</strong>（具体产品名 + 症状 + 根因 + 修复步骤）是 RAG 效果的关键。</p>
+      <div style="font-size:13.5px;line-height:2.1;color:var(--text-secondary);">
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
+          <span style="color:var(--success);font-weight:700;flex-shrink:0;">✓</span>
+          <span><strong style="color:var(--text-primary);">RAG 在所有策略下均显著优于 Direct LLM</strong>，平均提升 +25.3 个百分点，证明检索增强在运维领域具有明确价值。</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
+          <span style="color:var(--accent);font-weight:700;flex-shrink:0;">★</span>
+          <span><strong style="color:var(--text-primary);">CoT + RAG 是最优组合</strong>，准确率达 96.0%（25 题仅错 1 题），推理链与领域知识的协同效应显著。</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
+          <span style="color:var(--accent);font-weight:700;flex-shrink:0;">★</span>
+          <span><strong style="color:var(--text-primary);">混合检索器</strong>（FULLTEXT + symptoms LIKE）使知识命中率从 24% 飙升至 100%，是 RAG 生效的关键基础设施。</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <span style="color:var(--warning);font-weight:700;flex-shrink:0;">→</span>
+          <span><strong style="color:var(--text-primary);">下一步优化方向</strong>：引入向量检索实现语义匹配，扩充知识库覆盖更多故障场景，增加多语言日志支持。</span>
+        </div>
       </div>
     </div>
   </div>
@@ -566,31 +750,33 @@
 <!-- Knowledge Modal -->
 <div class="modal-overlay" id="kbModalOverlay">
   <div class="modal">
-    <h3 id="kbModalTitle">新增知识条目</h3>
+    <h3 id="kbModalTitle">📝 新增知识条目</h3>
     <div class="form-group">
-      <label class="form-label">标题 *</label>
-      <input type="text" id="kbFormTitle" class="form-input" placeholder="例如：AKS 集群升级后 etcd 租约残留">
+      <label class="form-label">故障标题 *</label>
+      <input type="text" id="kbFormTitle" class="form-input" placeholder="例如：AKS 集群升级后 etcd 租约残留导致 API Server 异常">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="form-group">
+        <label class="form-label">故障分类</label>
+        <input type="text" id="kbFormCategory" class="form-input" placeholder="例如：容器编排">
+      </div>
+      <div class="form-group">
+        <label class="form-label">关键词（逗号分隔）</label>
+        <input type="text" id="kbFormKeywords" class="form-input" placeholder="例如：Kubernetes, AKS, etcd">
+      </div>
     </div>
     <div class="form-group">
-      <label class="form-label">分类</label>
-      <input type="text" id="kbFormCategory" class="form-input" placeholder="例如：容器编排">
+      <label class="form-label">症状特征 Symptoms（逗号分隔）</label>
+      <input type="text" id="kbFormSymptoms" class="form-input" placeholder="例如：etcd, orphaned, lease, apiserver, timeout">
     </div>
     <div class="form-group">
-      <label class="form-label">关键词（逗号分隔）</label>
-      <input type="text" id="kbFormKeywords" class="form-input" placeholder="例如：Kubernetes, AKS, etcd, lease">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Symptoms（逗号分隔，用于精确匹配）</label>
-      <input type="text" id="kbFormSymptoms" class="form-input" placeholder="例如：etcd, orphaned, lease, apiserver">
-    </div>
-    <div class="form-group">
-      <label class="form-label">内容 *</label>
-      <textarea id="kbFormContent" class="form-textarea" rows="6" placeholder="详细描述故障现象、根本原因、修复步骤..."></textarea>
+      <label class="form-label">知识内容 *</label>
+      <textarea id="kbFormContent" class="form-textarea" rows="6" placeholder="【根因】描述故障发生的根本原因&#10;【触发条件】列出相关的日志特征关键词&#10;【修复步骤】1) ... 2) ... 3) ..."></textarea>
     </div>
     <input type="hidden" id="kbFormId">
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeKbModal()">取消</button>
-      <button class="btn btn-primary" id="kbFormSubmit">保存</button>
+      <button class="btn btn-primary" id="kbFormSubmit">保存条目</button>
     </div>
   </div>
 </div>
@@ -603,10 +789,10 @@
 function showToast(msg, type) {
   const t = document.createElement('div');
   t.className = 'toast toast-' + (type || 'success');
-  t.textContent = msg;
+  t.innerHTML = (type === 'error' ? '⚠ ' : '✓ ') + msg;
   document.getElementById('toastContainer').appendChild(t);
-  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.3s'; }, 2500);
-  setTimeout(() => t.remove(), 3000);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.35s'; }, 2800);
+  setTimeout(() => t.remove(), 3200);
 }
 
 // ========== Tab Navigation ==========
@@ -640,7 +826,7 @@ java.io.IOException: No space left on device
 2024-01-15 03:22:16 CRIT [monitor] system.monitor - Filesystem /data usage: 99.8%`
 };
 
-let currentStrategy = 'FEW_SHOT';
+let currentStrategy = 'ZERO_SHOT';
 let currentSessionId = '';
 
 document.querySelectorAll('.strategy-btn').forEach(btn => {
@@ -680,34 +866,42 @@ async function analyze() {
     if (!resp.ok) throw new Error(data.error || 'API 调用失败');
     currentSessionId = data.metadata.session_id;
     const d = data.diagnosis, m = data.metadata;
-    document.getElementById('rootCause').textContent = d.root_cause || '(无)';
-    const conf = (d.confidence || 0) * 100;
-    document.getElementById('confidenceValue').textContent = conf.toFixed(1) + '%';
-    document.getElementById('confidenceFill').style.width = conf + '%';
+    document.getElementById('rootCause').textContent = d.root_cause || '(未识别出明确根因)';
+    const conf = Math.round((d.confidence || 0) * 100);
+    document.getElementById('confidenceValue').textContent = conf + '%';
+    const circle = document.getElementById('confidenceCircle');
+    const circumference = 2 * Math.PI * 30;
+    circle.style.strokeDasharray = circumference;
+    circle.style.strokeDashoffset = circumference - (conf / 100) * circumference;
     document.getElementById('analysisProcess').textContent = d.analysis_process || '(无)';
     const steps = document.getElementById('solutionSteps');
     steps.innerHTML = '';
-    (d.solution_steps || ['(无)']).forEach(s => { const li = document.createElement('li'); li.textContent = s; steps.appendChild(li); });
+    (d.solution_steps || ['未生成修复步骤']).forEach(s => { const li = document.createElement('li'); li.textContent = s; steps.appendChild(li); });
     const meta = document.getElementById('metaRow');
     meta.innerHTML = `
-      <span class="meta-tag ${m.mode === 'RAG' ? 'rag' : 'direct'}">${m.mode === 'RAG' ? 'RAG 增强' : 'Direct LLM'}</span>
-      <span>策略: ${m.prompt_strategy}</span> <span>延迟: ${m.latency_ms}ms</span>
-      <span>知识条目: ${m.knowledge_used || 0}</span> <span>模型: ${m.model}</span>`;
+      <span class="meta-pill ${m.mode === 'RAG' ? 'rag' : 'direct'}">${m.mode === 'RAG' ? 'RAG 增强' : 'Direct LLM'}</span>
+      <span>策略: ${m.prompt_strategy}</span>
+      <span>·</span>
+      <span>延迟: ${m.latency_ms}ms</span>
+      <span>·</span>
+      <span>知识条目: ${m.knowledge_used || 0} 条</span>
+      <span>·</span>
+      <span>模型: ${m.model}</span>`;
     showDiagnosisState('result');
   } catch(err) {
-    document.getElementById('errorArea').textContent = '错误: ' + err.message;
+    document.getElementById('errorArea').textContent = '诊断失败: ' + err.message;
     showDiagnosisState('error');
   }
 }
 
 async function sendFeedback(value) {
-  if (!currentSessionId) { showToast('无活动诊断会话', 'error'); return; }
+  if (!currentSessionId) { showToast('当前无活动的诊断会话', 'error'); return; }
   try {
     await fetch('/api/feedback', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ session_id: currentSessionId, feedback: value })
     });
-    showToast('反馈已记录');
+    showToast(value ? '感谢反馈，已记录为「正确」' : '反馈已记录，我们将持续优化');
   } catch(err) { showToast('反馈提交失败', 'error'); }
 }
 
@@ -717,8 +911,8 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   showDiagnosisState('empty');
 });
 document.getElementById('pasteBtn').addEventListener('click', async () => {
-  try { document.getElementById('logInput').value = await navigator.clipboard.readText(); }
-  catch { showToast('无法访问剪贴板', 'error'); }
+  try { document.getElementById('logInput').value = await navigator.clipboard.readText(); showToast('已粘贴剪贴板内容'); }
+  catch { showToast('无法访问剪贴板，请手动粘贴', 'error'); }
 });
 document.getElementById('feedbackCorrect').addEventListener('click', () => sendFeedback(1));
 document.getElementById('feedbackWrong').addEventListener('click', () => sendFeedback(0));
@@ -737,17 +931,17 @@ async function loadKnowledgeBase(page) {
     kbTotal = data.total;
     const tbody = document.getElementById('kbTableBody');
     if (!data.items || data.items.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">暂无数据</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:48px;color:var(--text-muted);">暂无知识条目，点击「新增条目」添加</td></tr>';
     } else {
       tbody.innerHTML = data.items.map(item => `
-        <tr class="clickable" onclick="toggleKbDetail(${item.id}, this)">
-          <td>${item.id}</td>
+        <tr class="clickable" onclick="toggleKbDetail(${item.id})">
+          <td style="color:var(--text-muted);font-size:12px;">#${item.id}</td>
           <td><strong style="color:var(--text-primary);">${escHtml(item.title)}</strong></td>
           <td><span class="badge badge-blue">${escHtml(item.category || '未分类')}</span></td>
-          <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(item.keywords || '')}</td>
+          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(item.keywords || '—')}</td>
           <td>
             <div class="btn-group">
-              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();editKnowledge(${item.id})">编辑</button>
+              <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();editKnowledge(${item.id})">编辑</button>
               <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteKnowledge(${item.id})">删除</button>
             </div>
           </td>
@@ -755,11 +949,13 @@ async function loadKnowledgeBase(page) {
         <tr class="detail-row" id="kbDetail${item.id}" style="display:none;">
           <td colspan="5">
             <div class="detail-content">
-              <p><strong>标题：</strong>${escHtml(item.title)}</p>
-              <p><strong>分类：</strong>${escHtml(item.category || '未分类')}</p>
-              <p><strong>关键词：</strong>${escHtml(item.keywords || '')}</p>
-              <p><strong>Symptoms：</strong>${escHtml(item.symptoms || '')}</p>
-              <p><strong>内容：</strong></p>
+              <div class="detail-grid">
+                <div class="detail-item"><div class="key">标题</div><div class="val">${escHtml(item.title)}</div></div>
+                <div class="detail-item"><div class="key">分类</div><div class="val"><span class="badge badge-blue">${escHtml(item.category || '未分类')}</span></div></div>
+                <div class="detail-item"><div class="key">关键词</div><div class="val">${escHtml(item.keywords || '—')}</div></div>
+                <div class="detail-item"><div class="key">Symptoms</div><div class="val">${escHtml(item.symptoms || '—')}</div></div>
+              </div>
+              <p><strong>知识内容：</strong></p>
               <pre>${escHtml(item.content || '')}</pre>
             </div>
           </td>
@@ -767,32 +963,32 @@ async function loadKnowledgeBase(page) {
       `).join('');
     }
     renderKbPagination();
-  } catch(err) { showToast('加载知识库失败', 'error'); }
+  } catch(err) { showToast('加载知识库失败，请检查服务状态', 'error'); }
 }
 
 function renderKbPagination() {
   const totalPages = Math.ceil(kbTotal / kbPageSize);
   const p = document.getElementById('kbPagination');
   let html = `<button class="page-btn" onclick="loadKnowledgeBase(${kbPage-1})" ${kbPage<=1?'disabled':''}>‹ 上一页</button>`;
-  html += `<span class="page-info">第 ${kbPage} / ${totalPages || 1} 页 (共 ${kbTotal} 条)</span>`;
+  html += `<span class="page-info">第 ${kbPage} / ${totalPages || 1} 页，共 ${kbTotal} 条</span>`;
   html += `<button class="page-btn" onclick="loadKnowledgeBase(${kbPage+1})" ${kbPage>=totalPages?'disabled':''}>下一页 ›</button>`;
   p.innerHTML = html;
 }
 
-function toggleKbDetail(id, row) {
+function toggleKbDetail(id) {
   const detail = document.getElementById('kbDetail' + id);
   detail.style.display = detail.style.display === 'none' ? '' : 'none';
 }
 
 function openKbModal(title, data) {
-  document.getElementById('kbModalTitle').textContent = title;
+  document.getElementById('kbModalTitle').innerHTML = (data ? '✏️ 编辑知识条目' : '📝 新增知识条目');
   document.getElementById('kbFormId').value = data ? data.id : '';
   document.getElementById('kbFormTitle').value = data ? data.title : '';
   document.getElementById('kbFormCategory').value = data ? (data.category || '') : '';
   document.getElementById('kbFormKeywords').value = data ? (data.keywords || '') : '';
   document.getElementById('kbFormSymptoms').value = data ? (data.symptoms || '') : '';
   document.getElementById('kbFormContent').value = data ? (data.content || '') : '';
-  document.getElementById('kbFormSubmit').textContent = data ? '更新' : '创建';
+  document.getElementById('kbFormSubmit').textContent = data ? '保存修改' : '创建条目';
   document.getElementById('kbModalOverlay').classList.add('active');
 }
 
@@ -803,18 +999,19 @@ function closeKbModal() {
 async function editKnowledge(id) {
   try {
     const resp = await fetch('/api/knowledge/' + id);
+    if (!resp.ok) throw new Error('加载失败');
     const data = await resp.json();
     openKbModal('编辑知识条目', data);
-  } catch(err) { showToast('加载条目失败', 'error'); }
+  } catch(err) { showToast('加载条目详情失败', 'error'); }
 }
 
 async function deleteKnowledge(id) {
-  if (!confirm('确认删除该知识条目？此操作不可撤销。')) return;
+  if (!confirm('确认删除该知识条目？\n\n此操作不可撤销，删除后该知识将不再参与 RAG 检索。')) return;
   try {
     const resp = await fetch('/api/knowledge/' + id, { method:'DELETE' });
-    if (resp.ok) { showToast('删除成功'); loadKnowledgeBase(); }
+    if (resp.ok) { showToast('条目已删除'); loadKnowledgeBase(); }
     else { const e = await resp.json(); showToast(e.error || '删除失败', 'error'); }
-  } catch(err) { showToast('删除失败', 'error'); }
+  } catch(err) { showToast('删除操作失败', 'error'); }
 }
 
 document.getElementById('kbAddBtn').addEventListener('click', () => openKbModal('新增知识条目', null));
@@ -835,9 +1032,9 @@ document.getElementById('kbFormSubmit').addEventListener('click', async () => {
     const url = id ? '/api/knowledge/' + id : '/api/knowledge';
     const method = id ? 'PUT' : 'POST';
     const resp = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-    if (resp.ok) { showToast(id ? '更新成功' : '创建成功'); closeKbModal(); loadKnowledgeBase(); }
+    if (resp.ok) { showToast(id ? '条目已更新' : '条目已创建'); closeKbModal(); loadKnowledgeBase(); }
     else { const e = await resp.json(); showToast(e.error || '操作失败', 'error'); }
-  } catch(err) { showToast('操作失败', 'error'); }
+  } catch(err) { showToast('操作失败，请检查网络连接', 'error'); }
 });
 
 document.getElementById('kbModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeKbModal(); });
@@ -854,27 +1051,31 @@ async function loadHistory(page) {
     historyTotal = data.total;
     const tbody = document.getElementById('historyTableBody');
     if (!data.items || data.items.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">暂无诊断记录</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text-muted);">暂无诊断记录，前往「智能诊断」进行首次分析</td></tr>';
     } else {
       tbody.innerHTML = data.items.map(item => `
-        <tr class="clickable" onclick="toggleHistoryDetail(${item.id}, this)">
-          <td>${item.id}</td>
+        <tr class="clickable" onclick="toggleHistoryDetail(${item.id})">
+          <td style="color:var(--text-muted);font-size:12px;">#${item.id}</td>
           <td style="white-space:nowrap;font-size:12px;">${formatTime(item.created_at)}</td>
-          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(item.log_snippet || '')}</td>
-          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml((item.diagnosis_result || {}).root_cause || '')}</td>
+          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(item.log_snippet || '—')}</td>
+          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml((item.diagnosis_result || {}).root_cause || '—')}</td>
           <td><span class="badge badge-blue">${escHtml(item.prompt_strategy)}</span></td>
-          <td>${item.total_tokens}</td>
-          <td>${item.latency_ms}ms</td>
+          <td>${item.total_tokens || '—'}</td>
+          <td>${item.latency_ms ? item.latency_ms + 'ms' : '—'}</td>
         </tr>
         <tr class="detail-row" id="histDetail${item.id}" style="display:none;">
           <td colspan="7">
             <div class="detail-content">
-              <p><strong>会话ID：</strong>${escHtml(item.session_id)}</p>
-              <p><strong>模型：</strong>${escHtml(item.model_used)} | <strong>Token：</strong>${item.total_tokens} | <strong>耗时：</strong>${item.latency_ms}ms</p>
-              <p><strong>根因：</strong>${escHtml((item.diagnosis_result || {}).root_cause || '')}</p>
-              <p><strong>分析过程：</strong>${escHtml((item.diagnosis_result || {}).analysis_process || '')}</p>
-              <p><strong>日志片段：</strong></p>
-              <pre>${escHtml(item.log_snippet || '')}</pre>
+              <div class="detail-grid">
+                <div class="detail-item"><div class="key">会话 ID</div><div class="val">${escHtml(item.session_id)}</div></div>
+                <div class="detail-item"><div class="key">模型</div><div class="val">${escHtml(item.model_used || '—')}</div></div>
+                <div class="detail-item"><div class="key">Token 用量</div><div class="val">${item.total_tokens || '—'}</div></div>
+                <div class="detail-item"><div class="key">延迟</div><div class="val">${item.latency_ms ? item.latency_ms + 'ms' : '—'}</div></div>
+              </div>
+              <p><strong>根因结论：</strong>${escHtml((item.diagnosis_result || {}).root_cause || '—')}</p>
+              <p><strong>分析过程：</strong>${escHtml((item.diagnosis_result || {}).analysis_process || '—')}</p>
+              <p><strong>原始日志：</strong></p>
+              <pre>${escHtml(item.log_snippet || '—')}</pre>
             </div>
           </td>
         </tr>
@@ -884,12 +1085,12 @@ async function loadHistory(page) {
     const p = document.getElementById('historyPagination');
     p.innerHTML = `
       <button class="page-btn" onclick="loadHistory(${historyPage-1})" ${historyPage<=1?'disabled':''}>‹ 上一页</button>
-      <span class="page-info">第 ${historyPage} / ${totalPages || 1} 页 (共 ${historyTotal} 条)</span>
+      <span class="page-info">第 ${historyPage} / ${totalPages || 1} 页，共 ${historyTotal} 条</span>
       <button class="page-btn" onclick="loadHistory(${historyPage+1})" ${historyPage>=totalPages?'disabled':''}>下一页 ›</button>`;
-  } catch(err) { showToast('加载历史失败', 'error'); }
+  } catch(err) { showToast('加载历史记录失败', 'error'); }
 }
 
-function toggleHistoryDetail(id, row) {
+function toggleHistoryDetail(id) {
   const detail = document.getElementById('histDetail' + id);
   detail.style.display = detail.style.display === 'none' ? '' : 'none';
 }
