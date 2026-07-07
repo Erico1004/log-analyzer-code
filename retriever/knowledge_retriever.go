@@ -89,9 +89,17 @@ func (r *KnowledgeRetriever) Retrieve(ctx *model.LogContext, topK int, threshold
 	}
 
 	items := make([]model.KnowledgeItem, 0)
+	if len(results) == 0 {
+		return items, nil
+	}
+
+	// 相对于批次最高分进行归一化，避免硬编码除数导致的阈值失效
+	maxScore := results[0].Score
+	if maxScore <= 0 {
+		maxScore = 1
+	}
 	for _, res := range results {
-		// 归一化分数
-		normalizedScore := res.Score / 10.0
+		normalizedScore := res.Score / maxScore
 		if normalizedScore > 1.0 {
 			normalizedScore = 1.0
 		}

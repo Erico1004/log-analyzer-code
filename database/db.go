@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"log-analyzer/config"
+	"log-analyzer/model"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -33,6 +34,16 @@ func InitDB() error {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	log.Println("✅ 数据库连接成功")
+	// AutoMigrate：自动建表/更新表结构，demo可复现
+	if err := DB.AutoMigrate(
+		&model.KnowledgeBase{},
+		&model.DiagnosisResult{},
+		&model.DiagnosisHistory{},
+		&model.UserFeedback{},
+	); err != nil {
+		return fmt.Errorf("数据库迁移失败: %w", err)
+	}
+
+	log.Println("✅ 数据库连接成功，表结构已同步")
 	return nil
 }

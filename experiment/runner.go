@@ -94,7 +94,9 @@ func (r *ExperimentRunner) RunSingleCase(tc TestCase, strategy prompt.PromptStra
 	var knowledgeItems []model.KnowledgeItem
 	if r.useRAG && r.retriever != nil {
 		items, err := r.retriever.Retrieve(logCtx, 5, 0.3)
-		if err == nil {
+		if err != nil {
+			log.Printf("  ⚠️ 知识检索失败: %v", err)
+		} else {
 			knowledgeItems = items
 		}
 	}
@@ -430,7 +432,18 @@ func PrintReport(ragResults, directResults []ExperimentResult) {
 	fmt.Printf("2. 平均响应时间从 %dms 降至 %dms，缩短了 %dms。\n",
 		directStats["avg_latency_ms"], ragStats["avg_latency_ms"],
 		directStats["avg_latency_ms"].(int64)-ragStats["avg_latency_ms"].(int64))
-	fmt.Println("3. 少样本提示(FEW_SHOT)在本任务中表现最优。")
+	// 动态找出最优策略
+	bestStrategy := "ZERO_SHOT"
+	bestAccuracy := 0.0
+	for _, s := range []string{"ZERO_SHOT", "FEW_SHOT", "COT"} {
+		if stat, ok := ragStrategyStats[s]; ok {
+			if acc := stat["accuracy"].(float64); acc > bestAccuracy {
+				bestAccuracy = acc
+				bestStrategy = s
+			}
+		}
+	}
+	fmt.Printf("3. %s 策略在本任务中表现最优，准确率 %.2f%%。\n", bestStrategy, bestAccuracy)
 	fmt.Println("\n╔══════════════════════════════════════════════════════════════╗")
 	fmt.Println("║                    实验报告结束                               ║")
 	fmt.Println("╚══════════════════════════════════════════════════════════════╝")
