@@ -34,6 +34,8 @@ func main() {
 	// 初始化处理器
 	diagnoseHandler := handler.NewDiagnoseHandler(llmAdapter)
 	feedbackHandler := handler.NewFeedbackHandler()
+	knowledgeHandler := handler.NewKnowledgeHandler()
+	historyHandler := handler.NewHistoryHandler()
 
 	// 创建Gin引擎
 	r := gin.Default()
@@ -50,6 +52,20 @@ func main() {
 	{
 		api.POST("/diagnose", diagnoseHandler.Handle)
 		api.POST("/feedback", feedbackHandler.Handle)
+
+		// 知识库管理
+		kb := api.Group("/knowledge")
+		{
+			kb.GET("", knowledgeHandler.List)
+			kb.GET("/:id", knowledgeHandler.Get)
+			kb.POST("", knowledgeHandler.Create)
+			kb.PUT("/:id", knowledgeHandler.Update)
+			kb.DELETE("/:id", knowledgeHandler.Delete)
+		}
+
+		// 诊断历史
+		api.GET("/history", historyHandler.List)
+		api.GET("/stats", historyHandler.Stats)
 	}
 
 	port := os.Getenv("PORT")

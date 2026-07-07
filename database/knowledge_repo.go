@@ -34,6 +34,42 @@ func (r *KnowledgeRepo) GetByCategory(category string) ([]model.KnowledgeBase, e
 	return items, err
 }
 
+// Create 创建知识条目
+func (r *KnowledgeRepo) Create(item *model.KnowledgeBase) error {
+	return DB.Create(item).Error
+}
+
+// Update 更新知识条目
+func (r *KnowledgeRepo) Update(item *model.KnowledgeBase) error {
+	return DB.Save(item).Error
+}
+
+// Delete 删除知识条目
+func (r *KnowledgeRepo) Delete(id int) error {
+	return DB.Delete(&model.KnowledgeBase{}, id).Error
+}
+
+// List 分页搜索知识库
+func (r *KnowledgeRepo) List(keyword string, page, pageSize int) ([]model.KnowledgeBase, int64, error) {
+	var items []model.KnowledgeBase
+	var total int64
+
+	query := DB.Model(&model.KnowledgeBase{})
+	if keyword != "" {
+		like := "%" + keyword + "%"
+		query = query.Where("title LIKE ? OR content LIKE ? OR keywords LIKE ? OR symptoms LIKE ? OR category LIKE ?",
+			like, like, like, like, like)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * pageSize
+	err := query.Order("id DESC").Offset(offset).Limit(pageSize).Find(&items).Error
+	return items, total, err
+}
+
 // Count 统计知识库条目数
 func (r *KnowledgeRepo) Count() (int64, error) {
 	var count int64
