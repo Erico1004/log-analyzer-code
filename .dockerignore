@@ -1,0 +1,8 @@
+.git
+.env
+*.exe
+/log-analyzer
+.workbuddy/
+.vscode/
+.idea/
+*.log

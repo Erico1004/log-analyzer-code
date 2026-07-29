@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -23,11 +28,6 @@ func main() {
 		log.Printf("⚠️ 数据库连接失败: %v", err)
 	}
 
-	// 检查API Key
-	if config.AppConfig.DeepSeekAPIKey == "" {
-		log.Println("⚠️ 警告: 未设置 DEEPSEEK_API_KEY")
-	}
-
 	// 初始化LLM适配器
 	llmAdapter := llm.NewDeepSeekAdapter(config.AppConfig.DeepSeekAPIKey)
 
@@ -36,6 +36,7 @@ func main() {
 	feedbackHandler := handler.NewFeedbackHandler()
 	knowledgeHandler := handler.NewKnowledgeHandler()
 	historyHandler := handler.NewHistoryHandler()
+	healthHandler := handler.NewHealthHandler()
 
 	// 创建Gin引擎
 	r := gin.Default()
@@ -46,6 +47,10 @@ func main() {
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(200, "index.html", nil)
 	})
+
+	// 健康检查（无需认证）
+	r.GET("/health", healthHandler.Liveness)
+	r.GET("/ready", healthHandler.Readiness)
 
 	// API路由
 	api := r.Group("/api")
@@ -68,15 +73,43 @@ func main() {
 		api.GET("/stats", historyHandler.Stats)
 	}
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
+	port := config.AppConfig.Port
 
 	log.Println("========================================")
 	log.Println("🚀 运维日志智能分析系统启动成功")
 	log.Printf("   访问地址: http://localhost:%s", port)
 	log.Println("========================================")
 
-	r.Run(":" + port)
+	// 优雅退出
+	srv := &http.Server{
+		Addr:    ":" + port,
+		Handler: r,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("服务启动失败: %v", err)
+		}
+	}()
+
+	// 等待退出信号
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("收到退出信号，开始优雅关闭...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Printf("⚠️ 强制关闭: %v", err)
+	}
+
+	// 关闭数据库连接
+	if sqlDB, err := database.DB.DB(); err == nil {
+		sqlDB.Close()
+	}
+
+	log.Println("✅ 服务已关闭")
 }

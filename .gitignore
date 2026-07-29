@@ -22,6 +22,9 @@ testdata/*.log
 # 二进制产物
 *.exe
 
+# 内部文档（不上传公开仓库）
+docs/
+
 # 系统文件
 .DS_Store
 Thumbs.db

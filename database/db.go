@@ -34,13 +34,27 @@ func InitDB() error {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	// AutoMigrate：自动建表/更新表结构，demo可复现
+	// AutoMigrate：自动建表/更新表结构
 	if err := DB.AutoMigrate(
 		&model.KnowledgeBase{},
 		&model.DiagnosisHistory{},
 		&model.UserFeedback{},
 	); err != nil {
 		return fmt.Errorf("数据库迁移失败: %w", err)
+	}
+
+	// 创建 FULLTEXT 索引（幂等：检查是否已存在）
+	var indexCount int64
+	DB.Raw(`SELECT COUNT(*) FROM information_schema.STATISTICS
+		WHERE table_schema = DATABASE()
+			AND table_name = 'knowledge_base'
+			AND index_type = 'FULLTEXT'`).Scan(&indexCount)
+	if indexCount == 0 {
+		if err := DB.Exec(`ALTER TABLE knowledge_base ADD FULLTEXT INDEX ft_content_keywords (content, keywords)`).Error; err != nil {
+			log.Printf("⚠️ FULLTEXT 索引创建失败: %v", err)
+		} else {
+			log.Println("✅ FULLTEXT 索引创建成功")
+		}
 	}
 
 	log.Println("✅ 数据库连接成功，表结构已同步")

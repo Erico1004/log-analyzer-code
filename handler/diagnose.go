@@ -188,15 +188,6 @@ func parseStrategy(s string) prompt.PromptStrategy {
 	}
 }
 
-// extractIDs 提取知识条目ID列表
-func extractIDs(items []model.KnowledgeItem) string {
-	ids := make([]string, len(items))
-	for i, item := range items {
-		ids[i] = fmt.Sprintf("%d", item.ID)
-	}
-	return strings.Join(ids, ",")
-}
-
 // truncateString 截断字符串
 func truncateString(s string, maxLen int) string {
 	if len(s) <= maxLen {

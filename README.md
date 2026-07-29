@@ -28,11 +28,16 @@ cd log-analyzer-code
 
 ### 2. 配置环境变量
 
-创建 `.env` 文件：
+创建 `.env` 文件（参考 `.env.example`）：
 
 ```env
 DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
-MYSQL_DSN=root:password@tcp(127.0.0.1:3306)/log_analyzer?charset=utf8mb4&parseTime=true
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your-password-here
+DB_NAME=log_analysis
+PORT=8080
 ```
 
 ### 3. 初始化知识库
@@ -62,7 +67,7 @@ go run cmd/verify/main.go
 ### 6. 运行实验（可选）
 
 ```bash
-go run cmd/experiment/main.go --cases testdata/experiment_cases.json
+go run cmd/experiment/main.go --cases testdata/cases.json
 ```
 
 对比 RAG 增强模式与 Direct LLM 模式的诊断准确率，结果导出为 CSV。
@@ -173,6 +178,8 @@ log-analyzer/
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | `GET` | `/` | 管理界面 |
+| `GET` | `/health` | 存活探针（进程是否存活） |
+| `GET` | `/ready` | 就绪探针（MySQL 是否连通） |
 | `POST` | `/api/diagnose` | 提交日志进行智能诊断 |
 | `POST` | `/api/feedback` | 提交诊断反馈 |
 | `GET` | `/api/knowledge` | 知识库列表（支持 `?page=&page_size=&search=`） |
@@ -181,6 +188,18 @@ log-analyzer/
 | `DELETE` | `/api/knowledge/:id` | 删除知识条目 |
 | `GET` | `/api/history` | 诊断历史（支持 `?page=&page_size=`） |
 | `GET` | `/api/stats` | 统计数据 |
+
+## Docker 部署
+
+一键启动（含 MySQL）：
+
+```bash
+cp .env.example .env
+# 编辑 .env 填入 DEEPSEEK_API_KEY
+docker compose up --build
+```
+
+服务启动后访问 `http://localhost:8080`。
 
 ## 技术栈
 

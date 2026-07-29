@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -13,6 +14,7 @@ type Config struct {
 	DBUser         string
 	DBPassword     string
 	DBName         string
+	Port           string
 }
 
 var AppConfig *Config
@@ -27,6 +29,19 @@ func LoadConfig() error {
 		DBUser:         getEnv("DB_USER", "root"),
 		DBPassword:     getEnv("DB_PASSWORD", ""),
 		DBName:         getEnv("DB_NAME", "log_analysis"),
+		Port:           getEnv("PORT", "8080"),
+	}
+
+	// 校验必填字段
+	var errs []string
+	if AppConfig.DeepSeekAPIKey == "" {
+		errs = append(errs, "DEEPSEEK_API_KEY 未设置")
+	}
+	if AppConfig.DBPassword == "" {
+		errs = append(errs, "DB_PASSWORD 未设置")
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("配置校验失败: %v", errs)
 	}
 
 	return nil
