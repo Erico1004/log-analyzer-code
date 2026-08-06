@@ -1,6 +1,8 @@
 package preprocessor
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"log-analyzer/model"
 )
 
@@ -18,6 +20,11 @@ func NewLogPreprocessor() *LogPreprocessor {
 		truncator:    NewLogTruncator(MaxTokens),
 		structurer:   NewLogStructurer(),
 	}
+}
+
+func (p *LogPreprocessor) Hash(content string) string {
+	h := sha256.Sum256([]byte(content))
+	return hex.EncodeToString(h[:16])
 }
 
 func (p *LogPreprocessor) Process(input *model.RawLogInput) *model.LogContext {

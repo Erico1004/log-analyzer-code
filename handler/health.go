@@ -20,6 +20,13 @@ func (h *HealthHandler) Liveness(c *gin.Context) {
 
 // Readiness 就绪探针 — 检查 MySQL 连通性
 func (h *HealthHandler) Readiness(c *gin.Context) {
+	if database.DB == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"status": "not ready",
+			"error":  "数据库未初始化",
+		})
+		return
+	}
 	sqlDB, err := database.DB.DB()
 	if err != nil {
 		c.JSON(http.StatusServiceUnavailable, gin.H{

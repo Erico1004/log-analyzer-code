@@ -20,6 +20,18 @@ func (r *DiagnosisRepo) GetBySessionID(sessionID string) (*model.DiagnosisHistor
 	return &history, err
 }
 
+func (r *DiagnosisRepo) FindByLogHash(logHash string) *model.DiagnosisHistory {
+	if DB == nil {
+		return nil
+	}
+	var history model.DiagnosisHistory
+	result := DB.Where("log_hash = ?", logHash).First(&history)
+	if result.Error != nil {
+		return nil
+	}
+	return &history
+}
+
 // List 分页查询诊断历史
 func (r *DiagnosisRepo) List(page, pageSize int) ([]model.DiagnosisHistory, int64, error) {
 	var items []model.DiagnosisHistory

@@ -29,14 +29,17 @@ type DiagnoseHandler struct {
 }
 
 func NewDiagnoseHandler(llmAdapter *llm.DeepSeekAdapter) *DiagnoseHandler {
-	return &DiagnoseHandler{
+	h := &DiagnoseHandler{
 		preprocessor:  preprocessor.NewLogPreprocessor(),
-		retriever:     retriever.NewKnowledgeRetriever(database.DB),
 		assembler:     prompt.NewPromptAssembler(),
 		llmAdapter:    llmAdapter,
 		diagnosisRepo: database.NewDiagnosisRepo(),
 		knowledgeRepo: database.NewKnowledgeRepo(),
 	}
+	if database.DB != nil {
+		h.retriever = retriever.NewKnowledgeRetriever(database.DB)
+	}
+	return h
 }
 
 // DiagnoseRequest 诊断请求
@@ -57,6 +60,22 @@ func (h *DiagnoseHandler) Handle(c *gin.Context) {
 	startTime := time.Now()
 	log.Printf("[请求] 日志长度: %d 字符, RAG: %v", len(req.Content), req.UseRAG)
 
+	// 0. 去重检查：相同日志内容在24小时内已诊断过则返回缓存结果
+	logHash := h.preprocessor.Hash(req.Content)
+	if existing := h.diagnosisRepo.FindByLogHash(logHash); existing != nil {
+		log.Printf("[去重] 命中缓存: ID=%d, 返回已有诊断", existing.ID)
+		c.JSON(http.StatusOK, gin.H{
+			"diagnosis":       existing,
+			"auto_learn":      false,
+			"knowledge_count": 0,
+			"retrieved_ids":   "",
+			"mode":            "cache",
+			"latency_ms":      time.Since(startTime).Milliseconds(),
+			"log_hash":        logHash,
+		})
+		return
+	}
+
 	// 步骤1：日志预处理
 	logCtx := h.preprocessor.Process(&model.RawLogInput{
 		Content:    req.Content,
@@ -69,18 +88,22 @@ func (h *DiagnoseHandler) Handle(c *gin.Context) {
 	var retrievedIDs string
 
 	if req.UseRAG {
-		items, err := h.retriever.Retrieve(logCtx, 5, 0.3)
-		if err != nil {
-			log.Printf("[检索] 失败: %v", err)
-			knowledgeItems = []model.KnowledgeItem{}
-		} else {
-			knowledgeItems = items
-			log.Printf("[检索] 找到 %d 条相关知识", len(knowledgeItems))
-			ids := make([]string, len(items))
-			for i, item := range items {
-				ids[i] = fmt.Sprintf("%d", item.ID)
+		if h.retriever != nil {
+			items, err := h.retriever.Retrieve(logCtx, 5, 0.3)
+			if err != nil {
+				log.Printf("[检索] 失败: %v", err)
+				knowledgeItems = []model.KnowledgeItem{}
+			} else {
+				knowledgeItems = items
+				log.Printf("[检索] 找到 %d 条相关知识", len(knowledgeItems))
+				ids := make([]string, len(items))
+				for i, item := range items {
+					ids[i] = fmt.Sprintf("%d", item.ID)
+				}
+				retrievedIDs = strings.Join(ids, ",")
 			}
-			retrievedIDs = strings.Join(ids, ",")
+		} else {
+			log.Printf("[检索] 跳过: retriever 未初始化（可能数据库不可用）")
 		}
 	} else {
 		knowledgeItems = []model.KnowledgeItem{}
@@ -113,6 +136,19 @@ func (h *DiagnoseHandler) Handle(c *gin.Context) {
 		AnalysisProcess: getString(llmResp.ParsedJSON, "analysis_process"),
 		SolutionSteps:   getStringSlice(llmResp.ParsedJSON, "solution_steps"),
 		Confidence:      getFloat64(llmResp.ParsedJSON, "confidence"),
+	}
+
+	if diagnosis.RootCause == "" {
+		keys := make([]string, 0, len(llmResp.ParsedJSON))
+		for k := range llmResp.ParsedJSON {
+			keys = append(keys, k)
+		}
+		c.JSON(http.StatusBadGateway, gin.H{
+			"error":        "LLM 返回格式异常，未能提取有效诊断结果",
+			"raw_response": llmResp.RawContent,
+			"parsed_keys":  keys,
+		})
+		return
 	}
 
 	// 步骤7：自动学习
@@ -166,6 +202,7 @@ func (h *DiagnoseHandler) Handle(c *gin.Context) {
 		"diagnosis": diagnosis,
 		"metadata": gin.H{
 			"session_id":           sessionID,
+			"log_hash":             logCtx.OriginalHash,
 			"latency_ms":           latency,
 			"knowledge_used":       len(knowledgeItems),
 			"key_errors":           logCtx.KeyErrors,
@@ -229,10 +266,11 @@ func parseStrategy(s string) prompt.PromptStrategy {
 }
 
 func truncateString(s string, maxLen int) string {
-	if len(s) <= maxLen {
+	runes := []rune(s)
+	if len(runes) <= maxLen {
 		return s
 	}
-	return s[:maxLen] + "..."
+	return string(runes[:maxLen]) + "..."
 }
 
 func getString(m map[string]interface{}, key string) string {
