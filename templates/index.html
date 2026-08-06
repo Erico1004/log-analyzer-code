@@ -313,6 +313,90 @@
     }
     .example-tag:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
 
+    /* ===== Chat Interface ===== */
+    .chat-container {
+      display:flex; flex-direction:column;
+      height:calc(100vh - 200px); min-height:480px;
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+    }
+    .chat-messages { flex:1; overflow-y:auto; padding:24px; }
+    .chat-welcome {
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:center; height:100%; text-align:center;
+    }
+    .chat-welcome-icon { font-size:42px; margin-bottom:14px; opacity:0.8; }
+    .chat-welcome-title { font-size:1.15rem; font-weight:600; margin-bottom:8px; }
+    .chat-welcome-desc { font-size:12.5px; color:var(--text-muted); max-width:380px; line-height:1.7; margin-bottom:20px; }
+
+    .chat-message { display:flex; gap:12px; margin-bottom:20px; animation:msgIn 0.3s ease; }
+    @keyframes msgIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .chat-message.user { flex-direction:row-reverse; }
+    .chat-avatar {
+      width:34px; height:34px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center; font-size:17px;
+    }
+    .chat-message.user .chat-avatar { background:var(--accent-soft); }
+    .chat-message.assistant .chat-avatar { background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; }
+
+    .chat-bubble {
+      max-width:75%; padding:15px 18px; border-radius:var(--radius-sm);
+      font-size:13.5px; line-height:1.7;
+    }
+    .chat-message.user .chat-bubble {
+      background:var(--accent-soft); border:1px solid rgba(79,140,255,0.2);
+    }
+    .chat-message.user .chat-bubble pre {
+      white-space:pre-wrap; font-family:var(--font-mono); font-size:12px;
+      line-height:1.6; color:var(--text-secondary);
+    }
+    .chat-message.assistant .chat-bubble {
+      background:var(--bg-elevated); border:1px solid var(--border);
+      flex:1; max-width:82%;
+    }
+
+    .chat-diag-card .learned-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:4px 12px; border-radius:20px; font-size:11.5px; font-weight:600;
+      background:var(--success-soft); color:var(--success); margin-bottom:14px;
+    }
+    .chat-diag-card .result-block { margin-bottom:14px; }
+    .chat-diag-card .result-block:last-child { margin-bottom:0; }
+    .chat-diag-card .result-value { font-size:13px; padding:12px 14px; }
+    .chat-diag-card .confidence-display { gap:12px; }
+    .chat-diag-card .confidence-ring { width:52px; height:52px; }
+    .chat-diag-card .confidence-num { font-size:0.95rem; }
+    .chat-diag-card .meta-row { padding-top:12px; margin-top:4px; }
+    .chat-diag-card .step-list li { font-size:13px; padding:8px 0 8px 24px; }
+
+    .chat-input-area { border-top:1px solid var(--border); padding:14px 18px; background:var(--bg-primary); }
+    .chat-settings { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+    .chat-settings .strategy-group { margin:0; }
+    .chat-settings .strategy-btn { padding:6px 14px; font-size:11.5px; }
+    .chat-settings .rag-toggle { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-secondary); }
+
+    .chat-input-row { display:flex; gap:10px; align-items:flex-end; }
+    .chat-input {
+      flex:1; padding:12px 16px; background:var(--bg-input);
+      border:1px solid var(--border); border-radius:var(--radius-sm);
+      color:var(--text-primary); font-size:13px; font-family:var(--font-mono), monospace;
+      line-height:1.6; resize:none; max-height:180px; outline:none; transition:all var(--transition);
+    }
+    .chat-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+    .chat-send-btn { padding:12px 24px; border-radius:var(--radius-sm); height:46px; }
+
+    .chat-typing { display:flex; gap:4px; padding:6px 0; }
+    .chat-typing span {
+      width:7px; height:7px; border-radius:50%; background:var(--text-muted);
+      animation:typingDot 1.4s infinite;
+    }
+    .chat-typing span:nth-child(2) { animation-delay:0.2s; }
+    .chat-typing span:nth-child(3) { animation-delay:0.4s; }
+    @keyframes typingDot {
+      0%,60%,100% { opacity:0.3; transform:scale(0.8); }
+      30% { opacity:1; transform:scale(1.2); }
+    }
+
     /* ===== Tables ===== */
     .table-wrap { overflow-x:auto; border-radius:var(--radius-xs); }
     table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -475,114 +559,44 @@
     </button>
   </nav>
 
-  <!-- ==================== TAB 1: 智能诊断 ==================== -->
+  <!-- ==================== TAB 1: 对话诊断 ==================== -->
   <div class="tab-content active" id="tab-diagnosis">
-    <div class="diag-grid">
-      <!-- Left: Input -->
-      <div class="card accent-top">
-        <div class="card-header">
-          <div>
-            <div class="card-title-row">
-              <div class="card-icon blue">📄</div>
-              <div>
-                <div class="card-title">日志输入</div>
-                <div class="card-subtitle">粘贴运维日志内容或选择预置示例</div>
-              </div>
-            </div>
+    <div class="chat-container">
+      <!-- Message List -->
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-welcome" id="chatWelcome">
+          <div class="chat-welcome-icon">💬</div>
+          <div class="chat-welcome-title">智能运维日志诊断助手</div>
+          <div class="chat-welcome-desc">粘贴运维日志，自动分析故障根因并提供修复方案。遇到未知故障会自动学习并存入知识库，下次再遇到可直接检索命中。</div>
+          <div class="example-tags" style="justify-content:center;">
+            <button class="example-tag" data-example="oom">⚡ OutOfMemoryError</button>
+            <button class="example-tag" data-example="connection">🔌 Connection Refused</button>
+            <button class="example-tag" data-example="null">🐛 NullPointerException</button>
+            <button class="example-tag" data-example="timeout">⏱ Read Timeout</button>
+            <button class="example-tag" data-example="disk">💾 Disk Full</button>
           </div>
-        </div>
-
-        <div class="strategy-group">
-          <button class="strategy-btn active" data-strategy="ZERO_SHOT">Zero-Shot</button>
-          <button class="strategy-btn" data-strategy="FEW_SHOT">Few-Shot</button>
-          <button class="strategy-btn" data-strategy="COT">Chain-of-Thought</button>
-        </div>
-
-        <div class="toggle-row">
-          <span class="toggle-label">
-            <span class="toggle-emoji">🔗</span> RAG 检索增强
-          </span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="ragMode" checked>
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="example-tags">
-          <button class="example-tag" data-example="oom">OutOfMemoryError</button>
-          <button class="example-tag" data-example="connection">Connection Refused</button>
-          <button class="example-tag" data-example="null">NullPointerException</button>
-          <button class="example-tag" data-example="timeout">Read Timeout</button>
-          <button class="example-tag" data-example="disk">Disk Full</button>
-        </div>
-
-        <textarea id="logInput" class="form-textarea" placeholder="在此粘贴运维日志内容...&#10;&#10;支持 Ctrl+Enter 快捷分析"></textarea>
-
-        <div class="btn-group" style="margin-top:16px;">
-          <button id="analyzeBtn" class="btn btn-primary btn-lg" style="flex:1;">
-            开始分析
-          </button>
-          <button id="clearBtn" class="btn btn-secondary">清空</button>
-          <button id="pasteBtn" class="btn btn-secondary">从剪贴板粘贴</button>
         </div>
       </div>
 
-      <!-- Right: Result -->
-      <div class="card accent-top" id="resultCard">
-        <div class="card-header">
-          <div>
-            <div class="card-title-row">
-              <div class="card-icon green">📊</div>
-              <div>
-                <div class="card-title">诊断报告</div>
-                <div class="card-subtitle">AI 分析结果与修复建议</div>
-              </div>
-            </div>
+      <!-- Input Area -->
+      <div class="chat-input-area">
+        <div class="chat-settings">
+          <div class="strategy-group">
+            <button class="strategy-btn active" data-strategy="ZERO_SHOT">Zero-Shot</button>
+            <button class="strategy-btn" data-strategy="FEW_SHOT">Few-Shot</button>
+            <button class="strategy-btn" data-strategy="COT">CoT</button>
           </div>
+          <label class="rag-toggle">
+            <span>🔗 RAG</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="ragMode" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
         </div>
-
-        <div id="loadingArea" class="loading-overlay">
-          <div class="pulse-ring"><div class="inner"></div></div>
-          <div class="loading-text">正在分析日志...</div>
-          <div class="loading-sub">检索知识库 · 调用大模型 · 生成诊断报告</div>
-        </div>
-
-        <div id="errorArea" style="display:none;padding:14px 16px;background:var(--danger-soft);border:1px solid rgba(248,113,109,0.3);border-radius:var(--radius-xs);color:var(--danger);font-size:13px;margin-bottom:16px;"></div>
-
-        <div id="resultArea" style="display:none;">
-          <div class="result-block">
-            <div class="result-label"><span class="dot red"></span> 根本原因</div>
-            <div id="rootCause" class="result-value root-cause"></div>
-          </div>
-          <div class="result-block">
-            <div class="result-label"><span class="dot blue"></span> 置信度</div>
-            <div class="confidence-display">
-              <div class="confidence-ring">
-                <svg viewBox="0 0 72 72"><circle class="bg" cx="36" cy="36" r="30"/><circle id="confidenceCircle" class="fill" cx="36" cy="36" r="30" stroke-dasharray="188.5" stroke-dashoffset="188.5"/></svg>
-                <span id="confidenceValue" class="confidence-num">0%</span>
-              </div>
-              <span style="font-size:12px;color:var(--text-muted);">基于知识库匹配与模型推断的综合置信度评分</span>
-            </div>
-          </div>
-          <div class="result-block">
-            <div class="result-label"><span class="dot blue"></span> 分析过程</div>
-            <div id="analysisProcess" class="result-value analysis"></div>
-          </div>
-          <div class="result-block">
-            <div class="result-label"><span class="dot green"></span> 修复步骤</div>
-            <ul id="solutionSteps" class="step-list result-value"></ul>
-          </div>
-          <div id="metaRow" class="meta-row"></div>
-          <div class="btn-group" style="margin-top:16px;">
-            <button id="feedbackCorrect" class="btn btn-sm" style="background:var(--success-soft);color:var(--success);">诊断正确</button>
-            <button id="feedbackWrong" class="btn btn-sm" style="background:var(--danger-soft);color:var(--danger);">诊断有误</button>
-          </div>
-        </div>
-
-        <div id="emptyState" class="empty-state">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="6" y="8" width="36" height="32" rx="3" stroke="currentColor" stroke-width="1.5" opacity="0.4"/><line x1="10" y1="16" x2="22" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/><line x1="10" y1="22" x2="30" y2="22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/><line x1="10" y1="28" x2="26" y2="28" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/><circle cx="36" cy="28" r="6" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"/><line x1="36" y1="25" x2="36" y2="31" stroke="currentColor" stroke-width="1.2" opacity="0.3"/><line x1="33" y1="28" x2="39" y2="28" stroke="currentColor" stroke-width="1.2" opacity="0.3"/></svg>
-          <div class="empty-text">等待输入日志内容</div>
-          <div class="empty-hint">在左侧输入框中粘贴运维日志，点击「开始分析」即可获取智能诊断结果</div>
+        <div class="chat-input-row">
+          <textarea id="chatInput" class="chat-input" placeholder="粘贴运维日志... (Ctrl+Enter 发送)" rows="1"></textarea>
+          <button id="chatSendBtn" class="btn btn-primary chat-send-btn">发送</button>
         </div>
       </div>
     </div>
@@ -806,7 +820,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
-// ========== TAB 1: Diagnosis ==========
+// ========== TAB 1: Chat Diagnosis ==========
 const examples = {
   oom: `2024-01-15 10:23:45 ERROR [main] com.example.App - Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
 2024-01-15 10:23:45 ERROR [main] com.example.App -     at com.example.DataProcessor.process(DataProcessor.java:42)
@@ -839,83 +853,139 @@ document.querySelectorAll('.strategy-btn').forEach(btn => {
 document.querySelectorAll('.example-tag').forEach(tag => {
   tag.addEventListener('click', () => {
     const type = tag.dataset.example;
-    if (examples[type]) document.getElementById('logInput').value = examples[type];
+    if (examples[type]) {
+      const input = document.getElementById('chatInput');
+      input.value = examples[type];
+      autoResize(input);
+      input.focus();
+    }
   });
 });
 
-function showDiagnosisState(state) {
-  document.getElementById('loadingArea').classList.toggle('active', state === 'loading');
-  document.getElementById('errorArea').style.display = state === 'error' ? 'block' : 'none';
-  document.getElementById('resultArea').style.display = state === 'result' ? 'block' : 'none';
-  document.getElementById('emptyState').style.display = state === 'empty' ? 'block' : 'none';
-  document.getElementById('analyzeBtn').disabled = state === 'loading';
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 180) + 'px';
 }
 
-async function analyze() {
-  const content = document.getElementById('logInput').value.trim();
+function appendMessage(role, html) {
+  const container = document.getElementById('chatMessages');
+  const welcome = document.getElementById('chatWelcome');
+  if (welcome) welcome.style.display = 'none';
+
+  const msg = document.createElement('div');
+  msg.className = 'chat-message ' + role;
+
+  if (role === 'user') {
+    msg.innerHTML = '<div class="chat-avatar">👤</div><div class="chat-bubble"><pre></pre></div>';
+    msg.querySelector('pre').textContent = html;
+  } else if (role === 'typing') {
+    msg.innerHTML = '<div class="chat-avatar">🤖</div><div class="chat-bubble"><div class="chat-typing"><span></span><span></span><span></span></div></div>';
+    msg.id = 'typingIndicator';
+  } else {
+    msg.innerHTML = '<div class="chat-avatar">🤖</div><div class="chat-bubble">' + html + '</div>';
+  }
+
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
+function buildDiagnosisCard(d, m) {
+  const conf = Math.round((d.confidence || 0) * 100);
+  const r = 22, circ = 2 * Math.PI * r;
+  const offset = circ - (conf / 100) * circ;
+
+  let badge = '';
+  if (m.auto_learned) {
+    badge = '<div class="learned-badge">🧠 已自动学习并存入知识库 (ID: #' + m.learned_knowledge_id + ')</div>';
+  }
+
+  const steps = (d.solution_steps || ['未生成修复步骤']).map(s => '<li>' + escHtml(s) + '</li>').join('');
+  const modePill = m.mode === 'RAG'
+    ? '<span class="meta-pill" style="background:var(--accent-soft);color:var(--accent);">RAG 增强</span>'
+    : '<span class="meta-pill" style="background:var(--warning-soft);color:var(--warning);">Direct LLM</span>';
+
+  return '<div class="chat-diag-card">'
+    + badge
+    + '<div class="result-block"><div class="result-label"><span class="dot red"></span> 根本原因</div>'
+    + '<div class="result-value root-cause">' + escHtml(d.root_cause || '(未识别出明确根因)') + '</div></div>'
+    + '<div class="result-block"><div class="result-label"><span class="dot blue"></span> 置信度</div>'
+    + '<div class="confidence-display"><div class="confidence-ring">'
+    + '<svg viewBox="0 0 52 52" style="transform:rotate(-90deg);">'
+    + '<circle cx="26" cy="26" r="' + r + '" fill="none" stroke="var(--border)" stroke-width="5"/>'
+    + '<circle cx="26" cy="26" r="' + r + '" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/>'
+    + '</svg><span class="confidence-num">' + conf + '%</span></div>'
+    + '<span style="font-size:11.5px;color:var(--text-muted);">综合置信度评分</span></div></div>'
+    + '<div class="result-block"><div class="result-label"><span class="dot blue"></span> 分析过程</div>'
+    + '<div class="result-value analysis">' + escHtml(d.analysis_process || '(无)') + '</div></div>'
+    + '<div class="result-block"><div class="result-label"><span class="dot green"></span> 修复步骤</div>'
+    + '<ul class="step-list result-value">' + steps + '</ul></div>'
+    + '<div class="meta-row">' + modePill
+    + '<span>策略: ' + escHtml(m.prompt_strategy) + '</span><span>·</span>'
+    + '<span>延迟: ' + m.latency_ms + 'ms</span><span>·</span>'
+    + '<span>知识: ' + (m.knowledge_used || 0) + ' 条</span></div>'
+    + '<div class="btn-group" style="margin-top:12px;">'
+    + '<button class="btn btn-sm" style="background:var(--success-soft);color:var(--success);" onclick="sendFeedbackChat(\'' + m.session_id + '\',1,this)">✓ 诊断正确</button>'
+    + '<button class="btn btn-sm" style="background:var(--danger-soft);color:var(--danger);" onclick="sendFeedbackChat(\'' + m.session_id + '\',0,this)">✗ 诊断有误</button>'
+    + '</div></div>';
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const content = input.value.trim();
   if (content.length < 10) { showToast('日志内容过短，请输入至少 10 个字符', 'error'); return; }
-  showDiagnosisState('loading');
+
+  appendMessage('user', content);
+  input.value = '';
+  autoResize(input);
+
+  const sendBtn = document.getElementById('chatSendBtn');
+  sendBtn.disabled = true;
+  sendBtn.textContent = '分析中...';
+
+  appendMessage('typing', '');
+
   try {
     const useRAG = document.getElementById('ragMode').checked;
     const resp = await fetch('/api/diagnose', {
-      method:'POST', headers:{'Content-Type':'application/json'},
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content, strategy: currentStrategy, use_rag: useRAG })
     });
     const data = await resp.json();
+
+    const typing = document.getElementById('typingIndicator');
+    if (typing) typing.remove();
+
     if (!resp.ok) throw new Error(data.error || 'API 调用失败');
+
     currentSessionId = data.metadata.session_id;
-    const d = data.diagnosis, m = data.metadata;
-    document.getElementById('rootCause').textContent = d.root_cause || '(未识别出明确根因)';
-    const conf = Math.round((d.confidence || 0) * 100);
-    document.getElementById('confidenceValue').textContent = conf + '%';
-    const circle = document.getElementById('confidenceCircle');
-    const circumference = 2 * Math.PI * 30;
-    circle.style.strokeDasharray = circumference;
-    circle.style.strokeDashoffset = circumference - (conf / 100) * circumference;
-    document.getElementById('analysisProcess').textContent = d.analysis_process || '(无)';
-    const steps = document.getElementById('solutionSteps');
-    steps.innerHTML = '';
-    (d.solution_steps || ['未生成修复步骤']).forEach(s => { const li = document.createElement('li'); li.textContent = s; steps.appendChild(li); });
-    const meta = document.getElementById('metaRow');
-    meta.innerHTML = `
-      <span class="meta-pill ${m.mode === 'RAG' ? 'rag' : 'direct'}">${m.mode === 'RAG' ? 'RAG 增强' : 'Direct LLM'}</span>
-      <span>策略: ${m.prompt_strategy}</span>
-      <span>·</span>
-      <span>延迟: ${m.latency_ms}ms</span>
-      <span>·</span>
-      <span>知识条目: ${m.knowledge_used || 0} 条</span>
-      <span>·</span>
-      <span>模型: ${m.model}</span>`;
-    showDiagnosisState('result');
-  } catch(err) {
-    document.getElementById('errorArea').textContent = '诊断失败: ' + err.message;
-    showDiagnosisState('error');
+    appendMessage('assistant', buildDiagnosisCard(data.diagnosis, data.metadata));
+  } catch (err) {
+    const typing = document.getElementById('typingIndicator');
+    if (typing) typing.remove();
+    appendMessage('assistant', '<div style="color:var(--danger);font-size:13px;">⚠ 诊断失败: ' + escHtml(err.message) + '</div>');
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = '发送';
   }
 }
 
-async function sendFeedback(value) {
-  if (!currentSessionId) { showToast('当前无活动的诊断会话', 'error'); return; }
+async function sendFeedbackChat(sessionId, value, btn) {
   try {
     await fetch('/api/feedback', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ session_id: currentSessionId, feedback: value })
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId, feedback: value })
     });
-    showToast(value ? '感谢反馈，已记录为「正确」' : '反馈已记录，我们将持续优化');
-  } catch(err) { showToast('反馈提交失败', 'error'); }
+    btn.style.opacity = '0.5';
+    btn.style.pointerEvents = 'none';
+    showToast(value ? '感谢反馈，已记录为「正确」' : '反馈已记录');
+  } catch (err) { showToast('反馈提交失败', 'error'); }
 }
 
-document.getElementById('analyzeBtn').addEventListener('click', analyze);
-document.getElementById('clearBtn').addEventListener('click', () => {
-  document.getElementById('logInput').value = '';
-  showDiagnosisState('empty');
+document.getElementById('chatSendBtn').addEventListener('click', sendMessage);
+document.getElementById('chatInput').addEventListener('input', function() { autoResize(this); });
+document.getElementById('chatInput').addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); sendMessage(); }
 });
-document.getElementById('pasteBtn').addEventListener('click', async () => {
-  try { document.getElementById('logInput').value = await navigator.clipboard.readText(); showToast('已粘贴剪贴板内容'); }
-  catch { showToast('无法访问剪贴板，请手动粘贴', 'error'); }
-});
-document.getElementById('feedbackCorrect').addEventListener('click', () => sendFeedback(1));
-document.getElementById('feedbackWrong').addEventListener('click', () => sendFeedback(0));
-document.getElementById('logInput').addEventListener('keydown', e => { if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); analyze(); } });
 
 // ========== TAB 2: Knowledge Base ==========
 let kbPage = 1, kbTotal = 0;
@@ -1099,7 +1169,6 @@ function escHtml(s) { if (!s) return ''; const d = document.createElement('div')
 function formatTime(t) { if (!t) return ''; const d = new Date(t); return d.toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
 
 // ========== Init ==========
-showDiagnosisState('empty');
 </script>
 </body>
 </html>
