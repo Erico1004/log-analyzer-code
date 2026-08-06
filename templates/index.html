@@ -3,40 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LogAnalyzer — 运维日志智能诊断平台</title>
+  <title>LogAnalyzer — 运维日志根因分析平台</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    /* ===== Design Tokens ===== */
     :root {
-      --bg-root: #0b1120;
-      --bg-primary: #111827;
-      --bg-card: #1a2332;
-      --bg-elevated: #1f2a3a;
-      --bg-input: #0f1a26;
-      --bg-hover: #243447;
-      --text-primary: #edf2f7;
-      --text-secondary: #94a3b8;
-      --text-muted: #5c6e82;
-      --accent: #4f8cff;
-      --accent-glow: rgba(79,140,255,0.18);
-      --accent-hover: #3b75e6;
-      --accent-soft: rgba(79,140,255,0.10);
-      --success: #34d399;
-      --success-soft: rgba(52,211,153,0.10);
-      --warning: #f59e0b;
-      --warning-soft: rgba(245,158,11,0.10);
-      --danger: #f8716d;
-      --danger-soft: rgba(248,113,109,0.10);
-      --border: #1e2d42;
-      --border-light: #263548;
-      --radius: 12px;
-      --radius-sm: 8px;
-      --radius-xs: 5px;
-      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-      --shadow: 0 2px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.2);
-      --shadow-lg: 0 8px 32px rgba(0,0,0,0.45);
+      --bg-root: #f4f5f7;
+      --bg-primary: #ffffff;
+      --bg-card: #ffffff;
+      --bg-elevated: #f8f9fa;
+      --bg-input: #ffffff;
+      --bg-hover: #f1f3f5;
+      --bg-active: #e8f0fe;
+      --bg-selected: #e8f0fe;
+      --text-primary: #1a1d23;
+      --text-secondary: #4a5160;
+      --text-muted: #6b7280;
+      --text-faint: #9ca3af;
+      --brand: #1a69e0;
+      --brand-hover: #1456b8;
+      --brand-soft: #e8f0fe;
+      --brand-border: #c7d8f2;
+      --success: #0f8a52;
+      --success-border: #b6e0c9;
+      --warning: #b46100;
+      --warning-border: #e8cf9c;
+      --danger: #c52525;
+      --danger-border: #ecc0c0;
+      --border: #e1e4e8;
+      --border-light: #edeff2;
+      --border-dark: #d0d4da;
+      --radius: 4px;
+      --radius-sm: 4px;
+      --radius-xs: 3px;
+      --shadow-sm: 0 1px 2px rgba(26,29,35,0.05);
+      --shadow: 0 1px 3px rgba(26,29,35,0.08), 0 1px 2px rgba(26,29,35,0.04);
+      --shadow-lg: 0 8px 24px rgba(26,29,35,0.12), 0 2px 6px rgba(26,29,35,0.06);
       --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
-      --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+      --transition: 0.12s ease;
     }
 
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -46,750 +50,1563 @@
       background: var(--bg-root);
       color: var(--text-primary);
       min-height: 100vh;
-      line-height: 1.6;
+      line-height: 1.5;
       -webkit-font-smoothing: antialiased;
+      font-size: 13.5px;
     }
 
-    /* ===== Scrollbar ===== */
-    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar { width:7px; height:7px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    ::-webkit-scrollbar-thumb { background: #c9cdd3; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #a8adb5; }
 
-    .app { max-width:1340px; margin:0 auto; padding:0 28px 48px; }
-
-    /* ===== Header ===== */
-    .header {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:24px 0 20px; border-bottom:1px solid var(--border);
-    }
-    .header-brand { display:flex; align-items:center; gap:14px; }
-    .header-logo {
-      width:42px; height:42px; border-radius:10px;
-      background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
-      display:flex; align-items:center; justify-content:center;
-      font-size:20px; color:#fff; font-weight:700;
-      box-shadow: 0 4px 14px rgba(59,130,246,0.3);
-    }
-    .header-text h1 { font-size:1.3rem; font-weight:700; letter-spacing:-0.3px; line-height:1.2; }
-    .header-text .subtitle { font-size:11.5px; color:var(--text-muted); letter-spacing:0.3px; }
-    .header-badge {
-      font-size:12px; padding:5px 14px; border-radius:20px; font-weight:600;
-      background: linear-gradient(135deg, var(--accent-soft), rgba(99,102,241,0.10));
-      color: var(--accent); border:1px solid rgba(79,140,255,0.2);
-      letter-spacing:0.3px;
+    /* ===== App Layout ===== */
+    .app {
+      display: flex;
+      min-height: 100vh;
     }
 
-    /* ===== Tab Navigation ===== */
-    .tabs {
-      display:flex; gap:3px; margin:22px 0 28px;
-      background: var(--bg-card); border-radius: var(--radius); padding:5px;
-      border:1px solid var(--border);
+    /* ===== Sidebar ===== */
+    .sidebar {
+      width: 200px;
+      flex-shrink: 0;
+      background: var(--bg-primary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
     }
-    .tab-btn {
-      flex:1; padding:11px 22px; border:none; border-radius:9px;
-      background:transparent; color:var(--text-secondary); font-size:13.5px;
-      font-weight:500; cursor:pointer; transition:all var(--transition);
-      display:flex; align-items:center; justify-content:center; gap:8px;
-      font-family: var(--font), system-ui, -apple-system, sans-serif; white-space:nowrap;
+    .sidebar-brand {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    .tab-btn:hover { color:var(--text-primary); background:rgba(255,255,255,0.04); }
-    .tab-btn.active {
-      background: linear-gradient(135deg, var(--accent), #5670e6);
-      color:#fff; box-shadow:0 3px 12px var(--accent-glow), 0 1px 3px rgba(0,0,0,0.3);
+    .sidebar-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      background: var(--brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 12.5px;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
     }
-    .tab-icon { font-size:15px; opacity:0.85; }
-    .tab-btn.active .tab-icon { opacity:1; }
+    .sidebar-brand-text h1 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .sidebar-brand-text .subtitle {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .sidebar-nav {
+      padding: 10px 8px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .nav-section-title {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 10px 5px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7.5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 1px;
+      transition: background var(--transition), color var(--transition);
+      user-select: none;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+    .nav-item:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+    .nav-item.active {
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-weight: 600;
+    }
+    .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; stroke-width: 1.8; }
+    .sidebar-footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sidebar-footer .ver-badge {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      padding: 2px 7px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-weight: 500;
+    }
+    .sidebar-footer .env {
+      font-size: 10.5px;
+      color: var(--text-faint);
+    }
 
-    .tab-content { display:none; }
-    .tab-content.active { display:block; animation: fadeIn 0.25s ease; }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+    /* ===== Main ===== */
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      height: 48px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+    .breadcrumb .crumb-sep { color: var(--text-faint); }
+    .breadcrumb .crumb-current { color: var(--text-primary); font-weight: 600; }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .topbar-btn {
+      padding: 5.5px 10px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all var(--transition);
+      font-family: inherit;
+    }
+    .topbar-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-dark); }
+    .topbar-btn svg { width: 13px; height: 13px; }
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 9px 4px 4px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      cursor: default;
+    }
+    .avatar {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
+      font-size: 10.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .user-name { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+
+    .content-wrap {
+      padding: 20px;
+      flex: 1;
+      min-width: 0;
+    }
+    .page-header { margin-bottom: 16px; }
+    .page-title-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 3px;
+    }
+    .page-title {
+      font-size: 16.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.1px;
+    }
+    .page-title svg { width: 18px; height: 18px; color: var(--brand); stroke-width: 2; }
+    .page-desc { font-size: 12.5px; color: var(--text-muted); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
     /* ===== Cards ===== */
     .card {
-      background:var(--bg-card); border:1px solid var(--border);
-      border-radius:var(--radius); padding:26px; margin-bottom:22px;
-      box-shadow:var(--shadow);
-      position:relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
     }
-    .card.accent-top::before {
-      content:''; position:absolute; top:0; left:20px; right:20px;
-      height:1px; background:linear-gradient(90deg, transparent, var(--accent), transparent);
-      opacity:0.5;
+    .card-section {
+      padding: 14px;
+    }
+    .card-section + .card-section {
+      border-top: 1px solid var(--border-light);
     }
     .card-header {
-      display:flex; align-items:flex-start; justify-content:space-between;
-      margin-bottom:20px; padding-bottom:16px;
-      border-bottom:1px solid var(--border);
-      gap:16px;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
     }
-    .card-title-row { display:flex; align-items:center; gap:10px; }
+    .card-title-row { display: flex; align-items: center; gap: 9px; }
     .card-icon {
-      width:32px; height:32px; border-radius:8px; display:flex;
-      align-items:center; justify-content:center; font-size:15px;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
     }
-    .card-icon.blue { background:var(--accent-soft); color:var(--accent); }
-    .card-icon.green { background:var(--success-soft); color:var(--success); }
-    /* .card-icon.amber { background:var(--warning-soft); color:var(--warning); } */
-    .card-title { font-size:0.95rem; font-weight:600; color:var(--text-primary); }
-    .card-subtitle { font-size:12px; color:var(--text-muted); margin-top:1px; }
+    .card-icon svg { width: 14px; height: 14px; stroke-width: 2; }
+    .card-icon.blue { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-border); }
+    .card-icon.green { background: #e8f5ee; color: var(--success); border-color: var(--success-border); }
+    .card-icon.amber { background: #fbf1df; color: var(--warning); border-color: var(--warning-border); }
+    .card-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+    .card-subtitle { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
 
     /* ===== Buttons ===== */
     .btn {
-      padding:8px 18px; border:none; border-radius:var(--radius-xs); font-size:13px;
-      font-weight:500; cursor:pointer; transition:all var(--transition); display:inline-flex;
-      align-items:center; gap:6px; font-family: var(--font), system-ui, -apple-system, sans-serif; white-space:nowrap;
+      padding: 6.5px 13px;
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius-xs);
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--transition), border-color var(--transition), color var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: inherit;
+      white-space: nowrap;
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      line-height: 1.4;
     }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #5670e6); color:#fff;
-      box-shadow: 0 2px 8px var(--accent-glow);
-    }
-    .btn-primary:hover { box-shadow:0 4px 16px var(--accent-glow); transform:translateY(-1px); }
-    .btn-primary:active { transform:translateY(0); }
-    .btn-primary:disabled { opacity:0.45; cursor:not-allowed; transform:none; box-shadow:none; }
-    .btn-secondary {
-      background: var(--bg-elevated); color: var(--text-secondary);
-      border:1px solid var(--border);
-    }
-    .btn-secondary:hover { background: var(--bg-hover); color: var(--text-primary); }
-    .btn-outline {
-      background: transparent; color: var(--accent); border:1px solid rgba(79,140,255,0.3);
-    }
-    .btn-outline:hover { background: var(--accent-soft); }
-    .btn-danger { background:var(--danger-soft); color:var(--danger); border:1px solid rgba(248,113,109,0.25); }
-    .btn-danger:hover { background: rgba(248,113,109,0.18); }
-    .btn-sm { padding:5px 11px; font-size:11.5px; border-radius:var(--radius-xs); }
-    .btn-lg { padding:13px 28px; font-size:15px; border-radius:var(--radius-sm); }
-    .btn-group { display:flex; gap:8px; }
+    .btn:hover:not(:disabled) { background: var(--bg-hover); color: var(--text-primary); border-color: #aeb4bd; }
+    .btn:active:not(:disabled) { transform: translateY(0); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn svg { width: 13px; height: 13px; stroke-width: 2; flex-shrink: 0; }
 
-    /* ===== Form Controls ===== */
-    .form-group { margin-bottom:16px; }
+    .btn-primary {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--brand-hover); border-color: var(--brand-hover); color: #fff; }
+
+    .btn-secondary {
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      border-color: var(--border-dark);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--brand);
+      border-color: var(--brand-border);
+    }
+    .btn-outline:hover:not(:disabled) { background: var(--brand-soft); color: var(--brand); border-color: var(--brand); }
+
+    .btn-danger {
+      background: var(--bg-primary);
+      color: var(--danger);
+      border-color: var(--danger-border);
+    }
+    .btn-danger:hover:not(:disabled) { background: #fcecec; color: var(--danger); border-color: #d8a0a0; }
+
+    .btn-sm { padding: 4px 9px; font-size: 11.5px; border-radius: var(--radius-xs); }
+    .btn-sm svg { width: 11.5px; height: 11.5px; }
+    .btn-lg { padding: 9px 18px; font-size: 13.5px; }
+    .btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* ===== Forms ===== */
+    .form-group { margin-bottom: 12px; }
     .form-label {
-      display:block; font-size:11px; font-weight:600; color:var(--text-muted);
-      margin-bottom:6px; text-transform:uppercase; letter-spacing:0.6px;
+      display: block;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
     }
+    .form-label .req { color: var(--danger); margin-left: 2px; }
     .form-input, .form-textarea {
-      width:100%; padding:10px 14px; background:var(--bg-input);
-      border:1px solid var(--border); border-radius:var(--radius-xs);
-      color:var(--text-primary); font-size:13px; font-family: var(--font), system-ui, -apple-system, sans-serif;
-      transition:all var(--transition); outline:none;
+      width: 100%;
+      padding: 7px 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius-xs);
+      color: var(--text-primary);
+      font-size: 12.5px;
+      font-family: inherit;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      outline: none;
+      line-height: 1.5;
     }
-    .form-input:hover, .form-textarea:hover { border-color: var(--border-light); }
+    .form-input:hover, .form-textarea:hover { border-color: #aeb4bd; }
     .form-input:focus, .form-textarea:focus {
-      border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow);
+      border-color: var(--brand);
+      box-shadow: 0 0 0 2px rgba(26, 105, 224, 0.10);
     }
     .form-textarea {
-      min-height:280px; font-family: var(--font-mono), ui-monospace, monospace; font-size:13px;
-      line-height:1.75; resize:vertical;
+      min-height: 260px;
+      font-family: var(--font-mono), ui-monospace, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      resize: vertical;
     }
-    .form-textarea::placeholder, .form-input::placeholder { color:var(--text-muted); }
+    .form-textarea::placeholder, .form-input::placeholder { color: var(--text-faint); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     /* ===== Strategy Selector ===== */
-    .strategy-group { display:flex; gap:5px; margin-bottom:16px; }
+    .strategy-group { display: inline-flex; gap: 0; border: 1px solid var(--border-dark); border-radius: var(--radius-xs); overflow: hidden; background: var(--bg-primary); }
     .strategy-btn {
-      flex:1; padding:9px 14px; border:1px solid var(--border); border-radius:var(--radius-xs);
-      background:var(--bg-input); color:var(--text-secondary); font-size:12px;
-      font-weight:600; cursor:pointer; transition:all var(--transition);
-      text-align:center; font-family: var(--font), system-ui, -apple-system, sans-serif;
+      padding: 6px 14px;
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      border: none;
+      border-right: 1px solid var(--border-dark);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      font-family: inherit;
     }
-    .strategy-btn:hover { border-color:var(--accent); color:var(--text-primary); }
+    .strategy-btn:last-child { border-right: none; }
+    .strategy-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
     .strategy-btn.active {
-      background:var(--accent-soft); border-color:var(--accent); color:var(--accent);
-      box-shadow:0 0 0 1px var(--accent-glow);
+      background: var(--brand-soft);
+      color: var(--brand);
     }
 
     /* ===== Toggle Switch ===== */
     .toggle-row {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:13px 16px; background:var(--bg-input); border-radius:var(--radius-xs);
-      margin-bottom:16px; border:1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-xs);
+      margin-bottom: 10px;
+      border: 1px solid var(--border-light);
     }
-    .toggle-label { font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; }
-    .toggle-emoji { font-size:15px; }
-    .toggle-switch { position:relative; width:46px; height:25px; flex-shrink:0; }
-    .toggle-switch input { opacity:0; width:0; height:0; }
+    .toggle-label {
+      font-size: 12.5px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--text-secondary);
+    }
+    .toggle-label svg { width: 13px; height: 13px; color: var(--brand); stroke-width: 2; }
+    .toggle-switch { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
     .toggle-slider {
-      position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0;
-      background:var(--border-light); border-radius:25px; transition:var(--transition);
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--border-dark);
+      border-radius: 20px;
+      transition: var(--transition);
     }
     .toggle-slider::before {
-      content:""; position:absolute; height:19px; width:19px; left:3px; bottom:3px;
-      background:#fff; border-radius:50%; transition:var(--transition);
-      box-shadow:0 1px 3px rgba(0,0,0,0.2);
+      content: "";
+      position: absolute;
+      height: 14px; width: 14px;
+      left: 3px; bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: var(--transition);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
     }
-    input:checked + .toggle-slider { background: var(--accent); }
-    input:checked + .toggle-slider::before { transform: translateX(21px); }
+    input:checked + .toggle-slider { background: var(--brand); }
+    input:checked + .toggle-slider::before { transform: translateX(16px); }
 
-    /* ===== Diagnosis Two-Column ===== */
-    .diag-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; align-items:start; }
-    @media (max-width:1024px) { .diag-grid { grid-template-columns:1fr; } }
-
-    /* ===== Diagnosis Result ===== */
-    .result-block { margin-bottom:20px; }
-    .result-block:last-child { margin-bottom:0; }
-    .result-label {
-      font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;
-      letter-spacing:0.8px; margin-bottom:7px; display:flex; align-items:center; gap:6px;
+    /* ===== Diagnosis Two-Column Workbench ===== */
+    .diag-grid {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 14px;
+      align-items: start;
     }
-    .result-label .dot { width:6px; height:6px; border-radius:50%; display:inline-block; }
-    .dot.red { background:var(--danger); }
-    .dot.blue { background:var(--accent); }
-    .dot.green { background:var(--success); }
-
-    .result-value {
-      font-size:14px; line-height:1.75; color:var(--text-primary);
-      background:var(--bg-input); padding:15px 16px; border-radius:var(--radius-xs);
-      border-left:3px solid var(--accent);
-    }
-    .result-value.root-cause { border-left-color:var(--danger); }
-    .result-value.analysis { border-left-color:var(--accent); }
-
-    .confidence-display { display:flex; align-items:center; gap:16px; }
-    .confidence-ring {
-      position:relative; width:72px; height:72px; flex-shrink:0;
-    }
-    .confidence-ring svg { transform:rotate(-90deg); }
-    .confidence-ring .bg { fill:none; stroke:var(--border); stroke-width:6; }
-    .confidence-ring .fill { fill:none; stroke:var(--accent); stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset 0.8s ease; }
-    .confidence-num {
-      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-      font-size:1.25rem; font-weight:700; color:var(--accent);
+    @media (max-width: 1080px) {
+      .diag-grid { grid-template-columns: 1fr; }
     }
 
-    .step-list { list-style:none; }
-    .step-list li {
-      padding:10px 0 10px 26px; position:relative; border-bottom:1px solid var(--border-light);
-      font-size:13.5px; color:var(--text-secondary);
+    .diag-panel { }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-light);
     }
-    .step-list li:last-child { border-bottom:none; padding-bottom:0; }
-    .step-list li::before {
-      content:''; position:absolute; left:2px; top:16px;
-      width:7px; height:7px; border-radius:50%;
-      background:var(--accent); opacity:0.7;
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-primary);
     }
-    .step-list li:first-child::before { background:var(--danger); opacity:1; }
+    .panel-title svg { width: 13px; height: 13px; color: var(--brand); stroke-width: 2; }
+    .panel-body { padding: 14px; }
+    .panel-body.compact { padding: 0; }
 
-    .meta-row {
-      display:flex; flex-wrap:wrap; gap:10px; padding-top:16px;
-      border-top:1px solid var(--border); font-size:11.5px; color:var(--text-muted);
-      align-items:center;
-    }
-    .meta-pill {
-      padding:4px 12px; border-radius:20px; font-weight:600; font-size:11px;
-      letter-spacing:0.2px;
-    }
-    .meta-pill { /* rag/direct via style attribute in JS, no dedicated classes */ }
-
-    .empty-state { text-align:center; padding:64px 24px; }
-    .empty-state svg { opacity:0.12; margin-bottom:16px; }
-    .empty-text { color:var(--text-muted); font-size:13.5px; }
-    .empty-hint { color:var(--text-muted); font-size:11.5px; margin-top:6px; opacity:0.7; }
-
-    /* ===== Loading ===== */
-    .loading-overlay { display:none; text-align:center; padding:64px 24px; }
-    .loading-overlay.active { display:block; }
-    .pulse-ring {
-      width:44px; height:44px; border-radius:50%; margin:0 auto 18px;
-      background:var(--accent-soft); display:flex; align-items:center;
-      justify-content:center; animation:pulse 1.8s ease infinite;
-    }
-    .pulse-ring .inner {
-      width:16px; height:16px; border-radius:50%; background:var(--accent);
-    }
-    @keyframes pulse {
-      0% { transform:scale(0.9); opacity:0.6; }
-      50% { transform:scale(1.15); opacity:1; }
-      100% { transform:scale(0.9); opacity:0.6; }
-    }
-    .loading-text { color:var(--text-muted); font-size:13px; }
-    .loading-sub { font-size:11px; color:var(--text-muted); margin-top:5px; opacity:0.7; }
+    .tool-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+    .tool-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .tool-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
     /* ===== Example Tags ===== */
-    .example-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+    .example-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px; }
     .example-tag {
-      padding:5px 12px; background:var(--bg-input); border:1px solid var(--border);
-      border-radius:var(--radius-xs); font-size:11.5px; color:var(--text-secondary);
-      cursor:pointer; transition:all var(--transition); font-family: var(--font), system-ui, -apple-system, sans-serif;
+      padding: 3.5px 8px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition);
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
     }
-    .example-tag:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+    .example-tag:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
+    .example-tag svg { width: 11px; height: 11px; stroke-width: 2; }
 
-    /* ===== Chat Interface ===== */
-    .chat-container {
-      display:flex; flex-direction:column;
-      height:calc(100vh - 200px); min-height:480px;
-      background:var(--bg-card); border:1px solid var(--border);
-      border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+    /* ===== Diagnosis Result Blocks ===== */
+    .result-block { margin-bottom: 12px; }
+    .result-block:last-child { margin-bottom: 0; }
+    .result-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--text-muted);
     }
-    .chat-messages { flex:1; overflow-y:auto; padding:24px; }
-    .chat-welcome {
-      display:flex; flex-direction:column; align-items:center;
-      justify-content:center; height:100%; text-align:center;
-    }
-    .chat-welcome-icon { font-size:42px; margin-bottom:14px; opacity:0.8; }
-    .chat-welcome-title { font-size:1.15rem; font-weight:600; margin-bottom:8px; }
-    .chat-welcome-desc { font-size:12.5px; color:var(--text-muted); max-width:380px; line-height:1.7; margin-bottom:20px; }
+    .result-label svg { width: 12px; height: 12px; stroke-width: 2; }
+    .result-label.danger { color: var(--danger); }
+    .result-label.info { color: var(--brand); }
+    .result-label.success { color: var(--success); }
 
-    .chat-message { display:flex; gap:12px; margin-bottom:20px; animation:msgIn 0.3s ease; }
-    @keyframes msgIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-    .chat-message.user { flex-direction:row-reverse; }
-    .chat-avatar {
-      width:34px; height:34px; border-radius:50%; flex-shrink:0;
-      display:flex; align-items:center; justify-content:center; font-size:17px;
+    .result-value {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+      padding: 10px 12px;
+      border-radius: var(--radius-xs);
+      border: 1px solid var(--border-light);
+      border-left: 3px solid var(--border-dark);
+      white-space: pre-wrap;
+      word-break: break-word;
     }
-    .chat-message.user .chat-avatar { background:var(--accent-soft); }
-    .chat-message.assistant .chat-avatar { background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; }
-
-    .chat-bubble {
-      max-width:75%; padding:15px 18px; border-radius:var(--radius-sm);
-      font-size:13.5px; line-height:1.7;
+    .result-value.root-cause {
+      border-left-color: var(--danger);
+      background: #fdf6f6;
+      border-color: #f5e0e0;
     }
-    .chat-message.user .chat-bubble {
-      background:var(--accent-soft); border:1px solid rgba(79,140,255,0.2);
-    }
-    .chat-message.user .chat-bubble pre {
-      white-space:pre-wrap; font-family:var(--font-mono); font-size:12px;
-      line-height:1.6; color:var(--text-secondary);
-    }
-    .chat-message.assistant .chat-bubble {
-      background:var(--bg-elevated); border:1px solid var(--border);
-      flex:1; max-width:82%;
+    .result-value.analysis {
+      border-left-color: var(--brand);
+      background: #f5f9fe;
+      border-color: #dde7f6;
     }
 
-    .chat-diag-card .learned-badge {
-      display:inline-flex; align-items:center; gap:5px;
-      padding:4px 12px; border-radius:20px; font-size:11.5px; font-weight:600;
-      background:var(--success-soft); color:var(--success); margin-bottom:14px;
+    /* ===== Confidence Bar ===== */
+    .confidence-display {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-elevated);
+      padding: 10px 12px;
+      border-radius: var(--radius-xs);
+      border: 1px solid var(--border-light);
     }
-    .chat-diag-card .result-block { margin-bottom:14px; }
-    .chat-diag-card .result-block:last-child { margin-bottom:0; }
-    .chat-diag-card .result-value { font-size:13px; padding:12px 14px; }
-    .chat-diag-card .confidence-display { gap:12px; }
-    .chat-diag-card .confidence-ring { width:52px; height:52px; }
-    .chat-diag-card .confidence-num { font-size:0.95rem; }
-    .chat-diag-card .meta-row { padding-top:12px; margin-top:4px; }
-    .chat-diag-card .step-list li { font-size:13px; padding:8px 0 8px 24px; }
+    .confidence-bar-wrap { flex: 1; min-width: 0; }
+    .confidence-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+    .confidence-num {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.2px;
+    }
+    .confidence-note { font-size: 11px; color: var(--text-muted); }
+    .confidence-bar {
+      height: 6px;
+      background: var(--border-light);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .confidence-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+    .confidence-fill.high { background: var(--success); }
+    .confidence-fill.medium { background: var(--warning); }
+    .confidence-fill.low { background: var(--danger); }
 
-    .chat-input-area { border-top:1px solid var(--border); padding:14px 18px; background:var(--bg-primary); }
-    .chat-settings { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
-    .chat-settings .strategy-group { margin:0; }
-    .chat-settings .strategy-btn { padding:6px 14px; font-size:11.5px; }
-    .chat-settings .rag-toggle { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-secondary); }
+    .step-list {
+      list-style: none;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-xs);
+      border-left: 3px solid var(--success);
+      padding: 4px 12px;
+      border: 1px solid var(--border-light);
+      border-left-color: var(--success);
+    }
+    .step-list li {
+      padding: 7px 0 7px 20px;
+      position: relative;
+      border-bottom: 1px dashed var(--border-light);
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+    .step-list li:last-child { border-bottom: none; padding-bottom: 3px; }
+    .step-list li::before {
+      content: '';
+      position: absolute;
+      left: 2px;
+      top: 12px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--success);
+      opacity: 0.12;
+    }
+    .step-list li::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 15px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+    }
 
-    .chat-input-row { display:flex; gap:10px; align-items:flex-end; }
-    .chat-input {
-      flex:1; padding:12px 16px; background:var(--bg-input);
-      border:1px solid var(--border); border-radius:var(--radius-sm);
-      color:var(--text-primary); font-size:13px; font-family:var(--font-mono), monospace;
-      line-height:1.6; resize:none; max-height:180px; outline:none; transition:all var(--transition);
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px 9px;
+      padding-top: 10px;
+      margin-top: 4px;
+      border-top: 1px solid var(--border-light);
+      font-size: 11px;
+      color: var(--text-muted);
+      align-items: center;
     }
-    .chat-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
-    .chat-send-btn { padding:12px 24px; border-radius:var(--radius-sm); height:46px; }
+    .meta-pill {
+      padding: 2px 8px;
+      border-radius: 2px;
+      font-weight: 600;
+      font-size: 10.5px;
+      letter-spacing: 0.1px;
+      border: 1px solid transparent;
+    }
+    .meta-pill.rag { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-border); }
+    .meta-pill.direct { background: #fbf1df; color: var(--warning); border-color: var(--warning-border); }
+    .meta-dot { color: var(--text-faint); }
 
-    .chat-typing { display:flex; gap:4px; padding:6px 0; }
-    .chat-typing span {
-      width:7px; height:7px; border-radius:50%; background:var(--text-muted);
-      animation:typingDot 1.4s infinite;
+    .learned-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 2px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #e8f5ee;
+      color: var(--success);
+      margin-bottom: 10px;
+      border: 1px solid var(--success-border);
     }
-    .chat-typing span:nth-child(2) { animation-delay:0.2s; }
-    .chat-typing span:nth-child(3) { animation-delay:0.4s; }
-    @keyframes typingDot {
-      0%,60%,100% { opacity:0.3; transform:scale(0.8); }
-      30% { opacity:1; transform:scale(1.2); }
+    .learned-badge svg { width: 11px; height: 11px; stroke-width: 2.2; }
+
+    .feedback-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      margin-top: 5px;
+      border-top: 1px solid var(--border-light);
     }
+    .feedback-text { font-size: 11.5px; color: var(--text-muted); }
+
+    /* ===== Empty / Loading ===== */
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .empty-state .empty-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      color: var(--text-faint);
+    }
+    .empty-state .empty-icon svg { width: 22px; height: 22px; stroke-width: 1.5; }
+    .empty-text { color: var(--text-secondary); font-size: 12.5px; margin-bottom: 3px; font-weight: 500; }
+    .empty-hint { color: var(--text-muted); font-size: 11.5px; }
+
+    .loading-state {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border-light);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: var(--text-secondary); font-size: 12.5px; font-weight: 500; }
+    .loading-sub { color: var(--text-muted); font-size: 11px; margin-top: 3px; }
 
     /* ===== Tables ===== */
-    .table-wrap { overflow-x:auto; border-radius:var(--radius-xs); }
-    table { width:100%; border-collapse:collapse; font-size:13px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
     thead th {
-      text-align:left; padding:11px 14px; background:var(--bg-input);
-      color:var(--text-muted); font-weight:600; font-size:11px;
-      text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid var(--border);
-      white-space:nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      text-align: left;
+      padding: 8px 10px;
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      border-bottom: 1px solid var(--border);
+      border-top: 1px solid var(--border-light);
+      white-space: nowrap;
     }
-    thead th:first-child { border-radius:var(--radius-xs) 0 0 0; }
-    thead th:last-child { border-radius:0 var(--radius-xs) 0 0; }
-    tbody td { padding:11px 14px; border-bottom:1px solid var(--border-light); color:var(--text-secondary); }
-    tbody tr { transition:background 0.15s ease; }
-    tbody tr:hover { background:rgba(255,255,255,0.02); }
-    /* tbody tr.clickable { cursor:pointer; }  -- unused, removed to silence linter */
+    tbody td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+    tbody tr { transition: background 0.1s ease; cursor: default; }
+    tbody tr:nth-child(even) { background: #fcfcfd; }
+    tbody tr:hover { background: var(--bg-selected) !important; }
+    tbody tr.clickable { cursor: pointer; }
+    .tbl-loading {
+      text-align: center !important;
+      padding: 36px 10px !important;
+      color: var(--text-muted) !important;
+    }
+    .tbl-empty {
+      text-align: center !important;
+      padding: 36px 10px !important;
+      color: var(--text-muted) !important;
+      font-size: 12px;
+    }
 
     .badge {
-      display:inline-flex; align-items:center; gap:4px; padding:3px 10px;
-      border-radius:20px; font-size:11.5px; font-weight:500; white-space:nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 2px;
+      font-size: 10.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      line-height: 1.4;
+      border: 1px solid transparent;
     }
-    .badge-blue { background:var(--accent-soft); color:var(--accent); }
-    .badge-green { background:var(--success-soft); color:var(--success); }
-    .badge-red { background:var(--danger-soft); color:var(--danger); }
-    .badge-amber { background:var(--warning-soft); color:var(--warning); }
-    .badge-gray { background:var(--bg-elevated); color:var(--text-muted); }
+    .badge-blue { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-border); }
+    .badge-green { background: #e8f5ee; color: var(--success); border-color: var(--success-border); }
+    .badge-red { background: #fdf2f2; color: var(--danger); border-color: var(--danger-border); }
+    .badge-amber { background: #fbf1df; color: var(--warning); border-color: var(--warning-border); }
+    .badge-gray { background: var(--bg-elevated); color: var(--text-secondary); border-color: var(--border); }
 
     /* ===== Pagination ===== */
-    .pagination { display:flex; align-items:center; justify-content:center; gap:4px; margin-top:18px; }
-    .page-btn {
-      padding:7px 13px; border:1px solid var(--border); border-radius:var(--radius-xs);
-      background:var(--bg-input); color:var(--text-secondary); font-size:12px;
-      cursor:pointer; transition:all var(--transition); font-family: var(--font), system-ui, -apple-system, sans-serif;
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--border-light);
+      flex-wrap: wrap;
     }
-    .page-btn:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
-    .page-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
-    .page-btn:disabled { opacity:0.35; cursor:not-allowed; }
-    .page-info { font-size:12px; color:var(--text-muted); padding:0 12px; }
+    .page-btn {
+      padding: 5px 10px;
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius-xs);
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all var(--transition);
+      font-family: inherit;
+    }
+    .page-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
+    .page-btn.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .page-info { font-size: 12px; color: var(--text-muted); padding: 0 12px; }
+
+    /* ===== Search Bar ===== */
+    .search-bar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .search-input {
+      flex: 1;
+      min-width: 180px;
+      padding: 6px 10px 6px 30px;
+      background: var(--bg-input) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='8'/><path d='m21 21-4.35-4.35'/></svg>") no-repeat 10px center;
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius-xs);
+      color: var(--text-primary);
+      font-size: 12px;
+      outline: none;
+      font-family: inherit;
+      transition: all var(--transition);
+    }
+    .search-input:hover { border-color: #aeb4bd; }
+    .search-input:focus { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(26,105,224,0.10); }
+    .search-input::placeholder { color: var(--text-faint); }
+
+    /* ===== Stats Grid ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 1080px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 540px) {
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      position: relative;
+      transition: box-shadow var(--transition), border-color var(--transition);
+    }
+    .stat-card:hover { box-shadow: var(--shadow); border-color: #d0d4da; }
+    .stat-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .stat-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+    }
+    .stat-icon svg { width: 14px; height: 14px; stroke-width: 2; }
+    .stat-icon.blue { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-border); }
+    .stat-icon.green { background: #e8f5ee; color: var(--success); border-color: var(--success-border); }
+    .stat-icon.amber { background: #fbf1df; color: var(--warning); border-color: var(--warning-border); }
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.6px;
+      line-height: 1.1;
+      margin-bottom: 3px;
+    }
+    .stat-value.accent { color: var(--brand); }
+    .stat-value.success { color: var(--success); }
+    .stat-value.warning { color: var(--warning); }
+    .stat-value.muted { color: var(--text-secondary); }
+    .stat-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 1.5px 7px;
+      border-radius: 2px;
+      margin-top: 3px;
+      border: 1px solid transparent;
+    }
+    .stat-meta.up { background: #e8f5ee; color: var(--success); border-color: var(--success-border); }
+    .stat-meta.info { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-border); }
+    .stat-meta.subtle { background: var(--bg-elevated); color: var(--text-muted); border-color: var(--border); }
+
+    /* ===== Experiment Findings ===== */
+    .findings-list {
+      padding: 2px 0;
+    }
+    .finding-item {
+      display: flex;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .finding-item:last-child { border-bottom: none; }
+    .finding-check {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      border: 1px solid transparent;
+    }
+    .finding-check svg { width: 11px; height: 11px; stroke-width: 3; }
+    .finding-check.green { background: #e8f5ee; color: var(--success); border-color: var(--success-border); }
+    .finding-check.blue { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-border); }
+    .finding-check.amber { background: #fbf1df; color: var(--warning); border-color: var(--warning-border); }
+    .finding-text { font-size: 13px; line-height: 1.65; color: var(--text-secondary); }
+    .finding-text strong { color: var(--text-primary); font-weight: 600; }
+
+    /* ===== Detail Row ===== */
+    .detail-row { background: var(--bg-elevated) !important; }
+    .detail-row td { padding: 12px 14px !important; }
+    .detail-content { font-size: 12.5px; line-height: 1.65; color: var(--text-secondary); }
+    .detail-content strong { color: var(--text-primary); font-weight: 600; }
+    .detail-content p { margin-bottom: 7px; }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .detail-item .key {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 600;
+    }
+    .detail-item .val { font-size: 12.5px; color: var(--text-primary); margin-top: 2px; }
+    .detail-content pre {
+      background: var(--bg-primary);
+      padding: 10px 12px;
+      border-radius: var(--radius-xs);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      font-size: 11.5px;
+      margin: 7px 0;
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
 
     /* ===== Modal ===== */
     .modal-overlay {
-      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7);
-      backdrop-filter:blur(4px); z-index:100; align-items:center; justify-content:center;
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.12s ease;
     }
-    .modal-overlay.active { display:flex; animation:fadeIn 0.2s ease; }
+    .modal-overlay.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .modal {
-      background:var(--bg-card); border:1px solid var(--border);
-      border-radius:var(--radius); padding:30px; max-width:660px; width:92%;
-      max-height:85vh; overflow-y:auto; box-shadow:var(--shadow-lg);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      max-width: 640px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      animation: modalIn 0.15s ease;
     }
-    .modal h3 { font-size:1.05rem; font-weight:600; margin-bottom:22px; display:flex; align-items:center; gap:8px; }
-    .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:22px; }
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .modal-title {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .modal-title svg { width: 15px; height: 15px; color: var(--brand); stroke-width: 2; }
+    .modal-close {
+      padding: 4px;
+      background: transparent;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all var(--transition);
+    }
+    .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .modal-close svg { width: 17px; height: 17px; stroke-width: 2; }
+    .modal-actions {
+      display: flex;
+      gap: 7px;
+      justify-content: flex-end;
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-light);
+    }
 
     /* ===== Toast ===== */
-    .toast-container { position:fixed; top:24px; right:24px; z-index:200; display:flex; flex-direction:column; gap:8px; }
+    .toast-container {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      max-width: 340px;
+    }
     .toast {
-      padding:13px 20px; border-radius:var(--radius-xs); font-size:13px; font-weight:500;
-      color:#fff; animation:toastIn 0.3s cubic-bezier(0.4,0,0.2,1);
-      box-shadow:var(--shadow-lg); display:flex; align-items:center; gap:8px;
-      max-width:380px;
+      padding: 9px 12px;
+      border-radius: var(--radius-xs);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--brand);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      animation: toastIn 0.15s ease;
     }
-    .toast-success { background:linear-gradient(135deg, #059669, #10b981); }
-    .toast-error { background:linear-gradient(135deg, #b91c1c, #ef4444); }
-    @keyframes toastIn { from { opacity:0; transform:translateX(50px) scale(0.95); } to { opacity:1; transform:translateX(0) scale(1); } }
+    .toast svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; stroke-width: 2.2; }
+    .toast-success { border-left-color: var(--success); }
+    .toast-success svg { color: var(--success); }
+    .toast-error { border-left-color: var(--danger); }
+    .toast-error svg { color: var(--danger); }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .toast-text { flex: 1; }
 
-    /* ===== Stats Cards ===== */
-    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:22px; }
-    .stat-card {
-      background:var(--bg-card); border:1px solid var(--border);
-      border-radius:var(--radius); padding:24px; position:relative;
-      overflow:hidden; box-shadow:var(--shadow);
+    /* ===== Diagnostic Output Card (inside result panel) ===== */
+    .result-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-light);
+      border-radius: var(--radius-xs) var(--radius-xs) 0 0;
     }
-    .stat-card::after {
-      content:''; position:absolute; top:0; right:0; width:80px; height:80px;
-      border-radius:0 0 0 80px; opacity:0.04;
+    .result-header-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
     }
-    .stat-card.accent::after { background:var(--accent); }
-    .stat-card.success::after { background:var(--success); }
-    .stat-card.warning::after { background:var(--warning); }
-    .stat-icon { font-size:26px; margin-bottom:10px; }
-    .stat-value { font-size:2.4rem; font-weight:800; letter-spacing:-1.5px; line-height:1; }
-    .stat-value.accent { color:var(--accent); }
-    .stat-value.success { color:var(--success); }
-    .stat-value.warning { color:var(--warning); }
-    .stat-value.muted { color:var(--text-muted); }
-    .stat-label { font-size:12px; color:var(--text-muted); margin-top:6px; font-weight:500; }
-    .stat-delta {
-      display:inline-flex; align-items:center; gap:3px; font-size:12px;
-      font-weight:600; margin-top:8px; padding:2px 8px; border-radius:20px;
-    }
-    .stat-delta.up { background:var(--success-soft); color:var(--success); }
-    .stat-delta.info { background:var(--accent-soft); color:var(--accent); }
-
-    /* ===== Expandable Row Detail ===== */
-    .detail-row { background:var(--bg-input) !important; }
-    .detail-row td { padding:18px 22px !important; }
-    .detail-content { font-size:13px; line-height:1.8; color:var(--text-secondary); }
-    .detail-content strong { color:var(--text-primary); }
-    .detail-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; margin-bottom:12px; }
-    .detail-item { }
-    .detail-item .key { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; }
-    .detail-item .val { font-size:13px; color:var(--text-primary); margin-top:2px; }
-    .detail-content pre {
-      background:var(--bg-primary); padding:14px; border-radius:var(--radius-xs);
-      overflow-x:auto; white-space:pre-wrap; font-size:12px; margin:8px 0;
-      border:1px solid var(--border); font-family:var(--font-mono);
-      line-height:1.7; color:var(--text-secondary);
-    }
-
-    /* ===== Search Bar ===== */
-    .search-bar { display:flex; gap:8px; align-items:center; }
-    .search-input {
-      flex:1; padding:8px 14px; background:var(--bg-input); border:1px solid var(--border);
-      border-radius:var(--radius-xs); color:var(--text-primary); font-size:13px;
-      outline:none; font-family:var(--font); min-width:160px;
-    }
-    .search-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+    .result-header-title svg { width: 12px; height: 12px; stroke-width: 2; color: var(--brand); }
+    .result-body-inner { padding: 12px; }
 
     /* ===== Responsive ===== */
-    @media (max-width:768px) {
-      .app { padding:0 14px 32px; }
-      .header { flex-direction:column; gap:12px; align-items:flex-start; }
-      .tabs { flex-wrap:wrap; }
-      .tab-btn { flex:1 1 45%; font-size:12px; padding:9px 14px; }
-      .stats-grid { grid-template-columns:1fr 1fr; }
-      .diag-grid { grid-template-columns:1fr; }
-      .card { padding:18px; }
-      .modal { padding:20px; }
-      .search-bar { flex-wrap:wrap; width:100% !important; }
-      .header-badge { display:none; }
+    @media (max-width: 900px) {
+      .sidebar { width: 58px; }
+      .sidebar-brand-text,
+      .nav-item span:not(.nav-icon-wrap),
+      .nav-section-title,
+      .sidebar-footer .env { display: none; }
+      .sidebar-brand { justify-content: center; padding: 14px 0; }
+      .nav-item { justify-content: center; padding: 9px; }
+      .sidebar-footer { justify-content: center; padding: 10px; }
+    }
+    @media (max-width: 640px) {
+      .content-wrap { padding: 14px; }
+      .topbar { padding: 0 14px; }
+      .form-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 <div class="app">
-  <!-- Header -->
-  <header class="header">
-    <div class="header-brand">
-      <div class="header-logo">LA</div>
-      <div class="header-text">
+  <!-- ============ Left Sidebar ============ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">LA</div>
+      <div class="sidebar-brand-text">
         <h1>LogAnalyzer</h1>
-        <div class="subtitle">基于 LLM+RAG 的智能运维日志诊断引擎</div>
+        <div class="subtitle">运维日志根因分析</div>
       </div>
     </div>
-    <span class="header-badge">v1.0</span>
-  </header>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">工作台</div>
+      <button class="nav-item active" data-tab="diagnosis">
+        <i data-lucide="search-code"></i>
+        <span>日志诊断</span>
+      </button>
+      <div class="nav-section-title">资源管理</div>
+      <button class="nav-item" data-tab="knowledge">
+        <i data-lucide="book-dashed"></i>
+        <span>知识库</span>
+      </button>
+      <button class="nav-item" data-tab="history">
+        <i data-lucide="history"></i>
+        <span>诊断记录</span>
+      </button>
+      <div class="nav-section-title">分析评估</div>
+      <button class="nav-item" data-tab="experiment">
+        <i data-lucide="bar-chart-3"></i>
+        <span>实验对比</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <span class="ver-badge">v1.0</span>
+      <span class="env">DEV</span>
+    </div>
+  </aside>
 
-  <!-- Tab Navigation -->
-  <nav class="tabs">
-    <button class="tab-btn active" data-tab="diagnosis">
-      <span class="tab-icon">🔍</span> 智能诊断
-    </button>
-    <button class="tab-btn" data-tab="knowledge">
-      <span class="tab-icon">📚</span> 知识库
-    </button>
-    <button class="tab-btn" data-tab="history">
-      <span class="tab-icon">📋</span> 诊断历史
-    </button>
-    <button class="tab-btn" data-tab="experiment">
-      <span class="tab-icon">📊</span> 实验数据
-    </button>
-  </nav>
+  <!-- ============ Main ============ -->
+  <div class="main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="breadcrumb">
+        <span>工作台</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current" id="crumbCurrent">日志诊断</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="topbar-btn" onclick="location.reload()" title="刷新页面">
+          <i data-lucide="refresh-cw"></i>
+          <span>刷新</span>
+        </button>
+        <div class="user-chip">
+          <div class="avatar">AD</div>
+          <span class="user-name">Admin</span>
+        </div>
+      </div>
+    </header>
 
-  <!-- ==================== TAB 1: 对话诊断 ==================== -->
-  <div class="tab-content active" id="tab-diagnosis">
-    <div class="chat-container">
-      <!-- Message List -->
-      <div class="chat-messages" id="chatMessages">
-        <div class="chat-welcome" id="chatWelcome">
-          <div class="chat-welcome-icon">💬</div>
-          <div class="chat-welcome-title">智能运维日志诊断助手</div>
-          <div class="chat-welcome-desc">粘贴运维日志，自动分析故障根因并提供修复方案。遇到未知故障会自动学习并存入知识库，下次再遇到可直接检索命中。</div>
-          <div class="example-tags" style="justify-content:center;">
-            <button class="example-tag" data-example="oom">⚡ OutOfMemoryError</button>
-            <button class="example-tag" data-example="connection">🔌 Connection Refused</button>
-            <button class="example-tag" data-example="null">🐛 NullPointerException</button>
-            <button class="example-tag" data-example="timeout">⏱ Read Timeout</button>
-            <button class="example-tag" data-example="disk">💾 Disk Full</button>
+    <!-- Content -->
+    <main class="content-wrap">
+      <!-- ==================== TAB 1: 诊断工作台 ==================== -->
+      <div class="tab-content active" id="tab-diagnosis">
+        <div class="page-header">
+          <div class="page-title-row">
+            <i data-lucide="search-code"></i>
+            <h2 class="page-title">日志诊断</h2>
+          </div>
+          <p class="page-desc">输入运维错误日志，系统将自动完成预处理、知识检索并生成根因结论与修复建议</p>
+        </div>
+
+        <div class="diag-grid">
+          <!-- LEFT: Input Panel -->
+          <div class="card diag-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <i data-lucide="file-text"></i>
+                <span>日志输入</span>
+              </div>
+              <button class="btn btn-sm btn-secondary" onclick="document.getElementById('logInput').value='';document.getElementById('logInput').focus();">
+                <i data-lucide="eraser"></i> 清空
+              </button>
+            </div>
+            <div class="panel-body">
+              <div class="example-tags">
+                <button class="example-tag" data-example="oom"><i data-lucide="zap"></i> OOM</button>
+                <button class="example-tag" data-example="connection"><i data-lucide="plug-zap"></i> 连接异常</button>
+                <button class="example-tag" data-example="null"><i data-lucide="bug"></i> NPE</button>
+                <button class="example-tag" data-example="timeout"><i data-lucide="timer-reset"></i> 超时</button>
+                <button class="example-tag" data-example="disk"><i data-lucide="hard-drive"></i> 磁盘满</button>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="logInput">错误日志内容<span class="req">*</span></label>
+                <textarea id="logInput" class="form-textarea" placeholder="粘贴或输入需要诊断的日志内容，建议包含完整的堆栈信息或上下文。&#10;&#10;示例：&#10;java.lang.OutOfMemoryError: Java heap space&#10;    at com.example.DataProcessor.process(DataProcessor.java:42)"></textarea>
+              </div>
+
+              <div class="tool-row">
+                <div class="tool-left">
+                  <div class="form-label" style="margin:0;">推理策略</div>
+                  <div class="strategy-group" role="tablist">
+                    <button class="strategy-btn active" data-strategy="ZERO_SHOT">Zero-Shot</button>
+                    <button class="strategy-btn" data-strategy="FEW_SHOT">Few-Shot</button>
+                    <button class="strategy-btn" data-strategy="COT">CoT</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="toggle-row">
+                <div class="toggle-label">
+                  <i data-lucide="database-zap"></i>
+                  <span>启用 RAG 检索增强（知识关联）</span>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="ragMode" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <div style="margin-top:3px;">
+                <button id="analyzeBtn" class="btn btn-primary btn-lg" style="width:100%; justify-content:center;">
+                  <i data-lucide="sparkles"></i>
+                  开始诊断
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Output Panel -->
+          <div class="card diag-panel" style="min-height: 560px;">
+            <div class="panel-header">
+              <div class="panel-title">
+                <i data-lucide="scan-search"></i>
+                <span>诊断结果</span>
+              </div>
+              <span id="resultHint" class="badge badge-gray">等待输入</span>
+            </div>
+
+            <div id="resultEmpty" class="panel-body">
+              <div class="empty-state">
+                <div class="empty-icon"><i data-lucide="clipboard-list"></i></div>
+                <div class="empty-text">尚未进行诊断</div>
+                <div class="empty-hint">在左侧粘贴日志，选择策略后点击「开始诊断」</div>
+              </div>
+            </div>
+
+            <div id="resultLoading" class="panel-body" style="display:none;">
+              <div class="loading-state">
+                <div class="spinner"></div>
+                <div class="loading-text">正在分析日志并生成诊断结论…</div>
+                <div class="loading-sub">预处理 → 知识检索 → 推理生成，通常 3-8 秒</div>
+              </div>
+            </div>
+
+            <div id="resultContent" class="panel-body compact" style="display:none;"></div>
           </div>
         </div>
       </div>
 
-      <!-- Input Area -->
-      <div class="chat-input-area">
-        <div class="chat-settings">
-          <div class="strategy-group">
-            <button class="strategy-btn active" data-strategy="ZERO_SHOT">Zero-Shot</button>
-            <button class="strategy-btn" data-strategy="FEW_SHOT">Few-Shot</button>
-            <button class="strategy-btn" data-strategy="COT">CoT</button>
+      <!-- ==================== TAB 2: 知识库 ==================== -->
+      <div class="tab-content" id="tab-knowledge">
+        <div class="page-header">
+          <div class="page-title-row">
+            <i data-lucide="book-dashed"></i>
+            <h2 class="page-title">知识库</h2>
           </div>
-          <label class="rag-toggle">
-            <span>🔗 RAG</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="ragMode" checked>
-              <span class="toggle-slider"></span>
-            </label>
-          </label>
+          <p class="page-desc">管理 RAG 检索使用的运维故障决策知识，支持新增、编辑、搜索与删除</p>
         </div>
-        <div class="chat-input-row">
-          <textarea id="chatInput" class="chat-input" placeholder="粘贴运维日志... (Ctrl+Enter 发送)" rows="1"></textarea>
-          <button id="chatSendBtn" class="btn btn-primary chat-send-btn">发送</button>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-row">
+              <div class="card-icon blue"><i data-lucide="library"></i></div>
+              <div>
+                <div class="card-title">知识条目列表</div>
+                <div class="card-subtitle">共 <span id="kbCount">0</span> 条运维决策知识</div>
+              </div>
+            </div>
+            <div class="search-bar">
+              <input type="text" id="kbSearch" class="search-input" placeholder="搜索标题、内容、关键词...">
+              <button id="kbSearchBtn" class="btn btn-sm btn-secondary">搜索</button>
+              <button id="kbAddBtn" class="btn btn-sm btn-primary">
+                <i data-lucide="plus"></i> 新增条目
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:60px;">ID</th>
+                  <th>故障标题</th>
+                  <th style="width:100px;">分类</th>
+                  <th style="width:220px;">关键词</th>
+                  <th style="width:140px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="kbTableBody">
+                <tr><td colspan="5" class="tbl-loading"><div class="spinner" style="width:20px;height:20px;display:inline-block;vertical-align:middle;margin-right:7px;"></div>加载中…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination" id="kbPagination"></div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- ==================== TAB 2: 知识库管理 ==================== -->
-  <div class="tab-content" id="tab-knowledge">
-    <div class="card accent-top">
-      <div class="card-header">
-        <div>
-          <div class="card-title-row">
-            <div class="card-icon blue">📚</div>
-            <div>
-              <div class="card-title">知识库条目</div>
-              <div class="card-subtitle">管理 RAG 检索使用的运维故障决策知识</div>
+      <!-- ==================== TAB 3: 历史记录 ==================== -->
+      <div class="tab-content" id="tab-history">
+        <div class="page-header">
+          <div class="page-title-row">
+            <i data-lucide="history"></i>
+            <h2 class="page-title">诊断记录</h2>
+          </div>
+          <p class="page-desc">回溯所有历史诊断会话及其完整结果，支持展开查看日志与诊断详情</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-row">
+              <div class="card-icon green"><i data-lucide="clipboard-list"></i></div>
+              <div>
+                <div class="card-title">历史诊断列表</div>
+                <div class="card-subtitle">共 <span id="historyCount">0</span> 条会话记录</div>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-secondary" onclick="loadHistory()">
+              <i data-lucide="refresh-cw"></i> 刷新列表
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:60px;">ID</th>
+                  <th style="width:155px;">诊断时间</th>
+                  <th>日志摘要</th>
+                  <th style="width:210px;">根因结论</th>
+                  <th style="width:100px;">策略</th>
+                  <th style="width:68px;">Token</th>
+                  <th style="width:68px;">耗时</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <tr><td colspan="7" class="tbl-loading"><div class="spinner" style="width:20px;height:20px;display:inline-block;vertical-align:middle;margin-right:7px;"></div>加载中…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination" id="historyPagination"></div>
+        </div>
+      </div>
+
+      <!-- ==================== TAB 4: 实验评估 ==================== -->
+      <div class="tab-content" id="tab-experiment">
+        <div class="page-header">
+          <div class="page-title-row">
+            <i data-lucide="bar-chart-3"></i>
+            <h2 class="page-title">实验评估</h2>
+          </div>
+          <p class="page-desc">在标注测试用例下运行不同策略与模式的对比实验，实时查看诊断准确率</p>
+        </div>
+
+        <!-- 实验配置面板 -->
+        <div class="card" id="expConfigCard">
+          <div class="card-header">
+            <div class="card-title-row">
+              <div class="card-icon blue"><i data-lucide="settings-2"></i></div>
+              <div>
+                <div class="card-title">实验配置</div>
+                <div class="card-subtitle">选择推理策略、诊断模式与测试范围后启动实验</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-section">
+            <div class="form-row" style="margin-bottom:12px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">推理策略</label>
+                <div class="strategy-group" role="tablist" id="expStrategyGroup">
+                  <button class="strategy-btn active" data-exp-strategy="ALL">全部策略</button>
+                  <button class="strategy-btn" data-exp-strategy="ZERO_SHOT">Zero-Shot</button>
+                  <button class="strategy-btn" data-exp-strategy="FEW_SHOT">Few-Shot</button>
+                  <button class="strategy-btn" data-exp-strategy="COT">CoT</button>
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">诊断模式</label>
+                <div class="strategy-group" role="tablist" id="expModeGroup">
+                  <button class="strategy-btn active" data-exp-mode="rag">RAG 增强</button>
+                  <button class="strategy-btn" data-exp-mode="direct">Direct LLM</button>
+                  <button class="strategy-btn" data-exp-mode="both">两者对比</button>
+                </div>
+              </div>
+            </div>
+            <div class="form-row" style="margin-bottom:12px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="expLimit">测试用例数（0 = 全部 25 个）</label>
+                <input type="number" id="expLimit" class="form-input" value="0" min="0" max="25" placeholder="0">
+              </div>
+              <div class="form-group" style="margin-bottom:0;display:flex;align-items:flex-end;">
+                <button id="expRunBtn" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;">
+                  <i data-lucide="play"></i> 开始实验
+                </button>
+              </div>
+            </div>
+            <div style="font-size:11.5px;color:var(--text-muted);">提示：全部策略 × 25 用例 = 75 次诊断调用，预计 5-10 分钟。建议先用 3-5 个用例快速验证。</div>
+          </div>
+        </div>
+
+        <!-- 实验进度 -->
+        <div class="card" id="expProgressCard" style="display:none;">
+          <div class="card-section">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div style="display:flex;align-items:center;gap:7px;">
+                <div class="spinner" style="width:18px;height:18px;border-width:2px;"></div>
+                <span style="font-size:13px;font-weight:600;color:var(--text-primary);">实验运行中</span>
+              </div>
+              <span id="expProgressText" style="font-size:12px;color:var(--text-muted);">0 / 0</span>
+            </div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" id="expProgressBar" style="width:0%;background:var(--brand);"></div>
+            </div>
+            <div id="expProgressLog" style="margin-top:8px;max-height:120px;overflow-y:auto;font-family:var(--font-mono);font-size:11.5px;line-height:1.7;color:var(--text-secondary);background:var(--bg-elevated);padding:8px 10px;border-radius:var(--radius-xs);border:1px solid var(--border-light);"></div>
+          </div>
+        </div>
+
+        <!-- 实验结果：统计卡片 -->
+        <div class="stats-grid" id="expStatsGrid" style="display:none;">
+          <div class="stat-card">
+            <div class="stat-head">
+              <div class="stat-label">总准确率</div>
+              <div class="stat-icon blue"><i data-lucide="target"></i></div>
+            </div>
+            <div class="stat-value accent" id="expStatAccuracy">-</div>
+            <span class="stat-meta info" id="expStatCorrect">- / -</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-head">
+              <div class="stat-label">平均置信度</div>
+              <div class="stat-icon green"><i data-lucide="activity"></i></div>
+            </div>
+            <div class="stat-value success" id="expStatConfidence">-</div>
+            <span class="stat-meta subtle" id="expStatTokens">Token avg: -</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-head">
+              <div class="stat-label">平均耗时</div>
+              <div class="stat-icon amber"><i data-lucide="timer"></i></div>
+            </div>
+            <div class="stat-value warning" id="expStatLatency">-</div>
+            <span class="stat-meta subtle" id="expStatTotalTests">- 次测试</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-head">
+              <div class="stat-label">知识命中</div>
+              <div class="stat-icon blue"><i data-lucide="database-zap"></i></div>
+            </div>
+            <div class="stat-value accent" id="expStatKnowledge">-</div>
+            <span class="stat-meta info" id="expStatMode">-</span>
+          </div>
+        </div>
+
+        <!-- 实验结果：策略对比表 -->
+        <div class="card" id="expStrategyCard" style="display:none;">
+          <div class="card-header">
+            <div class="card-title-row">
+              <div class="card-icon blue"><i data-lucide="layout-template"></i></div>
+              <div>
+                <div class="card-title">策略维度对比</div>
+                <div class="card-subtitle" id="expStrategySubtitle">不同 Prompt 策略下的准确率</div>
+              </div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>分析策略</th>
+                  <th>准确率</th>
+                  <th>正确/总数</th>
+                  <th>平均置信度</th>
+                  <th>平均耗时</th>
+                </tr>
+              </thead>
+              <tbody id="expStrategyTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 实验结果：逐条详情 -->
+        <div class="card" id="expDetailCard" style="display:none;">
+          <div class="card-header">
+            <div class="card-title-row">
+              <div class="card-icon green"><i data-lucide="list-checks"></i></div>
+              <div>
+                <div class="card-title">逐条诊断结果</div>
+                <div class="card-subtitle" id="expDetailSubtitle">每个测试用例的诊断详情与正误判定</div>
+              </div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:48px;"></th>
+                  <th style="width:72px;">用例ID</th>
+                  <th style="width:80px;">分类</th>
+                  <th style="width:88px;">策略</th>
+                  <th style="width:60px;">模式</th>
+                  <th>预测根因</th>
+                  <th style="width:70px;">置信度</th>
+                  <th style="width:64px;">耗时</th>
+                </tr>
+              </thead>
+              <tbody id="expDetailTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 历史参考：预设实验结论 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-row">
+              <div class="card-icon amber"><i data-lucide="lightbulb"></i></div>
+              <div>
+                <div class="card-title">历史实验结论（参考）</div>
+                <div class="card-subtitle">基于此前 25 用例全量对比实验的 4 条关键结论</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-section">
+            <div class="findings-list">
+              <div class="finding-item">
+                <div class="finding-check green"><i data-lucide="check"></i></div>
+                <div class="finding-text"><strong>RAG 在所有策略下均显著优于 Direct LLM</strong>，平均提升 +25.3 个百分点，证明检索增强在运维领域具有明确价值。</div>
+              </div>
+              <div class="finding-item">
+                <div class="finding-check blue"><i data-lucide="star"></i></div>
+                <div class="finding-text"><strong>CoT + RAG 是最优组合</strong>，准确率达 96.0%（25 题仅错 1 题），推理链与领域知识的协同效应显著。</div>
+              </div>
+              <div class="finding-item">
+                <div class="finding-check blue"><i data-lucide="star"></i></div>
+                <div class="finding-text"><strong>混合检索器</strong>（FULLTEXT + symptoms LIKE）使知识命中率从 24% 提升至 100%，是 RAG 生效的关键基础设施。</div>
+              </div>
+              <div class="finding-item">
+                <div class="finding-check amber"><i data-lucide="arrow-right"></i></div>
+                <div class="finding-text"><strong>下一步优化方向</strong>：引入向量检索实现语义匹配，扩充知识库覆盖更多故障场景，增加多语言日志支持。</div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="search-bar" style="width:55%;">
-          <input type="text" id="kbSearch" class="search-input" placeholder="搜索标题、内容、关键词...">
-          <button id="kbSearchBtn" class="btn btn-secondary btn-sm">搜索</button>
-          <button id="kbAddBtn" class="btn btn-primary btn-sm">＋ 新增条目</button>
-        </div>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:50px;">ID</th>
-              <th>故障标题</th>
-              <th style="width:100px;">分类</th>
-              <th style="width:220px;">关键词</th>
-              <th style="width:120px;">操作</th>
-            </tr>
-          </thead>
-          <tbody id="kbTableBody">
-            <tr><td colspan="5" style="text-align:center;padding:48px;color:var(--text-muted);"><div class="pulse-ring" style="width:28px;height:28px;margin-bottom:12px;"><div class="inner" style="width:10px;height:10px;"></div></div>加载中...</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination" id="kbPagination"></div>
-    </div>
-  </div>
-
-  <!-- ==================== TAB 3: 诊断历史 ==================== -->
-  <div class="tab-content" id="tab-history">
-    <div class="card accent-top">
-      <div class="card-header">
-        <div>
-          <div class="card-title-row">
-            <div class="card-icon green">📋</div>
-            <div>
-              <div class="card-title">诊断记录</div>
-              <div class="card-subtitle">所有历史诊断会话及其结果回溯</div>
-            </div>
-          </div>
-        </div>
-        <button class="btn btn-secondary btn-sm" onclick="loadHistory()">刷新列表</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:55px;">ID</th>
-              <th style="width:145px;">诊断时间</th>
-              <th>日志摘要</th>
-              <th style="width:200px;">根因结论</th>
-              <th style="width:100px;">策略</th>
-              <th style="width:65px;">Token</th>
-              <th style="width:65px;">耗时</th>
-            </tr>
-          </thead>
-          <tbody id="historyTableBody">
-            <tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text-muted);"><div class="pulse-ring" style="width:28px;height:28px;margin-bottom:12px;"><div class="inner" style="width:10px;height:10px;"></div></div>加载中...</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination" id="historyPagination"></div>
-    </div>
-  </div>
-
-  <!-- ==================== TAB 4: 实验数据 ==================== -->
-  <div class="tab-content" id="tab-experiment">
-    <div class="stats-grid">
-      <div class="stat-card accent">
-        <div class="stat-icon">🎯</div>
-        <div class="stat-value accent">89.3%</div>
-        <div class="stat-label">RAG 增强准确率</div>
-        <div class="stat-delta up">↑ 最优策略</div>
-      </div>
-      <div class="stat-card warning">
-        <div class="stat-icon">📡</div>
-        <div class="stat-value muted">64.0%</div>
-        <div class="stat-label">Direct LLM 准确率</div>
-      </div>
-      <div class="stat-card success">
-        <div class="stat-icon">🚀</div>
-        <div class="stat-value success">+25.3%</div>
-        <div class="stat-label">RAG 提升幅度</div>
-        <div class="stat-delta up">25 个测试用例</div>
-      </div>
-      <div class="stat-card accent">
-        <div class="stat-icon">🔍</div>
-        <div class="stat-value success">100%</div>
-        <div class="stat-label">知识命中率</div>
-        <div class="stat-delta info">75 / 75 条检索命中</div>
-      </div>
-    </div>
-
-    <div class="card accent-top">
-      <div class="card-header">
-        <div>
-          <div class="card-title-row">
-            <div class="card-icon blue">📈</div>
-            <div class="card-title">策略维度对比</div>
-          </div>
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>分析策略</th><th>RAG 增强</th><th>Direct LLM</th><th>RAG 优势</th></tr>
-          </thead>
-          <tbody>
-            <tr><td><strong>Zero-Shot</strong></td><td><span class="badge badge-green">92.0%</span></td><td><span class="badge badge-gray">68.0%</span></td><td><strong style="color:var(--success);">+24.0%</strong></td></tr>
-            <tr><td><strong>Few-Shot</strong></td><td><span class="badge badge-green">80.0%</span></td><td><span class="badge badge-gray">52.0%</span></td><td><strong style="color:var(--success);">+28.0%</strong></td></tr>
-            <tr><td><strong>Chain-of-Thought</strong></td><td><span class="badge badge-green">96.0%</span></td><td><span class="badge badge-gray">72.0%</span></td><td><strong style="color:var(--success);">+24.0%</strong></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card accent-top">
-      <div class="card-header">
-        <div>
-          <div class="card-title-row">
-            <div class="card-icon green">💡</div>
-            <div class="card-title">实验结论</div>
-          </div>
-        </div>
-      </div>
-      <div style="font-size:13.5px;line-height:2.1;color:var(--text-secondary);">
-        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
-          <span style="color:var(--success);font-weight:700;flex-shrink:0;">✓</span>
-          <span><strong style="color:var(--text-primary);">RAG 在所有策略下均显著优于 Direct LLM</strong>，平均提升 +25.3 个百分点，证明检索增强在运维领域具有明确价值。</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
-          <span style="color:var(--accent);font-weight:700;flex-shrink:0;">★</span>
-          <span><strong style="color:var(--text-primary);">CoT + RAG 是最优组合</strong>，准确率达 96.0%（25 题仅错 1 题），推理链与领域知识的协同效应显著。</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
-          <span style="color:var(--accent);font-weight:700;flex-shrink:0;">★</span>
-          <span><strong style="color:var(--text-primary);">混合检索器</strong>（FULLTEXT + symptoms LIKE）使知识命中率从 24% 飙升至 100%，是 RAG 生效的关键基础设施。</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:10px;">
-          <span style="color:var(--warning);font-weight:700;flex-shrink:0;">→</span>
-          <span><strong style="color:var(--text-primary);">下一步优化方向</strong>：引入向量检索实现语义匹配，扩充知识库覆盖更多故障场景，增加多语言日志支持。</span>
-        </div>
-      </div>
-    </div>
+    </main>
   </div>
 </div>
 
 <!-- Knowledge Modal -->
 <div class="modal-overlay" id="kbModalOverlay">
   <div class="modal">
-    <h3 id="kbModalTitle">📝 新增知识条目</h3>
+    <div class="modal-header">
+      <div class="modal-title" id="kbModalTitle">
+        <i data-lucide="file-pen-line"></i>
+        <span>新增知识条目</span>
+      </div>
+      <button class="modal-close" onclick="closeKbModal()" title="关闭">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
     <div class="form-group">
-      <label class="form-label">故障标题 *</label>
+      <label class="form-label" for="kbFormTitle">故障标题<span class="req">*</span></label>
       <input type="text" id="kbFormTitle" class="form-input" placeholder="例如：AKS 集群升级后 etcd 租约残留导致 API Server 异常">
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="form-row">
       <div class="form-group">
-        <label class="form-label">故障分类</label>
+        <label class="form-label" for="kbFormCategory">故障分类</label>
         <input type="text" id="kbFormCategory" class="form-input" placeholder="例如：容器编排">
       </div>
       <div class="form-group">
-        <label class="form-label">关键词（逗号分隔）</label>
+        <label class="form-label" for="kbFormKeywords">关键词（逗号分隔）</label>
         <input type="text" id="kbFormKeywords" class="form-input" placeholder="例如：Kubernetes, AKS, etcd">
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">症状特征 Symptoms（逗号分隔）</label>
+      <label class="form-label" for="kbFormSymptoms">症状特征 Symptoms（逗号分隔）</label>
       <input type="text" id="kbFormSymptoms" class="form-input" placeholder="例如：etcd, orphaned, lease, apiserver, timeout">
     </div>
     <div class="form-group">
-      <label class="form-label">知识内容 *</label>
-      <textarea id="kbFormContent" class="form-textarea" rows="6" placeholder="【根因】描述故障发生的根本原因&#10;【触发条件】列出相关的日志特征关键词&#10;【修复步骤】1) ... 2) ... 3) ..."></textarea>
+      <label class="form-label" for="kbFormContent">知识内容<span class="req">*</span></label>
+      <textarea id="kbFormContent" class="form-textarea" rows="7" placeholder="【根因】描述故障发生的根本原因&#10;【触发条件】列出相关的日志特征关键词&#10;【修复步骤】1) ... 2) ... 3) ..."></textarea>
     </div>
     <input type="hidden" id="kbFormId">
+
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeKbModal()">取消</button>
-      <button class="btn btn-primary" id="kbFormSubmit">保存条目</button>
+      <button class="btn btn-primary" id="kbFormSubmit">
+        <i data-lucide="save"></i> 保存条目
+      </button>
     </div>
   </div>
 </div>
@@ -798,377 +1615,758 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-// ========== Toast ==========
-function showToast(msg, type) {
-  const t = document.createElement('div');
-  t.className = 'toast toast-' + (type || 'success');
-  t.innerHTML = (type === 'error' ? '⚠ ' : '✓ ') + msg;
-  document.getElementById('toastContainer').appendChild(t);
-  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.35s'; }, 2800);
-  setTimeout(() => t.remove(), 3200);
-}
+(function() {
+  'use strict';
 
-// ========== Tab Navigation ==========
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-    if (btn.dataset.tab === 'knowledge') loadKnowledgeBase();
-    if (btn.dataset.tab === 'history') loadHistory();
-  });
-});
-
-// ========== TAB 1: Chat Diagnosis ==========
-const examples = {
-  oom: `2024-01-15 10:23:45 ERROR [main] com.example.App - Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
-2024-01-15 10:23:45 ERROR [main] com.example.App -     at com.example.DataProcessor.process(DataProcessor.java:42)
-2024-01-15 10:23:46 INFO  [main] com.example.App - JVM Memory: max=2048M, used=2046M, free=2M`,
-  connection: `2024-01-15 14:32:10 ERROR [nio-8080-exec-1] c.e.c.UserController - Failed to fetch user data
-java.net.ConnectException: Connection refused: connect
-Caused by: com.mysql.jdbc.exceptions.jdbc4.CommunicationsException: Communications link failure`,
-  null: `2024-01-15 09:15:22 ERROR [http-nio-8080-exec-3] c.e.s.OrderService - Order processing failed for orderId: 12345
-java.lang.NullPointerException: Cannot invoke "com.example.entity.User.getAddress()" because "user" is null
-    at com.example.service.OrderService.processOrder(OrderService.java:156)`,
-  timeout: `2024-01-15 16:45:30 WARN  [scheduling-1] o.s.c.r.s.SimpleRetryPolicy - Retry failed for operation: getRemoteData
-java.net.SocketTimeoutException: Read timed out
-    at com.example.client.RemoteServiceClient.fetchData(RemoteServiceClient.java:78)`,
-  disk: `2024-01-15 03:22:15 ERROR [FileWriter-1] o.a.k.s.FileWriter - Failed to write record to log file
-java.io.IOException: No space left on device
-2024-01-15 03:22:16 CRIT [monitor] system.monitor - Filesystem /data usage: 99.8%`
-};
-
-let currentStrategy = 'ZERO_SHOT';
-let currentSessionId = '';
-
-document.querySelectorAll('.strategy-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.strategy-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentStrategy = btn.dataset.strategy;
-  });
-});
-
-document.querySelectorAll('.example-tag').forEach(tag => {
-  tag.addEventListener('click', () => {
-    const type = tag.dataset.example;
-    if (examples[type]) {
-      const input = document.getElementById('chatInput');
-      input.value = examples[type];
-      autoResize(input);
-      input.focus();
+  /* ========= Lucide Icons Init ========= */
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.lucide && typeof lucide.createIcons === 'function') {
+      lucide.createIcons();
     }
+    initTabs();
+    initExamples();
+    initStrategyButtons();
+    initAnalyzeBtn();
+    initKnowledge();
+    initHistory();
+    initKbModal();
+    initExperiment();
   });
-});
 
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 180) + 'px';
-}
-
-function appendMessage(role, html) {
-  const container = document.getElementById('chatMessages');
-  const welcome = document.getElementById('chatWelcome');
-  if (welcome) welcome.style.display = 'none';
-
-  const msg = document.createElement('div');
-  msg.className = 'chat-message ' + role;
-
-  if (role === 'user') {
-    msg.innerHTML = '<div class="chat-avatar">👤</div><div class="chat-bubble"><pre></pre></div>';
-    msg.querySelector('pre').textContent = html;
-  } else if (role === 'typing') {
-    msg.innerHTML = '<div class="chat-avatar">🤖</div><div class="chat-bubble"><div class="chat-typing"><span></span><span></span><span></span></div></div>';
-    msg.id = 'typingIndicator';
-  } else {
-    msg.innerHTML = '<div class="chat-avatar">🤖</div><div class="chat-bubble">' + html + '</div>';
-  }
-
-  container.appendChild(msg);
-  container.scrollTop = container.scrollHeight;
-}
-
-function buildDiagnosisCard(d, m) {
-  const conf = Math.round((d.confidence || 0) * 100);
-  const r = 22, circ = 2 * Math.PI * r;
-  const offset = circ - (conf / 100) * circ;
-
-  let badge = '';
-  if (m.auto_learned) {
-    badge = '<div class="learned-badge">🧠 已自动学习并存入知识库 (ID: #' + m.learned_knowledge_id + ')</div>';
-  }
-
-  const steps = (d.solution_steps || ['未生成修复步骤']).map(s => '<li>' + escHtml(s) + '</li>').join('');
-  const modePill = m.mode === 'RAG'
-    ? '<span class="meta-pill" style="background:var(--accent-soft);color:var(--accent);">RAG 增强</span>'
-    : '<span class="meta-pill" style="background:var(--warning-soft);color:var(--warning);">Direct LLM</span>';
-
-  return '<div class="chat-diag-card">'
-    + badge
-    + '<div class="result-block"><div class="result-label"><span class="dot red"></span> 根本原因</div>'
-    + '<div class="result-value root-cause">' + escHtml(d.root_cause || '(未识别出明确根因)') + '</div></div>'
-    + '<div class="result-block"><div class="result-label"><span class="dot blue"></span> 置信度</div>'
-    + '<div class="confidence-display"><div class="confidence-ring">'
-    + '<svg viewBox="0 0 52 52" style="transform:rotate(-90deg);">'
-    + '<circle cx="26" cy="26" r="' + r + '" fill="none" stroke="var(--border)" stroke-width="5"/>'
-    + '<circle cx="26" cy="26" r="' + r + '" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/>'
-    + '</svg><span class="confidence-num">' + conf + '%</span></div>'
-    + '<span style="font-size:11.5px;color:var(--text-muted);">综合置信度评分</span></div></div>'
-    + '<div class="result-block"><div class="result-label"><span class="dot blue"></span> 分析过程</div>'
-    + '<div class="result-value analysis">' + escHtml(d.analysis_process || '(无)') + '</div></div>'
-    + '<div class="result-block"><div class="result-label"><span class="dot green"></span> 修复步骤</div>'
-    + '<ul class="step-list result-value">' + steps + '</ul></div>'
-    + '<div class="meta-row">' + modePill
-    + '<span>策略: ' + escHtml(m.prompt_strategy) + '</span><span>·</span>'
-    + '<span>延迟: ' + m.latency_ms + 'ms</span><span>·</span>'
-    + '<span>知识: ' + (m.knowledge_used || 0) + ' 条</span></div>'
-    + '<div class="btn-group" style="margin-top:12px;">'
-    + '<button class="btn btn-sm" style="background:var(--success-soft);color:var(--success);" onclick="sendFeedbackChat(\'' + m.session_id + '\',1,this)">✓ 诊断正确</button>'
-    + '<button class="btn btn-sm" style="background:var(--danger-soft);color:var(--danger);" onclick="sendFeedbackChat(\'' + m.session_id + '\',0,this)">✗ 诊断有误</button>'
-    + '</div></div>';
-}
-
-async function sendMessage() {
-  const input = document.getElementById('chatInput');
-  const content = input.value.trim();
-  if (content.length < 10) { showToast('日志内容过短，请输入至少 10 个字符', 'error'); return; }
-
-  appendMessage('user', content);
-  input.value = '';
-  autoResize(input);
-
-  const sendBtn = document.getElementById('chatSendBtn');
-  sendBtn.disabled = true;
-  sendBtn.textContent = '分析中...';
-
-  appendMessage('typing', '');
-
-  try {
-    const useRAG = document.getElementById('ragMode').checked;
-    const resp = await fetch('/api/diagnose', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, strategy: currentStrategy, use_rag: useRAG })
-    });
-    const data = await resp.json();
-
-    const typing = document.getElementById('typingIndicator');
-    if (typing) typing.remove();
-
-    if (!resp.ok) throw new Error(data.error || 'API 调用失败');
-
-    currentSessionId = data.metadata.session_id;
-    appendMessage('assistant', buildDiagnosisCard(data.diagnosis, data.metadata));
-  } catch (err) {
-    const typing = document.getElementById('typingIndicator');
-    if (typing) typing.remove();
-    appendMessage('assistant', '<div style="color:var(--danger);font-size:13px;">⚠ 诊断失败: ' + escHtml(err.message) + '</div>');
-  } finally {
-    sendBtn.disabled = false;
-    sendBtn.textContent = '发送';
-  }
-}
-
-async function sendFeedbackChat(sessionId, value, btn) {
-  try {
-    await fetch('/api/feedback', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_id: sessionId, feedback: value })
-    });
-    btn.style.opacity = '0.5';
-    btn.style.pointerEvents = 'none';
-    showToast(value ? '感谢反馈，已记录为「正确」' : '反馈已记录');
-  } catch (err) { showToast('反馈提交失败', 'error'); }
-}
-
-document.getElementById('chatSendBtn').addEventListener('click', sendMessage);
-document.getElementById('chatInput').addEventListener('input', function() { autoResize(this); });
-document.getElementById('chatInput').addEventListener('keydown', e => {
-  if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); sendMessage(); }
-});
-
-// ========== TAB 2: Knowledge Base ==========
-let kbPage = 1, kbTotal = 0;
-const kbPageSize = 15;
-
-async function loadKnowledgeBase(page) {
-  kbPage = page || kbPage;
-  const kw = document.getElementById('kbSearch').value.trim();
-  try {
-    const resp = await fetch(`/api/knowledge?page=${kbPage}&page_size=${kbPageSize}&search=${encodeURIComponent(kw)}`);
-    const data = await resp.json();
-    kbTotal = data.total;
-    const tbody = document.getElementById('kbTableBody');
-    if (!data.items || data.items.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:48px;color:var(--text-muted);">暂无知识条目，点击「新增条目」添加</td></tr>';
-    } else {
-      tbody.innerHTML = data.items.map(item => `
-        <tr class="clickable" onclick="toggleKbDetail(${item.id})">
-          <td style="color:var(--text-muted);font-size:12px;">#${item.id}</td>
-          <td><strong style="color:var(--text-primary);">${escHtml(item.title)}</strong></td>
-          <td><span class="badge badge-blue">${escHtml(item.category || '未分类')}</span></td>
-          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(item.keywords || '—')}</td>
-          <td>
-            <div class="btn-group">
-              <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();editKnowledge(${item.id})">编辑</button>
-              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteKnowledge(${item.id})">删除</button>
-            </div>
-          </td>
-        </tr>
-        <tr class="detail-row" id="kbDetail${item.id}" style="display:none;">
-          <td colspan="5">
-            <div class="detail-content">
-              <div class="detail-grid">
-                <div class="detail-item"><div class="key">标题</div><div class="val">${escHtml(item.title)}</div></div>
-                <div class="detail-item"><div class="key">分类</div><div class="val"><span class="badge badge-blue">${escHtml(item.category || '未分类')}</span></div></div>
-                <div class="detail-item"><div class="key">关键词</div><div class="val">${escHtml(item.keywords || '—')}</div></div>
-                <div class="detail-item"><div class="key">Symptoms</div><div class="val">${escHtml(item.symptoms || '—')}</div></div>
-              </div>
-              <p><strong>知识内容：</strong></p>
-              <pre>${escHtml(item.content || '')}</pre>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
-    renderKbPagination();
-  } catch(err) { showToast('加载知识库失败，请检查服务状态', 'error'); }
-}
-
-function renderKbPagination() {
-  const totalPages = Math.ceil(kbTotal / kbPageSize);
-  const p = document.getElementById('kbPagination');
-  let html = `<button class="page-btn" onclick="loadKnowledgeBase(${kbPage-1})" ${kbPage<=1?'disabled':''}>‹ 上一页</button>`;
-  html += `<span class="page-info">第 ${kbPage} / ${totalPages || 1} 页，共 ${kbTotal} 条</span>`;
-  html += `<button class="page-btn" onclick="loadKnowledgeBase(${kbPage+1})" ${kbPage>=totalPages?'disabled':''}>下一页 ›</button>`;
-  p.innerHTML = html;
-}
-
-function toggleKbDetail(id) {
-  const detail = document.getElementById('kbDetail' + id);
-  detail.style.display = detail.style.display === 'none' ? '' : 'none';
-}
-
-function openKbModal(title, data) {
-  document.getElementById('kbModalTitle').innerHTML = (data ? '✏️ 编辑知识条目' : '📝 新增知识条目');
-  document.getElementById('kbFormId').value = data ? data.id : '';
-  document.getElementById('kbFormTitle').value = data ? data.title : '';
-  document.getElementById('kbFormCategory').value = data ? (data.category || '') : '';
-  document.getElementById('kbFormKeywords').value = data ? (data.keywords || '') : '';
-  document.getElementById('kbFormSymptoms').value = data ? (data.symptoms || '') : '';
-  document.getElementById('kbFormContent').value = data ? (data.content || '') : '';
-  document.getElementById('kbFormSubmit').textContent = data ? '保存修改' : '创建条目';
-  document.getElementById('kbModalOverlay').classList.add('active');
-}
-
-function closeKbModal() {
-  document.getElementById('kbModalOverlay').classList.remove('active');
-}
-
-async function editKnowledge(id) {
-  try {
-    const resp = await fetch('/api/knowledge/' + id);
-    if (!resp.ok) throw new Error('加载失败');
-    const data = await resp.json();
-    openKbModal('编辑知识条目', data);
-  } catch(err) { showToast('加载条目详情失败', 'error'); }
-}
-
-async function deleteKnowledge(id) {
-  if (!confirm('确认删除该知识条目？\n\n此操作不可撤销，删除后该知识将不再参与 RAG 检索。')) return;
-  try {
-    const resp = await fetch('/api/knowledge/' + id, { method:'DELETE' });
-    if (resp.ok) { showToast('条目已删除'); loadKnowledgeBase(); }
-    else { const e = await resp.json(); showToast(e.error || '删除失败', 'error'); }
-  } catch(err) { showToast('删除操作失败', 'error'); }
-}
-
-document.getElementById('kbAddBtn').addEventListener('click', () => openKbModal('新增知识条目', null));
-document.getElementById('kbSearchBtn').addEventListener('click', () => loadKnowledgeBase(1));
-document.getElementById('kbSearch').addEventListener('keydown', e => { if (e.key === 'Enter') loadKnowledgeBase(1); });
-
-document.getElementById('kbFormSubmit').addEventListener('click', async () => {
-  const id = document.getElementById('kbFormId').value;
-  const body = {
-    title: document.getElementById('kbFormTitle').value.trim(),
-    category: document.getElementById('kbFormCategory').value.trim(),
-    keywords: document.getElementById('kbFormKeywords').value.trim(),
-    symptoms: document.getElementById('kbFormSymptoms').value.trim(),
-    content: document.getElementById('kbFormContent').value.trim()
+  /* ========= Tab Navigation ========= */
+  var tabNames = {
+    diagnosis: '日志诊断',
+    knowledge: '知识库',
+    history: '诊断记录',
+    experiment: '实验对比'
   };
-  if (!body.title || !body.content) { showToast('标题和内容不能为空', 'error'); return; }
-  try {
-    const url = id ? '/api/knowledge/' + id : '/api/knowledge';
-    const method = id ? 'PUT' : 'POST';
-    const resp = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-    if (resp.ok) { showToast(id ? '条目已更新' : '条目已创建'); closeKbModal(); loadKnowledgeBase(); }
-    else { const e = await resp.json(); showToast(e.error || '操作失败', 'error'); }
-  } catch(err) { showToast('操作失败，请检查网络连接', 'error'); }
-});
 
-document.getElementById('kbModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeKbModal(); });
+  function initTabs() {
+    var navItems = document.querySelectorAll('.nav-item[data-tab]');
+    navItems.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var tabId = btn.getAttribute('data-tab');
+        navItems.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(function(tc) { tc.classList.remove('active'); });
+        var tc = document.getElementById('tab-' + tabId);
+        if (tc) tc.classList.add('active');
+        var cc = document.getElementById('crumbCurrent');
+        if (cc && tabNames[tabId]) cc.textContent = tabNames[tabId];
+        if (tabId === 'knowledge' && !window.__kbLoaded) loadKnowledge(1, '');
+        if (tabId === 'history' && !window.__histLoaded) loadHistory(1);
+        if (window.lucide) window.lucide.createIcons();
+      });
+    });
+  }
 
-// ========== TAB 3: History ==========
-let historyPage = 1, historyTotal = 0;
-const historyPageSize = 15;
+  /* ========= Example Logs ========= */
+  var exampleLogs = {
+    oom: "2025-09-17 14:54:22 ERROR [haproxy] out of memory: Kill process 1293 (vector) score 980 or sacrifice child\n2025-09-17 14:54:22 KERNEL: vector invoked oom-killer: gfp_mask=0x201da, order=0, oom_score_adj=0\n2025-09-17 14:54:23 systemd-journald[343]: Under memory pressure, flushing caches.",
+    connection: "2026-04-09 00:15:00 WARN  [kube-apiserver] /readyz probe failed: etcd timeout.\n2026-04-09 00:15:05 ERROR [kube-apiserver] List leases failed: context deadline exceeded.\n2026-04-09 00:15:10 CRITICAL: KubeAPIErrorBudgetBurn alert firing.",
+    null: "Exception in thread \"main\" java.lang.NullPointerException: Cannot invoke \"com.example.User.getEmail()\" because \"user\" is null\n    at com.example.Service.process(Service.java:87)\n    at com.example.Controller.handle(Controller.java:42)\n    at com.example.Main.entry(Main.java:15)",
+    timeout: "2026-02-09 07:12:00 UTC WARN  [Trello] Upstream server temporarily unavailable.\n2026-02-09 07:12:15 ERROR [Trello] 502 Bad Gateway: Cannot connect to backend service.\n2026-02-09 07:12:30 ERROR [Gateway] Read timeout from upstream after 30000ms.",
+    disk: "2026-01-26 04:02:00 ERROR [NTFS] Event ID 55: Corruption discovered on volume C:.\n2026-01-26 04:02:01 WARN  [NTFS] $I30:$INDEX_ALLOCATION corruption in directory \\Windows\\System32\\SMI\\Store\\Machine.\n2026-01-26 04:02:02 CRITICAL: No space left on device (ENOSPC)."
+  };
 
-async function loadHistory(page) {
-  historyPage = page || historyPage;
-  try {
-    const resp = await fetch(`/api/history?page=${historyPage}&page_size=${historyPageSize}`);
-    const data = await resp.json();
-    historyTotal = data.total;
-    const tbody = document.getElementById('historyTableBody');
-    if (!data.items || data.items.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text-muted);">暂无诊断记录，前往「智能诊断」进行首次分析</td></tr>';
+  function initExamples() {
+    document.querySelectorAll('.example-tag[data-example]').forEach(function(tag) {
+      tag.addEventListener('click', function() {
+        var key = tag.getAttribute('data-example');
+        if (exampleLogs[key]) {
+          document.getElementById('logInput').value = exampleLogs[key];
+          document.getElementById('logInput').focus();
+          showToast('已加载 ' + key.toUpperCase() + ' 示例日志', 'success');
+        }
+      });
+    });
+  }
+
+  /* ========= Strategy Buttons ========= */
+  var currentStrategy = 'ZERO_SHOT';
+  function initStrategyButtons() {
+    document.querySelectorAll('.strategy-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.strategy-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentStrategy = btn.getAttribute('data-strategy');
+      });
+    });
+  }
+
+  /* ========= Analyze Button ========= */
+  function initAnalyzeBtn() {
+    var btn = document.getElementById('analyzeBtn');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      var content = document.getElementById('logInput').value.trim();
+      if (!content) {
+        showToast('请输入需要诊断的日志内容', 'error');
+        document.getElementById('logInput').focus();
+        return;
+      }
+      runDiagnose(content);
+    });
+  }
+
+  function runDiagnose(content) {
+    var useRAG = document.getElementById('ragMode').checked;
+    setLoading(true);
+    setResultHint('诊断中…', 'badge-amber');
+
+    fetch('/api/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: content, strategy: currentStrategy, use_rag: useRAG })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(resp) {
+      setLoading(false);
+      if (resp.error) {
+        setResultHint('失败', 'badge-red');
+        showToast('诊断失败: ' + resp.error, 'error');
+        renderError(resp.error);
+        return;
+      }
+      setResultHint('已完成', 'badge-green');
+      renderResult(resp.diagnosis, resp.metadata);
+    })
+    .catch(function(err) {
+      setLoading(false);
+      setResultHint('请求异常', 'badge-red');
+      showToast('请求失败: ' + err.message, 'error');
+      renderError('网络请求失败或服务未响应：' + err.message);
+    });
+  }
+
+  function setLoading(isLoading) {
+    var empty = document.getElementById('resultEmpty');
+    var loading = document.getElementById('resultLoading');
+    var content = document.getElementById('resultContent');
+    var btn = document.getElementById('analyzeBtn');
+    if (isLoading) {
+      empty.style.display = 'none';
+      loading.style.display = '';
+      content.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" style="animation:spin 0.7s linear infinite;"></i> 诊断中…';
     } else {
-      tbody.innerHTML = data.items.map(item => `
-        <tr class="clickable" onclick="toggleHistoryDetail(${item.id})">
-          <td style="color:var(--text-muted);font-size:12px;">#${item.id}</td>
-          <td style="white-space:nowrap;font-size:12px;">${formatTime(item.created_at)}</td>
-          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(item.log_snippet || '—')}</td>
-          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml((item.diagnosis_result || {}).root_cause || '—')}</td>
-          <td><span class="badge badge-blue">${escHtml(item.prompt_strategy)}</span></td>
-          <td>${item.total_tokens || '—'}</td>
-          <td>${item.latency_ms ? item.latency_ms + 'ms' : '—'}</td>
-        </tr>
-        <tr class="detail-row" id="histDetail${item.id}" style="display:none;">
-          <td colspan="7">
-            <div class="detail-content">
-              <div class="detail-grid">
-                <div class="detail-item"><div class="key">会话 ID</div><div class="val">${escHtml(item.session_id)}</div></div>
-                <div class="detail-item"><div class="key">模型</div><div class="val">${escHtml(item.model_used || '—')}</div></div>
-                <div class="detail-item"><div class="key">Token 用量</div><div class="val">${item.total_tokens || '—'}</div></div>
-                <div class="detail-item"><div class="key">延迟</div><div class="val">${item.latency_ms ? item.latency_ms + 'ms' : '—'}</div></div>
-              </div>
-              <p><strong>根因结论：</strong>${escHtml((item.diagnosis_result || {}).root_cause || '—')}</p>
-              <p><strong>分析过程：</strong>${escHtml((item.diagnosis_result || {}).analysis_process || '—')}</p>
-              <p><strong>原始日志：</strong></p>
-              <pre>${escHtml(item.log_snippet || '—')}</pre>
-            </div>
-          </td>
-        </tr>
-      `).join('');
+      loading.style.display = 'none';
+      content.style.display = '';
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="sparkles"></i> 开始诊断';
     }
-    const totalPages = Math.ceil(historyTotal / historyPageSize);
-    const p = document.getElementById('historyPagination');
-    p.innerHTML = `
-      <button class="page-btn" onclick="loadHistory(${historyPage-1})" ${historyPage<=1?'disabled':''}>‹ 上一页</button>
-      <span class="page-info">第 ${historyPage} / ${totalPages || 1} 页，共 ${historyTotal} 条</span>
-      <button class="page-btn" onclick="loadHistory(${historyPage+1})" ${historyPage>=totalPages?'disabled':''}>下一页 ›</button>`;
-  } catch(err) { showToast('加载历史记录失败', 'error'); }
-}
+    if (window.lucide) window.lucide.createIcons();
+  }
 
-function toggleHistoryDetail(id) {
-  const detail = document.getElementById('histDetail' + id);
-  detail.style.display = detail.style.display === 'none' ? '' : 'none';
-}
+  function setResultHint(text, cls) {
+    var el = document.getElementById('resultHint');
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'badge ' + (cls || 'badge-gray');
+  }
 
-// ========== Helpers ==========
-function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-function formatTime(t) { if (!t) return ''; const d = new Date(t); return d.toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+  function renderResult(diag, meta) {
+    var container = document.getElementById('resultContent');
+    var confPct = Math.round((diag.confidence || 0) * 100);
+    var confCls = confPct >= 80 ? 'high' : (confPct >= 50 ? 'medium' : 'low');
 
-// ========== Init ==========
+    var html = '';
+    html += '<div class="result-header-bar">';
+    html += '  <div class="result-header-title"><i data-lucide="file-check-2"></i><span>诊断报告</span></div>';
+    html += '  <span class="badge badge-blue" style="font-size:10.5px;">' + (meta.model || 'deepseek-chat') + '</span>';
+    html += '</div>';
+    html += '<div class="result-body-inner">';
+
+    if (meta && meta.auto_learned) {
+      html += '<div class="learned-badge"><i data-lucide="sparkles"></i> 自动学习：新故障知识已入库（ID #' + (meta.learned_knowledge_id || '-') + '）</div>';
+    }
+
+    html += '<div class="result-block">';
+    html += '  <div class="confidence-display">';
+    html += '    <div class="confidence-bar-wrap">';
+    html += '      <div class="confidence-head"><div>诊断置信度</div><div class="confidence-num">' + confPct + '%</div></div>';
+    html += '      <div class="confidence-bar"><div class="confidence-fill ' + confCls + '" style="width:' + confPct + '%;"></div></div>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '</div>';
+
+    html += '<div class="result-block">';
+    html += '  <div class="result-label danger"><i data-lucide="alert-triangle"></i> 根因结论 Root Cause</div>';
+    html += '  <div class="result-value root-cause">' + escapeHtml(diag.root_cause || '（未识别）') + '</div>';
+    html += '</div>';
+
+    html += '<div class="result-block">';
+    html += '  <div class="result-label info"><i data-lucide="git-branch"></i> 分析过程 Analysis</div>';
+    html += '  <div class="result-value analysis">' + escapeHtml(diag.analysis_process || '（空）') + '</div>';
+    html += '</div>';
+
+    html += '<div class="result-block">';
+    html += '  <div class="result-label success"><i data-lucide="list-checks"></i> 修复步骤 Solution Steps (' + (diag.solution_steps || []).length + ')</div>';
+    if (diag.solution_steps && diag.solution_steps.length) {
+      html += '  <ol class="step-list">';
+      diag.solution_steps.forEach(function(s) { html += '<li>' + escapeHtml(s) + '</li>'; });
+      html += '  </ol>';
+    } else {
+      html += '  <div class="result-value">（无建议步骤）</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="meta-row">';
+    html += '  <span class="meta-pill ' + ((meta && meta.mode === 'RAG') ? 'rag' : 'direct') + '">' + ((meta && meta.mode === 'RAG') ? 'RAG 增强' : 'Direct LLM') + '</span>';
+    html += '  <span class="meta-dot">·</span><span>策略：' + ((meta && meta.prompt_strategy) ? meta.prompt_strategy.replace('_', '-') : '-') + '</span>';
+    html += '  <span class="meta-dot">·</span><span>耗时：' + ((meta && meta.latency_ms) ? meta.latency_ms : '-') + 'ms</span>';
+    html += '  <span class="meta-dot">·</span><span>Token：' + ((meta && meta.total_tokens != null) ? meta.total_tokens : ((meta && meta.totalTokens != null) ? meta.totalTokens : '-')) + '</span>';
+    if (meta && meta.knowledge_used != null) { html += '<span class="meta-dot">·</span><span>命中知识：' + meta.knowledge_used + ' 条</span>'; }
+    if (meta && meta.key_errors && meta.key_errors.length) {
+      html += '<span class="meta-dot">·</span><span>关键错误：' + meta.key_errors.slice(0,4).join(', ') + (meta.key_errors.length > 4 ? '...' : '') + '</span>';
+    }
+    html += '</div>';
+
+    html += '<div class="feedback-row">';
+    html += '  <span class="feedback-text">诊断结果是否准确？</span>';
+    html += '  <div class="btn-group">';
+    html += '    <button class="btn btn-sm btn-secondary" onclick="submitFeedback(\'' + (meta && meta.session_id ? meta.session_id : '') + '\', 1)"><i data-lucide="thumbs-up"></i> 准确</button>';
+    html += '    <button class="btn btn-sm btn-danger" onclick="submitFeedback(\'' + (meta && meta.session_id ? meta.session_id : '') + '\', -1)"><i data-lucide="thumbs-down"></i> 不准确</button>';
+    html += '  </div>';
+    html += '</div>';
+
+    html += '</div>';
+    container.innerHTML = html;
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  function renderError(msg) {
+    var container = document.getElementById('resultContent');
+    container.innerHTML =
+      '<div class="result-body-inner"><div class="result-block">' +
+      '<div class="result-label danger"><i data-lucide="circle-x"></i> 诊断错误</div>' +
+      '<div class="result-value root-cause">' + escapeHtml(msg) + '</div></div></div>';
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  window.submitFeedback = function(sessionId, fb) {
+    if (!sessionId) { showToast('缺少会话ID，无法提交反馈', 'error'); return; }
+    fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId, feedback: fb })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(resp) {
+      if (resp.error) { showToast('反馈提交失败: ' + resp.error, 'error'); return; }
+      showToast(fb === 1 ? '感谢反馈，结果已标记为准确 ✓' : '感谢反馈，结果已标记为待优化', 'success');
+    })
+    .catch(function(e) { showToast('反馈提交失败', 'error'); });
+  };
+
+  /* ========= Knowledge Base ========= */
+  var kbPage = 1, kbPageSize = 10, kbSearch = '', kbTotal = 0;
+
+  function initKnowledge() {
+    document.getElementById('kbSearchBtn').addEventListener('click', function() {
+      kbSearch = document.getElementById('kbSearch').value.trim();
+      loadKnowledge(1, kbSearch);
+    });
+    document.getElementById('kbSearch').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        kbSearch = document.getElementById('kbSearch').value.trim();
+        loadKnowledge(1, kbSearch);
+      }
+    });
+    document.getElementById('kbAddBtn').addEventListener('click', function() { openKbModal(null); });
+  }
+
+  function loadKnowledge(page, search) {
+    window.__kbLoaded = true;
+    kbPage = page || 1;
+    kbSearch = search || '';
+    var tbody = document.getElementById('kbTableBody');
+    tbody.innerHTML = '<tr><td colspan="5" class="tbl-loading"><div class="spinner" style="width:20px;height:20px;display:inline-block;vertical-align:middle;margin-right:7px;"></div>加载中…</td></tr>';
+
+    fetch('/api/knowledge?page=' + kbPage + '&page_size=' + kbPageSize + (kbSearch ? '&search=' + encodeURIComponent(kbSearch) : ''))
+    .then(function(r) { return r.json(); })
+    .then(function(resp) {
+      if (resp.error) {
+        tbody.innerHTML = '<tr><td colspan="5" class="tbl-empty">加载失败：' + escapeHtml(resp.error) + '</td></tr>';
+        return;
+      }
+      kbTotal = resp.total || 0;
+      document.getElementById('kbCount').textContent = kbTotal;
+      var items = resp.items || [];
+      if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="tbl-empty">暂无知识条目</td></tr>';
+      } else {
+        var html = '';
+        items.forEach(function(it) {
+          html += '<tr class="clickable" onclick="expandKbRow(this, ' + it.id + ')">';
+          html += '<td><strong>#' + it.id + '</strong></td>';
+          html += '<td>' + escapeHtml(it.title || '') + '</td>';
+          html += '<td><span class="badge badge-blue">' + escapeHtml(it.category || '未分类') + '</span></td>';
+          html += '<td style="color:var(--text-muted);">' + escapeHtml((it.keywords || '').substring(0, 40) + ((it.keywords || '').length > 40 ? '…' : '')) + '</td>';
+          html += '<td>';
+          html += '<button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openKbModal(' + it.id + ')" style="margin-right:4px;"><i data-lucide="pencil"></i></button>';
+          html += '<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteKb(' + it.id + ', \'' + escapeAttr(it.title || '') + '\');"><i data-lucide="trash-2"></i></button>';
+          html += '</td></tr>';
+        });
+        tbody.innerHTML = html;
+      }
+      renderPagination('kbPagination', kbPage, kbPageSize, kbTotal, function(p) { loadKnowledge(p, kbSearch); });
+      if (window.lucide) window.lucide.createIcons();
+    })
+    .catch(function(e) {
+      tbody.innerHTML = '<tr><td colspan="5" class="tbl-empty">请求失败：' + escapeHtml(e.message) + '</td></tr>';
+    });
+  }
+
+  window.expandKbRow = function(tr, id) {
+    var next = tr.nextElementSibling;
+    if (next && next.classList.contains('detail-row')) { next.remove(); return; }
+    var cols = tr.children.length;
+    var det = document.createElement('tr');
+    det.className = 'detail-row';
+    det.innerHTML = '<td colspan="' + cols + '"><div class="detail-content"><div class="spinner" style="display:inline-block;width:18px;height:18px;"></div> 加载中…</div></td>';
+    tr.parentNode.insertBefore(det, next);
+    fetch('/api/knowledge/' + id).then(function(r) { return r.json(); }).then(function(it) {
+      if (it.error) { det.querySelector('.detail-content').textContent = '加载失败: ' + it.error; return; }
+      var html = '';
+      html += '<div class="detail-grid">';
+      html += '<div class="detail-item"><div class="key">分类</div><div class="val">' + escapeHtml(it.category || '-') + '</div></div>';
+      html += '<div class="detail-item"><div class="key">关键词</div><div class="val">' + escapeHtml(it.keywords || '-') + '</div></div>';
+      html += '<div class="detail-item"><div class="key">症状特征</div><div class="val">' + escapeHtml(it.symptoms || '-') + '</div></div>';
+      html += '<div class="detail-item"><div class="key">更新时间</div><div class="val">' + escapeHtml((it.updated_at || it.created_at || '-').toString()) + '</div></div>';
+      html += '</div>';
+      html += '<p><strong>知识内容：</strong></p>';
+      html += '<pre>' + escapeHtml(it.content || '') + '</pre>';
+      det.querySelector('.detail-content').innerHTML = html;
+    });
+  };
+
+  window.deleteKb = function(id, title) {
+    if (!confirm('确认删除知识条目「' + title + '」？此操作不可撤销。')) return;
+    fetch('/api/knowledge/' + id, { method: 'DELETE' })
+    .then(function(r) { return r.json(); })
+    .then(function(resp) {
+      if (resp.error) { showToast('删除失败: ' + resp.error, 'error'); return; }
+      showToast('已删除条目 #' + id, 'success');
+      loadKnowledge(kbPage, kbSearch);
+    })
+    .catch(function() { showToast('删除请求失败', 'error'); });
+  };
+
+  /* ========= Knowledge Modal ========= */
+  function initKbModal() {}
+  function openKbModal(id) {
+    var over = document.getElementById('kbModalOverlay');
+    var title = document.getElementById('kbModalTitle');
+    var formId = document.getElementById('kbFormId');
+    var t = document.getElementById('kbFormTitle');
+    var cat = document.getElementById('kbFormCategory');
+    var kw = document.getElementById('kbFormKeywords');
+    var sym = document.getElementById('kbFormSymptoms');
+    var content = document.getElementById('kbFormContent');
+    formId.value = id || '';
+    t.value = ''; cat.value = ''; kw.value = ''; sym.value = ''; content.value = '';
+    title.innerHTML = id ? '<i data-lucide="file-pen-line"></i><span>编辑知识条目 #' + id + '</span>'
+                         : '<i data-lucide="file-plus-2"></i><span>新增知识条目</span>';
+    if (id) {
+      fetch('/api/knowledge/' + id).then(function(r) { return r.json(); }).then(function(it) {
+        if (!it.error) {
+          t.value = it.title || ''; cat.value = it.category || '';
+          kw.value = it.keywords || ''; sym.value = it.symptoms || '';
+          content.value = it.content || '';
+        }
+      });
+    }
+    over.classList.add('active');
+    if (window.lucide) window.lucide.createIcons();
+  }
+  window.closeKbModal = function() {
+    document.getElementById('kbModalOverlay').classList.remove('active');
+  };
+  document.getElementById('kbFormSubmit').addEventListener('click', function() {
+    var id = document.getElementById('kbFormId').value;
+    var payload = {
+      title: document.getElementById('kbFormTitle').value.trim(),
+      content: document.getElementById('kbFormContent').value.trim(),
+      category: document.getElementById('kbFormCategory').value.trim(),
+      keywords: document.getElementById('kbFormKeywords').value.trim(),
+      symptoms: document.getElementById('kbFormSymptoms').value.trim()
+    };
+    if (!payload.title || !payload.content) {
+      showToast('标题和内容不能为空', 'error'); return;
+    }
+    var url = '/api/knowledge' + (id ? '/' + id : '');
+    var method = id ? 'PUT' : 'POST';
+    fetch(url, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(resp) {
+      if (resp.error) { showToast((id ? '更新' : '创建') + '失败: ' + resp.error, 'error'); return; }
+      showToast(id ? '更新成功' : '已创建条目 #' + resp.id, 'success');
+      closeKbModal();
+      loadKnowledge(kbPage, kbSearch);
+    })
+    .catch(function() { showToast('请求失败', 'error'); });
+  });
+
+  /* ========= History ========= */
+  var histPage = 1, histPageSize = 10, histTotal = 0;
+  function initHistory() {}
+  function loadHistory(page) {
+    window.__histLoaded = true;
+    histPage = page || 1;
+    var tbody = document.getElementById('historyTableBody');
+    tbody.innerHTML = '<tr><td colspan="7" class="tbl-loading"><div class="spinner" style="width:20px;height:20px;display:inline-block;vertical-align:middle;margin-right:7px;"></div>加载中…</td></tr>';
+    fetch('/api/history?page=' + histPage + '&page_size=' + histPageSize)
+    .then(function(r) { return r.json(); })
+    .then(function(resp) {
+      if (resp.error) { tbody.innerHTML = '<tr><td colspan="7" class="tbl-empty">加载失败：' + escapeHtml(resp.error) + '</td></tr>'; return; }
+      histTotal = resp.total || 0;
+      document.getElementById('historyCount').textContent = histTotal;
+      var items = resp.items || [];
+      if (!items.length) { tbody.innerHTML = '<tr><td colspan="7" class="tbl-empty">暂无历史诊断</td></tr>'; }
+      else {
+        var html = '';
+        items.forEach(function(h) {
+          var d = h.diagnosis_result || {};
+          var rc = (d.root_cause || '').substring(0, 50) + ((d.root_cause || '').length > 50 ? '…' : '');
+          var logSnip = (h.log_snippet || '').substring(0, 80) + ((h.log_snippet || '').length > 80 ? '…' : '');
+          html += '<tr class="clickable" onclick="expandHistRow(this, ' + h.id + ')">';
+          html += '<td><strong>#' + h.id + '</strong></td>';
+          html += '<td style="white-space:nowrap;">' + formatTime(h.created_at) + '</td>';
+          html += '<td style="font-family:var(--font-mono);font-size:11.5px;line-height:1.45;color:var(--text-secondary);">' + escapeHtml(logSnip) + '</td>';
+          html += '<td>' + escapeHtml(rc) + '</td>';
+          html += '<td><span class="badge badge-gray">' + escapeHtml(h.prompt_strategy || '-') + '</span></td>';
+          html += '<td style="font-family:var(--font-mono);">' + (h.total_tokens != null ? h.total_tokens : '-') + '</td>';
+          html += '<td style="font-family:var(--font-mono);">' + (h.latency_ms != null ? h.latency_ms + 'ms' : '-') + '</td>';
+          html += '</tr>';
+        });
+        tbody.innerHTML = html;
+      }
+      renderPagination('historyPagination', histPage, histPageSize, histTotal, function(p) { loadHistory(p); });
+      if (window.lucide) window.lucide.createIcons();
+    })
+    .catch(function(e) { tbody.innerHTML = '<tr><td colspan="7" class="tbl-empty">请求失败：' + escapeHtml(e.message) + '</td></tr>'; });
+  }
+
+  window.expandHistRow = function(tr, id) {
+    var next = tr.nextElementSibling;
+    if (next && next.classList.contains('detail-row')) { next.remove(); return; }
+    var cols = tr.children.length;
+    // 找到原始数据最方便的方法是通过索引再请求，这里先简单重新fetch
+    var det = document.createElement('tr');
+    det.className = 'detail-row';
+    det.innerHTML = '<td colspan="' + cols + '"><div class="detail-content">点击列表中的刷新按钮或刷新页面可重载，或后续支持 /history/:id 查看详情。</div></td>';
+    tr.parentNode.insertBefore(det, next);
+  };
+
+  /* ========= Pagination ========= */
+  function renderPagination(containerId, page, pageSize, total, cb) {
+    var c = document.getElementById(containerId);
+    if (!c) return;
+    var totalPages = Math.max(1, Math.ceil(total / pageSize));
+    var html = '';
+    html += '<button class="page-btn" ' + (page <= 1 ? 'disabled' : '') + ' data-p="' + (page - 1) + '">上一页</button>';
+    var start = Math.max(1, page - 2), end = Math.min(totalPages, start + 4);
+    start = Math.max(1, end - 4);
+    for (var i = start; i <= end; i++) {
+      html += '<button class="page-btn ' + (i === page ? 'active' : '') + '" data-p="' + i + '">' + i + '</button>';
+    }
+    html += '<button class="page-btn" ' + (page >= totalPages ? 'disabled' : '') + ' data-p="' + (page + 1) + '">下一页</button>';
+    html += '<span class="page-info">第 ' + page + ' / ' + totalPages + ' 页 · 共 ' + total + ' 条</span>';
+    c.innerHTML = html;
+    c.querySelectorAll('.page-btn[data-p]').forEach(function(b) {
+      b.addEventListener('click', function() {
+        if (b.disabled) return;
+        cb(parseInt(b.getAttribute('data-p'), 10));
+      });
+    });
+  }
+
+  /* ========= Toast ========= */
+  var toastSeq = 0;
+  function showToast(text, kind) {
+    var c = document.getElementById('toastContainer');
+    if (!c) return;
+    var id = 't_' + (++toastSeq);
+    var icon = kind === 'error' ? 'circle-alert' : 'check-circle-2';
+    var cls = kind === 'error' ? 'toast-error' : 'toast-success';
+    var el = document.createElement('div');
+    el.className = 'toast ' + cls;
+    el.id = id;
+    el.innerHTML = '<i data-lucide="' + icon + '"></i><div class="toast-text">' + escapeHtml(text) + '</div>';
+    c.appendChild(el);
+    if (window.lucide) window.lucide.createIcons({ root: el });
+    setTimeout(function() {
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(10px)';
+      el.style.transition = '0.15s ease';
+      setTimeout(function() { el.remove(); }, 160);
+    }, 2800);
+  }
+
+  /* ========= Experiment ========= */
+  var expStrategy = 'ALL';
+  var expMode = 'rag';
+  var expRunning = false;
+
+  function initExperiment() {
+    // 策略选择按钮
+    document.querySelectorAll('#expStrategyGroup .strategy-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#expStrategyGroup .strategy-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        expStrategy = btn.getAttribute('data-exp-strategy');
+      });
+    });
+    // 模式选择按钮
+    document.querySelectorAll('#expModeGroup .strategy-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#expModeGroup .strategy-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        expMode = btn.getAttribute('data-exp-mode');
+      });
+    });
+    // 开始实验按钮
+    var runBtn = document.getElementById('expRunBtn');
+    if (runBtn) {
+      runBtn.addEventListener('click', function() {
+        if (expRunning) return;
+        runExperiment();
+      });
+    }
+  }
+
+  function runExperiment() {
+    var limit = parseInt(document.getElementById('expLimit').value, 10) || 0;
+    var modes = [];
+    if (expMode === 'rag') modes.push(true);
+    else if (expMode === 'direct') modes.push(false);
+    else { modes.push(true); modes.push(false); }
+
+    expRunning = true;
+    var runBtn = document.getElementById('expRunBtn');
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<i data-lucide="loader-2" style="animation:spin 0.7s linear infinite;"></i> 实验运行中…';
+    if (window.lucide) window.lucide.createIcons();
+
+    // 显示进度卡片
+    var progressCard = document.getElementById('expProgressCard');
+    progressCard.style.display = '';
+    document.getElementById('expProgressLog').innerHTML = '';
+    document.getElementById('expProgressBar').style.width = '0%';
+    document.getElementById('expProgressText').textContent = '0 / ?';
+
+    // 隐藏之前的结果
+    document.getElementById('expStatsGrid').style.display = 'none';
+    document.getElementById('expStrategyCard').style.display = 'none';
+    document.getElementById('expDetailCard').style.display = 'none';
+
+    var allResults = [];
+    var totalRuns = modes.length; // 每个模式一次API调用
+    var completedRuns = 0;
+
+    // 依次运行每个模式
+    function runNextMode(idx) {
+      if (idx >= modes.length) {
+        // 全部完成
+        finishExperiment(allResults);
+        return;
+      }
+      var useRAG = modes[idx];
+      var modeLabel = useRAG ? 'RAG' : 'DIRECT';
+
+      appendExpLog('--- 开始 ' + modeLabel + ' 模式实验 (策略=' + expStrategy + ') ---');
+
+      fetch('/api/experiment/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ strategy: expStrategy, use_rag: useRAG, limit: limit })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(resp) {
+        completedRuns++;
+        if (resp.error) {
+          appendExpLog('错误: ' + resp.error);
+          showToast('实验错误: ' + resp.error, 'error');
+          expRunning = false;
+          var rb = document.getElementById('expRunBtn');
+          rb.disabled = false;
+          rb.innerHTML = '<i data-lucide="play"></i> 重试';
+          if (window.lucide) window.lucide.createIcons();
+          return;
+        }
+        var results = resp.results || [];
+        for (var i = 0; i < results.length; i++) {
+          allResults.push(results[i]);
+        }
+        results.forEach(function(r) {
+          var icon = r.is_correct ? 'OK' : 'MISS';
+          var line = '[' + icon + '] ' + r.case_id + ' ' + r.strategy + '/' + r.mode +
+            ' conf=' + Math.round(r.confidence * 100) + '% lat=' + r.latency_ms + 'ms';
+          if (r.error) line += ' ERR: ' + r.error;
+          appendExpLog(line);
+        });
+        var pct = Math.round(completedRuns / totalRuns * 100);
+        document.getElementById('expProgressBar').style.width = pct + '%';
+        document.getElementById('expProgressText').textContent = completedRuns + ' / ' + totalRuns + ' 轮';
+        runNextMode(idx + 1);
+      })
+      .catch(function(err) {
+        completedRuns++;
+        appendExpLog('请求失败: ' + err.message);
+        showToast('请求失败: ' + err.message, 'error');
+        expRunning = false;
+        var rb = document.getElementById('expRunBtn');
+        rb.disabled = false;
+        rb.innerHTML = '<i data-lucide="play"></i> 重试';
+        if (window.lucide) window.lucide.createIcons();
+      });
+    }
+
+    runNextMode(0);
+  }
+
+  function appendExpLog(text) {
+    var log = document.getElementById('expProgressLog');
+    log.innerHTML += escapeHtml(text) + '\n';
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function finishExperiment(allResults) {
+    expRunning = false;
+    var runBtn = document.getElementById('expRunBtn');
+    runBtn.disabled = false;
+    runBtn.innerHTML = '<i data-lucide="play"></i> 重新实验';
+    if (window.lucide) window.lucide.createIcons();
+
+    document.getElementById('expProgressBar').style.width = '100%';
+    document.getElementById('expProgressText').textContent = '已完成';
+    var spinner = document.querySelector('#expProgressCard .spinner');
+    if (spinner) spinner.style.display = 'none';
+
+    appendExpLog('--- 实验完成，共 ' + allResults.length + ' 条结果 ---');
+
+    if (!allResults.length) {
+      showToast('实验未产生有效结果，请检查日志', 'error');
+      document.getElementById('expProgressLog').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
+
+    // 统计汇总
+    var total = 0, correct = 0, totalLat = 0, totalConf = 0, totalTok = 0, totalKnow = 0;
+    allResults.forEach(function(r) {
+      if (r.error) return;
+      total++;
+      if (r.is_correct) correct++;
+      totalLat += r.latency_ms;
+      totalConf += r.confidence;
+      totalTok += r.tokens_used;
+      totalKnow += r.knowledge_used;
+    });
+
+    var accuracy = total > 0 ? (correct / total * 100) : 0;
+    var avgConf = total > 0 ? (totalConf / total * 100) : 0;
+    var avgLat = total > 0 ? Math.round(totalLat / total) : 0;
+    var avgTok = total > 0 ? Math.round(totalTok / total) : 0;
+    var avgKnow = total > 0 ? (totalKnow / total).toFixed(1) : '0';
+
+    // 填充统计卡片
+    document.getElementById('expStatAccuracy').textContent = accuracy.toFixed(1) + '%';
+    document.getElementById('expStatCorrect').textContent = correct + ' / ' + total;
+    document.getElementById('expStatConfidence').textContent = avgConf.toFixed(1) + '%';
+    document.getElementById('expStatTokens').textContent = 'Token avg: ' + avgTok;
+    document.getElementById('expStatLatency').textContent = avgLat + 'ms';
+    document.getElementById('expStatTotalTests').textContent = total + ' 次测试';
+    document.getElementById('expStatKnowledge').textContent = avgKnow + ' 条/次';
+    var modeSet = {};
+    allResults.forEach(function(r) { modeSet[r.mode] = true; });
+    document.getElementById('expStatMode').textContent = Object.keys(modeSet).join(' + ');
+
+    document.getElementById('expStatsGrid').style.display = '';
+
+    // 按策略分组
+    var stratMap = {};
+    allResults.forEach(function(r) {
+      if (r.error) return;
+      if (!stratMap[r.strategy]) stratMap[r.strategy] = [];
+      stratMap[r.strategy].push(r);
+    });
+    var stratTbody = document.getElementById('expStrategyTbody');
+    var stratHtml = '';
+    var stratNames = { 'ZERO_SHOT': 'Zero-Shot', 'FEW_SHOT': 'Few-Shot', 'COT': 'Chain-of-Thought' };
+    Object.keys(stratMap).sort().forEach(function(s) {
+      var items = stratMap[s];
+      var sTotal = items.length, sCorrect = 0, sConf = 0, sLat = 0;
+      items.forEach(function(r) { if (r.is_correct) sCorrect++; sConf += r.confidence; sLat += r.latency_ms; });
+      var sAcc = sTotal > 0 ? (sCorrect / sTotal * 100) : 0;
+      var sAvgConf = sTotal > 0 ? (sConf / sTotal * 100) : 0;
+      var sAvgLat = sTotal > 0 ? Math.round(sLat / sTotal) : 0;
+      stratHtml += '<tr>';
+      stratHtml += '<td><strong>' + (stratNames[s] || s) + '</strong></td>';
+      stratHtml += '<td><span class="badge ' + (sAcc >= 80 ? 'badge-green' : (sAcc >= 50 ? 'badge-amber' : 'badge-red')) + '">' + sAcc.toFixed(1) + '%</span></td>';
+      stratHtml += '<td>' + sCorrect + ' / ' + sTotal + '</td>';
+      stratHtml += '<td>' + sAvgConf.toFixed(1) + '%</td>';
+      stratHtml += '<td style="font-family:var(--font-mono);">' + sAvgLat + 'ms</td>';
+      stratHtml += '</tr>';
+    });
+    stratTbody.innerHTML = stratHtml;
+    document.getElementById('expStrategyCard').style.display = '';
+
+    // 逐条详情
+    var detTbody = document.getElementById('expDetailTbody');
+    var detHtml = '';
+    allResults.forEach(function(r) {
+      var predShort = (r.predicted_cause || '').substring(0, 60) + ((r.predicted_cause || '').length > 60 ? '…' : '');
+      detHtml += '<tr>';
+      if (r.error) {
+        detHtml += '<td><span class="badge badge-red">ERR</span></td>';
+      } else if (r.is_correct) {
+        detHtml += '<td><span class="badge badge-green">OK</span></td>';
+      } else {
+        detHtml += '<td><span class="badge badge-red">MISS</span></td>';
+      }
+      detHtml += '<td>' + escapeHtml(r.case_id || '-') + '</td>';
+      detHtml += '<td><span class="badge badge-blue">' + escapeHtml(r.category || '-') + '</span></td>';
+      detHtml += '<td>' + escapeHtml(r.strategy || '-') + '</td>';
+      detHtml += '<td><span class="badge ' + (r.mode === 'RAG' ? 'badge-blue' : 'badge-amber') + '">' + escapeHtml(r.mode || '-') + '</span></td>';
+      detHtml += '<td style="font-size:12px;">' + escapeHtml(predShort || (r.error ? '错误' : '（空）')) + '</td>';
+      detHtml += '<td style="font-family:var(--font-mono);">' + Math.round(r.confidence * 100) + '%</td>';
+      detHtml += '<td style="font-family:var(--font-mono);">' + r.latency_ms + 'ms</td>';
+      detHtml += '</tr>';
+    });
+    detTbody.innerHTML = detHtml;
+    document.getElementById('expDetailCard').style.display = '';
+    document.getElementById('expDetailSubtitle').textContent = allResults.length + ' 条诊断结果';
+
+    if (window.lucide) window.lucide.createIcons();
+    showToast('实验完成！准确率 ' + accuracy.toFixed(1) + '%', 'success');
+  }
+
+  /* ========= Utils ========= */
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function escapeAttr(s) {
+    if (s == null) return '';
+    return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  }
+  function formatTime(t) {
+    if (!t) return '-';
+    try {
+      var d = new Date(t);
+      if (isNaN(d.getTime())) return String(t);
+      var p = function(n) { return n < 10 ? '0' + n : '' + n; };
+      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+    } catch(e) { return String(t); }
+  }
+
+})();
 </script>
-</body>
-</html>

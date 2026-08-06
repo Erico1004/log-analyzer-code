@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -65,18 +66,41 @@ func NewExperimentRunner(llmAdapter *llm.DeepSeekAdapter, useRAG bool) *Experime
 
 // LoadTestCases 加载测试案例
 // 从JSON文件读取25个真实运维故障案例
+// 自动尝试多个候选路径以适应不同运行场景
 func LoadTestCases(path string) ([]TestCase, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("读取测试案例文件失败: %w", err)
+	candidates := []string{path}
+	if path != "testdata/cases.json" {
+		candidates = append(candidates, "testdata/cases.json")
+	}
+	if exe, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exe)
+		candidates = append(candidates,
+			filepath.Join(exeDir, "testdata", "cases.json"),
+			filepath.Join(exeDir, "..", "testdata", "cases.json"),
+		)
+	}
+	if wd, err := os.Getwd(); err == nil {
+		candidates = append(candidates,
+			filepath.Join(wd, "testdata", "cases.json"),
+		)
 	}
 
-	var cases []TestCase
-	if err := json.Unmarshal(data, &cases); err != nil {
-		return nil, fmt.Errorf("解析测试案例JSON失败: %w", err)
+	var lastErr error
+	for _, candidate := range candidates {
+		data, err := os.ReadFile(candidate)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		var cases []TestCase
+		if err := json.Unmarshal(data, &cases); err != nil {
+			lastErr = fmt.Errorf("解析JSON失败: %w", err)
+			continue
+		}
+		log.Printf("[LoadTestCases] 成功加载: %s (%d 个用例)", candidate, len(cases))
+		return cases, nil
 	}
-
-	return cases, nil
+	return nil, fmt.Errorf("加载测试案例失败（已尝试路径 %v）: %w", candidates, lastErr)
 }
 
 // RunSingleCase 运行单个案例

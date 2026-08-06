@@ -9,7 +9,7 @@
 | 🔍 **智能诊断** | 输入运维日志，自动脱敏 → 结构化 → 知识检索 → DeepSeek 推理 → 输出根因 + 分析过程 + 解决方案 |
 | 📚 **知识库管理** | 页面端增删改查，知识条目直接同步 MySQL，支持分类/关键词/症状多维度检索 |
 | 📋 **诊断历史** | 所有诊断记录持久化，支持分页浏览、展开详情、查看置信度 |
-| 📊 **实验评估** | 批量测试 RAG vs Direct LLM 诊断效果，导出 CSV 量化对比 |
+| 📊 **实验评估** | 页面端直接运行 RAG vs Direct LLM 对比实验，配置策略/模式/用例数，实时查看准确率 |
 
 ## 快速开始
 
@@ -106,7 +106,8 @@ log-analyzer/
 │   ├── diagnose.go                  # 核心诊断 Handler：完整流水线编排
 │   ├── feedback.go                  # 用户反馈收集
 │   ├── knowledge.go                  # 知识库管理 API（List/Get/Create/Update/Delete）
-│   └── history.go                   # 诊断历史查询 + 统计信息
+│   ├── history.go                   # 诊断历史查询 + 统计信息
+│   └── experiment.go                # 实验评估 API：批量运行 + 准确率统计
 ├── experiment/
 │   └── runner.go                    # 实验评估框架：RAG vs Direct 批量对比
 ├── cmd/
@@ -114,7 +115,7 @@ log-analyzer/
 │   ├── verify/main.go               # 检索验证脚本（命中率评估）
 │   └── experiment/main.go           # 实验入口（命令行参数驱动）
 ├── templates/
-│   └── index.html                   # 前端单页：四 Tab SaaS 管理界面
+│   └── index.html                   # 前端单页：专业企业级 UI（诊断工作台 + 知识库 + 历史 + 实验评估）
 ├── static/
 │   └── style.css                    # 全局样式
 └── testdata/
@@ -188,6 +189,8 @@ log-analyzer/
 | `DELETE` | `/api/knowledge/:id` | 删除知识条目 |
 | `GET` | `/api/history` | 诊断历史（支持 `?page=&page_size=`） |
 | `GET` | `/api/stats` | 统计数据 |
+| `GET` | `/api/experiment/cases` | 获取测试用例列表（摘要） |
+| `POST` | `/api/experiment/run` | 执行批量实验（参数：`strategy`, `use_rag`, `limit`） |
 
 ## Docker 部署
 
@@ -209,3 +212,36 @@ docker compose up --build
 - **数据库**：MySQL 5.7+（FULLTEXT 索引）
 - **LLM**：DeepSeek Chat API
 - **前端**：原生 HTML/CSS/JS（零依赖单页应用）
+
+## 更新日志
+
+### v2.0.0 — 2026-08-06
+
+#### 🎨 前端专业级改造
+
+- **全新企业级 UI 设计**：替换 AI 风格的渐变背景、大圆角、emoji 图标，采用中性灰底 + 商务蓝配色方案
+- **Lucide SVG 图标**：全面替换 emoji 表情图标，使用专业矢量图标库
+- **布局重构**：左侧边栏导航 + 顶部面包屑 + 双列诊断工作台
+- **4 个 Tab 页**：日志诊断工作台、知识库管理、诊断历史、实验评估
+- **置信度条形图**、**元数据 Pill**、**反馈按钮** 等专业组件
+- **响应式设计**：适配桌面/平板/移动端
+
+#### 🧪 实验评估功能
+
+- **页面端一键实验**：不再需要命令行即可运行 RAG vs Direct LLM 对比实验
+- **实验配置面板**：支持选择推理策略（Zero-Shot / Few-Shot / CoT / 全部）、诊断模式（RAG / Direct / 两者对比）、测试用例数
+- **实时进度反馈**：进度条 + 滚动日志面板，逐条展示诊断结果
+- **自动统计汇总**：总准确率、平均置信度、平均耗时、Token 消耗、知识命中率
+- **策略维度对比表**：按策略分组展示各指标
+- **逐条诊断详情表**：每个用例的预测根因、置信度、耗时一览
+
+#### 🛠️ 后端改进
+
+- **新增 `handler/experiment.go`**：实验运行 API Handler
+  - `GET /api/experiment/cases`：获取测试用例摘要列表
+  - `POST /api/experiment/run`：执行批量实验，返回逐条结果 + 统计汇总
+- **`experiment/runner.go`** 改进：
+  - `LoadTestCases` 支持多路径回退（可执行文件目录、工作目录等），解决不同运行场景下的路径问题
+  - 新增 `CaseResult` / `ExperimentRunResponse` 结构体用于 API 序列化
+  - 复用 `evaluateCorrectness` 评估逻辑
+- **`main.go`**：注册实验相关路由

@@ -37,6 +37,7 @@ func main() {
 	knowledgeHandler := handler.NewKnowledgeHandler()
 	historyHandler := handler.NewHistoryHandler()
 	healthHandler := handler.NewHealthHandler()
+	experimentHandler := handler.NewExperimentHandler(llmAdapter)
 
 	// 创建Gin引擎
 	r := gin.Default()
@@ -71,6 +72,10 @@ func main() {
 		// 诊断历史
 		api.GET("/history", historyHandler.List)
 		api.GET("/stats", historyHandler.Stats)
+
+		// 实验评估
+		api.GET("/experiment/cases", experimentHandler.ListTestCases)
+		api.POST("/experiment/run", experimentHandler.Run)
 	}
 
 	port := config.AppConfig.Port
