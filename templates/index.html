@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LogAnalyzer — 运维日志根因分析平台</title>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css" id="hljs-theme">
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
   <style>
     :root {
       --bg-root: #f4f5f7;
@@ -563,6 +566,128 @@
       border-color: #dde7f6;
     }
 
+    .result-value.markdown-body {
+      white-space: normal;
+      line-height: 1.7;
+    }
+    .result-value.markdown-body h1,
+    .result-value.markdown-body h2,
+    .result-value.markdown-body h3 {
+      font-size: 14px;
+      margin: 12px 0 6px;
+      color: var(--text-primary);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 4px;
+    }
+    .result-value.markdown-body h1 { font-size: 15px; }
+    .result-value.markdown-body h2 { font-size: 14px; }
+    .result-value.markdown-body h3 { font-size: 13px; }
+    .result-value.markdown-body p { margin: 0 0 8px; }
+    .result-value.markdown-body ul,
+    .result-value.markdown-body ol { padding-left: 20px; margin: 0 0 8px; }
+    .result-value.markdown-body li { margin-bottom: 3px; }
+    .result-value.markdown-body code {
+      background: rgba(0,0,0,0.06);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-primary);
+    }
+    .result-value.markdown-body pre {
+      background: #f6f8fa;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xs);
+      padding: 10px 12px;
+      overflow-x: auto;
+      margin: 8px 0;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .result-value.markdown-body pre code {
+      background: transparent;
+      padding: 0;
+      font-size: 12px;
+    }
+    .result-value.markdown-body blockquote {
+      border-left: 3px solid var(--brand);
+      padding-left: 12px;
+      margin: 8px 0;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    .result-value.markdown-body table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 8px 0;
+      font-size: 12px;
+    }
+    .result-value.markdown-body th,
+    .result-value.markdown-body td {
+      border: 1px solid var(--border);
+      padding: 5px 8px;
+      text-align: left;
+    }
+    .result-value.markdown-body th {
+      background: var(--bg-elevated);
+      font-weight: 600;
+    }
+    .result-value.markdown-body a {
+      color: var(--brand);
+      text-decoration: none;
+    }
+    .result-value.markdown-body strong { font-weight: 600; color: var(--text-primary); }
+    .result-value.markdown-body hr {
+      border: none;
+      border-top: 1px solid var(--border-light);
+      margin: 12px 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+    .empty-state-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 16px;
+      background: var(--brand-soft);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--brand);
+    }
+    .empty-state-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .empty-state-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .confidence-pulse {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
     /* ===== Confidence Bar ===== */
     .confidence-display {
       display: flex;
@@ -693,19 +818,7 @@
       align-items: center;
       justify-content: center;
     }
-    .empty-state .empty-icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 12px;
-      color: var(--text-faint);
-    }
-    .empty-state .empty-icon svg { width: 22px; height: 22px; stroke-width: 1.5; }
+    .empty-state .empty-state-icon svg { width: 26px; height: 26px; stroke-width: 1.5; }
     .empty-text { color: var(--text-secondary); font-size: 12.5px; margin-bottom: 3px; font-weight: 500; }
     .empty-hint { color: var(--text-muted); font-size: 11.5px; }
 
@@ -725,6 +838,33 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-text { color: var(--text-secondary); font-size: 12.5px; font-weight: 500; }
     .loading-sub { color: var(--text-muted); font-size: 11px; margin-top: 3px; }
+    .loading-steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .loading-step {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      border: 1px solid var(--border-light);
+      transition: all 0.2s ease;
+    }
+    .loading-step-active {
+      background: var(--brand-soft);
+      border-color: var(--brand-border);
+      color: var(--brand);
+      font-weight: 500;
+    }
+    .loading-step i { width: 13px; height: 13px; }
+    .loading-arrow { color: var(--text-faint); }
 
     /* ===== Tables ===== */
     .table-wrap { overflow-x: auto; }
@@ -1251,17 +1391,24 @@
 
             <div id="resultEmpty" class="panel-body">
               <div class="empty-state">
-                <div class="empty-icon"><i data-lucide="clipboard-list"></i></div>
-                <div class="empty-text">尚未进行诊断</div>
-                <div class="empty-hint">在左侧粘贴日志，选择策略后点击「开始诊断」</div>
+                <div class="empty-state-icon"><i data-lucide="activity" style="width:26px;height:26px;"></i></div>
+                <div class="empty-state-title">等待诊断</div>
+                <div class="empty-state-desc">在左侧输入运维日志，选择推理策略后点击「开始诊断」<br>系统将自动完成脱敏 → 检索 → 推理，输出根因分析</div>
               </div>
             </div>
 
             <div id="resultLoading" class="panel-body" style="display:none;">
               <div class="loading-state">
                 <div class="spinner"></div>
-                <div class="loading-text">正在分析日志并生成诊断结论…</div>
-                <div class="loading-sub">预处理 → 知识检索 → 推理生成，通常 3-8 秒</div>
+                <div class="loading-text">正在分析日志，生成诊断结论…</div>
+                <div class="loading-sub">预处理 → 知识检索 → LLM 推理，通常 3-8 秒</div>
+                <div class="loading-steps">
+                  <div class="loading-step"><i data-lucide="check-circle-2"></i> 预处理</div>
+                  <div class="loading-arrow">→</div>
+                  <div class="loading-step"><i data-lucide="search"></i> 知识检索</div>
+                  <div class="loading-arrow">→</div>
+                  <div class="loading-step loading-step-active"><i data-lucide="brain"></i> LLM 推理</div>
+                </div>
               </div>
             </div>
 
@@ -1771,12 +1918,31 @@
     var confPct = Math.round((diag.confidence || 0) * 100);
     var confCls = confPct >= 80 ? 'high' : (confPct >= 50 ? 'medium' : 'low');
 
+    var mdRender = function(text) {
+      if (!text) return '';
+      if (window.marked) {
+        try {
+          var raw = window.marked.parse(text);
+          if (window.hljs) {
+            var div = document.createElement('div');
+            div.innerHTML = raw;
+            div.querySelectorAll('pre code').forEach(function(block) {
+              try { window.hljs.highlightElement(block); } catch(e) {}
+            });
+            return div.innerHTML;
+          }
+          return raw;
+        } catch(e) { return escapeHtml(text); }
+      }
+      return escapeHtml(text);
+    };
+
     var html = '';
-    html += '<div class="result-header-bar">';
+    html += '<div class="result-header-bar fade-in">';
     html += '  <div class="result-header-title"><i data-lucide="file-check-2"></i><span>诊断报告</span></div>';
     html += '  <span class="badge badge-blue" style="font-size:10.5px;">' + (meta.model || 'deepseek-chat') + '</span>';
     html += '</div>';
-    html += '<div class="result-body-inner">';
+    html += '<div class="result-body-inner fade-in">';
 
     if (meta && meta.auto_learned) {
       html += '<div class="learned-badge"><i data-lucide="sparkles"></i> 自动学习：新故障知识已入库（ID #' + (meta.learned_knowledge_id || '-') + '）</div>';
@@ -1793,19 +1959,19 @@
 
     html += '<div class="result-block">';
     html += '  <div class="result-label danger"><i data-lucide="alert-triangle"></i> 根因结论 Root Cause</div>';
-    html += '  <div class="result-value root-cause">' + escapeHtml(diag.root_cause || '（未识别）') + '</div>';
+    html += '  <div class="result-value root-cause markdown-body">' + mdRender(diag.root_cause || '（未识别）') + '</div>';
     html += '</div>';
 
     html += '<div class="result-block">';
     html += '  <div class="result-label info"><i data-lucide="git-branch"></i> 分析过程 Analysis</div>';
-    html += '  <div class="result-value analysis">' + escapeHtml(diag.analysis_process || '（空）') + '</div>';
+    html += '  <div class="result-value analysis markdown-body">' + mdRender(diag.analysis_process || '（空）') + '</div>';
     html += '</div>';
 
     html += '<div class="result-block">';
     html += '  <div class="result-label success"><i data-lucide="list-checks"></i> 修复步骤 Solution Steps (' + (diag.solution_steps || []).length + ')</div>';
     if (diag.solution_steps && diag.solution_steps.length) {
       html += '  <ol class="step-list">';
-      diag.solution_steps.forEach(function(s) { html += '<li>' + escapeHtml(s) + '</li>'; });
+      diag.solution_steps.forEach(function(s) { html += '<li>' + mdRender(s) + '</li>'; });
       html += '  </ol>';
     } else {
       html += '  <div class="result-value">（无建议步骤）</div>';
