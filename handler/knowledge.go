@@ -1,26 +1,29 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 
 	"log-analyzer/database"
+	"log-analyzer/llm"
 	"log-analyzer/model"
 )
 
-// KnowledgeHandler 知识库管理处理器
 type KnowledgeHandler struct {
-	repo *database.KnowledgeRepo
+	repo      *database.KnowledgeRepo
+	embedder  *llm.EmbeddingAdapter
 }
 
-// NewKnowledgeHandler 创建知识库处理器
-func NewKnowledgeHandler() *KnowledgeHandler {
-	return &KnowledgeHandler{repo: database.NewKnowledgeRepo()}
+func NewKnowledgeHandler(embedder *llm.EmbeddingAdapter) *KnowledgeHandler {
+	return &KnowledgeHandler{
+		repo:     database.NewKnowledgeRepo(),
+		embedder: embedder,
+	}
 }
 
-// List 获取知识库列表（分页 + 搜索）
 func (h *KnowledgeHandler) List(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
@@ -47,7 +50,6 @@ func (h *KnowledgeHandler) List(c *gin.Context) {
 	})
 }
 
-// Get 获取单条知识
 func (h *KnowledgeHandler) Get(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -64,7 +66,6 @@ func (h *KnowledgeHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
-// Create 创建知识条目
 func (h *KnowledgeHandler) Create(c *gin.Context) {
 	var item model.KnowledgeBase
 	if err := c.ShouldBindJSON(&item); err != nil {
@@ -77,15 +78,25 @@ func (h *KnowledgeHandler) Create(c *gin.Context) {
 		return
 	}
 
+	if h.embedder != nil {
+		embedText := item.Title + "\n" + item.Content
+		embedding, err := h.embedder.Embed(embedText)
+		if err != nil {
+			log.Printf("[知识库] embedding 生成失败: %v", err)
+		} else {
+			item.Embedding = embedding
+			log.Printf("[知识库] embedding 生成成功, 维度: %d", len(embedding))
+		}
+	}
+
 	if err := h.repo.Create(&item); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "创建失败: " + err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"id": item.ID, "message": "创建成功"})
+	c.JSON(http.StatusOK, gin.H{"id": item.ID, "message": "创建成功", "has_embedding": len(item.Embedding) > 0})
 }
 
-// Update 更新知识条目
 func (h *KnowledgeHandler) Update(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -111,15 +122,25 @@ func (h *KnowledgeHandler) Update(c *gin.Context) {
 	existing.Keywords = input.Keywords
 	existing.Symptoms = input.Symptoms
 
+	if h.embedder != nil {
+		embedText := existing.Title + "\n" + existing.Content
+		embedding, err := h.embedder.Embed(embedText)
+		if err != nil {
+			log.Printf("[知识库] embedding 重新生成失败: %v", err)
+		} else {
+			existing.Embedding = embedding
+			log.Printf("[知识库] embedding 重新生成成功, 维度: %d", len(embedding))
+		}
+	}
+
 	if err := h.repo.Update(existing); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新失败: " + err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "更新成功"})
+	c.JSON(http.StatusOK, gin.H{"message": "更新成功", "has_embedding": len(existing.Embedding) > 0})
 }
 
-// Delete 删除知识条目
 func (h *KnowledgeHandler) Delete(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

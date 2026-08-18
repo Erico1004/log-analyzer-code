@@ -49,15 +49,13 @@ type ExperimentRunner struct {
 	retriever    *retriever.KnowledgeRetriever
 	assembler    *prompt.PromptAssembler
 	llmAdapter   *llm.DeepSeekAdapter
-	useRAG       bool // true=RAG模式，false=直接LLM模式
+	useRAG       bool
 }
 
-// NewExperimentRunner 创建实验运行器实例
-// useRAG: true表示使用RAG检索增强，false表示直接调用LLM（基线方法）
-func NewExperimentRunner(llmAdapter *llm.DeepSeekAdapter, useRAG bool) *ExperimentRunner {
+func NewExperimentRunner(llmAdapter *llm.DeepSeekAdapter, useRAG bool, embeddingAdapter *llm.EmbeddingAdapter) *ExperimentRunner {
 	return &ExperimentRunner{
 		preprocessor: preprocessor.NewLogPreprocessor(),
-		retriever:    retriever.NewKnowledgeRetriever(database.DB),
+		retriever:    retriever.NewKnowledgeRetriever(database.DB, embeddingAdapter),
 		assembler:    prompt.NewPromptAssembler(),
 		llmAdapter:   llmAdapter,
 		useRAG:       useRAG,

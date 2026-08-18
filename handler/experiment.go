@@ -13,13 +13,14 @@ import (
 )
 
 type ExperimentHandler struct {
-	llmAdapter *llm.DeepSeekAdapter
-	runMu      sync.Mutex
-	running    bool
+	llmAdapter       *llm.DeepSeekAdapter
+	embeddingAdapter *llm.EmbeddingAdapter
+	runMu            sync.Mutex
+	running          bool
 }
 
-func NewExperimentHandler(llmAdapter *llm.DeepSeekAdapter) *ExperimentHandler {
-	return &ExperimentHandler{llmAdapter: llmAdapter}
+func NewExperimentHandler(llmAdapter *llm.DeepSeekAdapter, embeddingAdapter *llm.EmbeddingAdapter) *ExperimentHandler {
+	return &ExperimentHandler{llmAdapter: llmAdapter, embeddingAdapter: embeddingAdapter}
 }
 
 type ExperimentRunRequest struct {
@@ -127,7 +128,7 @@ func (h *ExperimentHandler) Run(c *gin.Context) {
 		return
 	}
 
-	runner := experiment.NewExperimentRunner(h.llmAdapter, req.UseRAG)
+	runner := experiment.NewExperimentRunner(h.llmAdapter, req.UseRAG, h.embeddingAdapter)
 
 	rawResults, err := runner.RunExperiment(cases, strategies)
 	if err != nil {

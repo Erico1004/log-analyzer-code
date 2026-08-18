@@ -76,3 +76,15 @@ func (r *KnowledgeRepo) Count() (int64, error) {
 	err := DB.Model(&model.KnowledgeBase{}).Count(&count).Error
 	return count, err
 }
+
+// FindWithoutEmbedding 获取所有没有 embedding 的条目
+func (r *KnowledgeRepo) FindWithoutEmbedding() ([]model.KnowledgeBase, error) {
+	var items []model.KnowledgeBase
+	err := DB.Where("embedding IS NULL OR JSON_LENGTH(embedding) = 0").Find(&items).Error
+	return items, err
+}
+
+// UpdateEmbedding 更新条目的 embedding
+func (r *KnowledgeRepo) UpdateEmbedding(id int, embedding []float64) error {
+	return DB.Model(&model.KnowledgeBase{}).Where("id = ?", id).Update("embedding", embedding).Error
+}

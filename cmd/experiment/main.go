@@ -31,6 +31,7 @@ func main() {
 		log.Fatal("未设置 DEEPSEEK_API_KEY 环境变量")
 	}
 	llmAdapter := llm.NewDeepSeekAdapter(config.AppConfig.DeepSeekAPIKey)
+	embeddingAdapter := llm.NewEmbeddingAdapter(config.AppConfig.EmbeddingAPIKey, config.AppConfig.EmbeddingModel)
 
 	cases, err := experiment.LoadTestCases(*testCasesPath)
 	if err != nil {
@@ -48,7 +49,7 @@ func main() {
 
 	if !*skipRAG {
 		log.Println("--- RAG 增强模式实验 ---")
-		ragRunner := experiment.NewExperimentRunner(llmAdapter, true)
+		ragRunner := experiment.NewExperimentRunner(llmAdapter, true, embeddingAdapter)
 		ragResults, err = ragRunner.RunExperiment(cases, strategies)
 		if err != nil {
 			log.Printf("RAG实验出错: %v", err)
@@ -61,7 +62,7 @@ func main() {
 
 	if !*skipDirect {
 		log.Println("--- 直接LLM模式实验 ---")
-		directRunner := experiment.NewExperimentRunner(llmAdapter, false)
+		directRunner := experiment.NewExperimentRunner(llmAdapter, false, embeddingAdapter)
 		directResults, err = directRunner.RunExperiment(cases, strategies)
 		if err != nil {
 			log.Printf("直接LLM实验出错: %v", err)

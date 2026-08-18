@@ -51,7 +51,7 @@ func main() {
 
 	// 4. 逐个案例检索
 	p := preprocessor.NewLogPreprocessor()
-	r := retriever.NewKnowledgeRetriever(database.DB)
+	r := retriever.NewKnowledgeRetriever(database.DB, nil)
 
 	hit := 0
 	fmt.Println("\n── 案例检索结果 ──")

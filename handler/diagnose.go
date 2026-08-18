@@ -20,24 +20,26 @@ import (
 
 // DiagnoseHandler 诊断处理器
 type DiagnoseHandler struct {
-	preprocessor  *preprocessor.LogPreprocessor
-	retriever     *retriever.KnowledgeRetriever
-	assembler     *prompt.PromptAssembler
-	llmAdapter    *llm.DeepSeekAdapter
-	diagnosisRepo *database.DiagnosisRepo
-	knowledgeRepo *database.KnowledgeRepo
+	preprocessor     *preprocessor.LogPreprocessor
+	retriever        *retriever.KnowledgeRetriever
+	assembler        *prompt.PromptAssembler
+	llmAdapter       *llm.DeepSeekAdapter
+	embeddingAdapter *llm.EmbeddingAdapter
+	diagnosisRepo    *database.DiagnosisRepo
+	knowledgeRepo    *database.KnowledgeRepo
 }
 
-func NewDiagnoseHandler(llmAdapter *llm.DeepSeekAdapter) *DiagnoseHandler {
+func NewDiagnoseHandler(llmAdapter *llm.DeepSeekAdapter, embeddingAdapter *llm.EmbeddingAdapter) *DiagnoseHandler {
 	h := &DiagnoseHandler{
-		preprocessor:  preprocessor.NewLogPreprocessor(),
-		assembler:     prompt.NewPromptAssembler(),
-		llmAdapter:    llmAdapter,
-		diagnosisRepo: database.NewDiagnosisRepo(),
-		knowledgeRepo: database.NewKnowledgeRepo(),
+		preprocessor:     preprocessor.NewLogPreprocessor(),
+		assembler:        prompt.NewPromptAssembler(),
+		llmAdapter:       llmAdapter,
+		embeddingAdapter: embeddingAdapter,
+		diagnosisRepo:    database.NewDiagnosisRepo(),
+		knowledgeRepo:    database.NewKnowledgeRepo(),
 	}
 	if database.DB != nil {
-		h.retriever = retriever.NewKnowledgeRetriever(database.DB)
+		h.retriever = retriever.NewKnowledgeRetriever(database.DB, embeddingAdapter)
 	}
 	return h
 }
@@ -163,12 +165,23 @@ func (h *DiagnoseHandler) Handle(c *gin.Context) {
 			Keywords: strings.Join(logCtx.KeyErrors, ","),
 			Symptoms: strings.Join(logCtx.KeyErrors, ","),
 		}
+
+		if h.embeddingAdapter != nil {
+			embedText := kbEntry.Title + "\n" + kbEntry.Content
+			embedding, err := h.embeddingAdapter.Embed(embedText)
+			if err != nil {
+				log.Printf("[自动学习] embedding 生成失败: %v", err)
+			} else {
+				kbEntry.Embedding = embedding
+			}
+		}
+
 		if err := h.knowledgeRepo.Create(kbEntry); err != nil {
 			log.Printf("[自动学习] 保存失败: %v", err)
 		} else {
 			autoLearned = true
 			learnedID = kbEntry.ID
-			log.Printf("[自动学习] 新知识已保存, ID: %d, 分类: %s", learnedID, kbEntry.Category)
+			log.Printf("[自动学习] 新知识已保存, ID: %d, 分类: %s, 有embedding: %v", learnedID, kbEntry.Category, len(kbEntry.Embedding) > 0)
 		}
 	}
 

@@ -63,13 +63,14 @@ func main() {
 	}
 
 	llmAdapter := llm.NewDeepSeekAdapter(config.AppConfig.DeepSeekAPIKey)
+	embeddingAdapter := llm.NewEmbeddingAdapter(config.AppConfig.EmbeddingAPIKey, config.AppConfig.EmbeddingModel)
 
-	diagnoseHandler := handler.NewDiagnoseHandler(llmAdapter)
+	diagnoseHandler := handler.NewDiagnoseHandler(llmAdapter, embeddingAdapter)
 	feedbackHandler := handler.NewFeedbackHandler()
-	knowledgeHandler := handler.NewKnowledgeHandler()
+	knowledgeHandler := handler.NewKnowledgeHandler(embeddingAdapter)
 	historyHandler := handler.NewHistoryHandler()
 	healthHandler := handler.NewHealthHandler()
-	experimentHandler := handler.NewExperimentHandler(llmAdapter)
+	experimentHandler := handler.NewExperimentHandler(llmAdapter, embeddingAdapter)
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")

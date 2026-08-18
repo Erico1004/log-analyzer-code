@@ -8,7 +8,8 @@ type KnowledgeBase struct {
 	Content   string    `gorm:"type:text;not null" json:"content"`
 	Category  string    `gorm:"type:varchar(50)" json:"category"`
 	Keywords  string    `gorm:"type:text" json:"keywords"`
-	Symptoms  string    `gorm:"type:text" json:"symptoms"` // 逗号分隔的精确匹配特征串，用于 LIKE 检索
+	Symptoms  string    `gorm:"type:text" json:"symptoms"`
+	Embedding []float64 `gorm:"type:json" json:"embedding"`
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }

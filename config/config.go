@@ -8,13 +8,15 @@ import (
 )
 
 type Config struct {
-	DeepSeekAPIKey string
-	DBHost         string
-	DBPort         string
-	DBUser         string
-	DBPassword     string
-	DBName         string
-	Port           string
+	DeepSeekAPIKey  string
+	EmbeddingAPIKey string
+	EmbeddingModel  string
+	DBHost          string
+	DBPort          string
+	DBUser          string
+	DBPassword      string
+	DBName          string
+	Port            string
 }
 
 var AppConfig *Config
@@ -23,13 +25,15 @@ func LoadConfig() error {
 	_ = godotenv.Load()
 
 	AppConfig = &Config{
-		DeepSeekAPIKey: getEnv("DEEPSEEK_API_KEY", ""),
-		DBHost:         getEnv("DB_HOST", "127.0.0.1"),
-		DBPort:         getEnv("DB_PORT", "3306"),
-		DBUser:         getEnv("DB_USER", "root"),
-		DBPassword:     getEnv("DB_PASSWORD", ""),
-		DBName:         getEnv("DB_NAME", "log_analysis"),
-		Port:           getEnv("PORT", "8080"),
+		DeepSeekAPIKey:  getEnv("DEEPSEEK_API_KEY", ""),
+		EmbeddingAPIKey: getEnv("EMBEDDING_API_KEY", ""),
+		EmbeddingModel:  getEnv("EMBEDDING_MODEL", "BAAI/bge-m3"),
+		DBHost:          getEnv("DB_HOST", "127.0.0.1"),
+		DBPort:          getEnv("DB_PORT", "3306"),
+		DBUser:          getEnv("DB_USER", "root"),
+		DBPassword:      getEnv("DB_PASSWORD", ""),
+		DBName:          getEnv("DB_NAME", "log_analysis"),
+		Port:            getEnv("PORT", "8080"),
 	}
 
 	// 校验必填字段
