@@ -1,9 +1,9 @@
 -- pgvector 扩展
 CREATE EXTENSION IF NOT EXISTS vector;
 
--- 知识表
+-- 知识表（与 model.KnowledgeBase 对齐）
 CREATE TABLE IF NOT EXISTS knowledge_base (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     category VARCHAR(50),
@@ -25,26 +25,32 @@ ON knowledge_base USING gin (
     to_tsvector('simple', coalesce(content, '') || ' ' || coalesce(keywords, ''))
 );
 
--- 诊断历史表
-CREATE TABLE IF NOT EXISTS diagnosis_histories (
-    id SERIAL PRIMARY KEY,
-    session_id VARCHAR(36) NOT NULL,
-    log_hash VARCHAR(64) NOT NULL,
+-- 诊断历史表（与 model.DiagnosisHistory 对齐，表名单数）
+CREATE TABLE IF NOT EXISTS diagnosis_history (
+    id BIGSERIAL PRIMARY KEY,
+    session_id CHAR(36) NOT NULL,
+    log_hash CHAR(64) NOT NULL,
     log_snippet TEXT,
-    retrieved_doc_ids VARCHAR(255),
-    diagnosis_result JSONB,
-    model_used VARCHAR(50),
-    prompt_strategy VARCHAR(20),
-    total_tokens INT DEFAULT 0,
-    latency_ms INT DEFAULT 0,
+    retrieved_doc_ids VARCHAR(500),
+    diagnosis_result JSON NOT NULL,
+    model_used VARCHAR(50) NOT NULL,
+    prompt_strategy VARCHAR(20) NOT NULL,
+    total_tokens BIGINT,
+    latency_ms BIGINT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
--- 用户反馈表
-CREATE TABLE IF NOT EXISTS user_feedbacks (
-    id SERIAL PRIMARY KEY,
-    session_id VARCHAR(36),
-    feedback_type VARCHAR(20),
-    comment TEXT,
+CREATE UNIQUE INDEX IF NOT EXISTS idx_diagnosis_history_session_id
+ON diagnosis_history (session_id);
+
+-- 用户反馈表（与 model.UserFeedback 对齐，表名单数）
+CREATE TABLE IF NOT EXISTS user_feedback (
+    id BIGSERIAL PRIMARY KEY,
+    session_id CHAR(36) NOT NULL,
+    feedback SMALLINT NOT NULL,
+    user_comment TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_user_feedback_session_id
+ON user_feedback (session_id);
