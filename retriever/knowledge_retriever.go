@@ -9,11 +9,12 @@ import (
 	"log-analyzer/llm"
 	"log-analyzer/model"
 
+	"github.com/pgvector/pgvector-go"
 	"gorm.io/gorm"
 )
 
 type KnowledgeRetriever struct {
-	db      *gorm.DB
+	db       *gorm.DB
 	embedder *llm.EmbeddingAdapter
 }
 
@@ -84,7 +85,7 @@ func (r *KnowledgeRetriever) Retrieve(ctx *model.LogContext, topK int, threshold
 	var allResults []scoredResult
 	seenIDs := make(map[int]bool)
 
-	// 策略1: FULLTEXT 全文检索
+	// 策略1: PostgreSQL 全文检索 (GIN 索引)
 	ftResults := r.searchFullText(keywordStr, topK)
 	for i, res := range ftResults {
 		if !seenIDs[res.ID] {
@@ -102,17 +103,15 @@ func (r *KnowledgeRetriever) Retrieve(ctx *model.LogContext, topK int, threshold
 		if !seenIDs[res.ID] {
 			seenIDs[res.ID] = true
 			allResults = append(allResults, scoredResult{
-				item:     res,
-				ftScore:  1.5,
-				vecScore: 0,
+				item:    res,
+				ftScore: 1.5,
 			})
 		}
 	}
 
-	// 策略3: 向量检索（语义召回）
+	// 策略3: pgvector HNSW 向量检索（ANN 索引，O(log n)）
 	if r.embedder != nil {
-		queryText := ctx.ProcessedText
-		queryEmbedding, err := r.embedder.Embed(queryText)
+		queryEmbedding, err := r.embedder.Embed(ctx.ProcessedText)
 		if err != nil {
 			log.Printf("[向量检索] embedding 生成失败: %v", err)
 		} else {
@@ -127,7 +126,6 @@ func (r *KnowledgeRetriever) Retrieve(ctx *model.LogContext, topK int, threshold
 	}
 
 	// RRF 融合：对每个结果计算 RRF 分数
-	// RRF = 1 / (k + rank_ft) + 1 / (k + rank_vec)，k=60 是标准参数
 	k := 60.0
 	for i := range allResults {
 		rrf := 0.0
@@ -140,12 +138,10 @@ func (r *KnowledgeRetriever) Retrieve(ctx *model.LogContext, topK int, threshold
 		allResults[i].rrfScore = rrf
 	}
 
-	// 按 RRF 分数排序
 	sort.Slice(allResults, func(i, j int) bool {
 		return allResults[i].rrfScore > allResults[j].rrfScore
 	})
 
-	// 归一化 + 阈值过滤
 	if len(allResults) == 0 {
 		log.Printf("[检索结果] 0 条")
 		return nil, nil
@@ -174,16 +170,17 @@ func (r *KnowledgeRetriever) Retrieve(ctx *model.LogContext, topK int, threshold
 		items = items[:topK]
 	}
 
-	log.Printf("[检索结果] %d 条 (FULLTEXT+LIKE+向量RRF融合)", len(items))
+	log.Printf("[检索结果] %d 条 (PostgreSQL FTS + pgvector HNSW + RRF 融合)", len(items))
 	return items, nil
 }
 
+// searchFullText PostgreSQL 原生全文检索（GIN 索引）
 func (r *KnowledgeRetriever) searchFullText(keywordStr string, topK int) []model.KnowledgeBase {
 	var results []model.KnowledgeBase
-	r.db.Raw(`SELECT *, MATCH(content, keywords) AGAINST(? IN NATURAL LANGUAGE MODE) as score
-		FROM knowledge_base
-		WHERE MATCH(content, keywords) AGAINST(? IN NATURAL LANGUAGE MODE)
-		ORDER BY score DESC
+	r.db.Raw(`SELECT * FROM knowledge_base
+		WHERE to_tsvector('simple', coalesce(content, '') || ' ' || coalesce(keywords, ''))
+			@@ plainto_tsquery('simple', ?)
+		ORDER BY ts_rank(to_tsvector('simple', coalesce(content, '') || ' ' || coalesce(keywords, '')), plainto_tsquery('simple', ?)) DESC
 		LIMIT ?`, keywordStr, keywordStr, topK).Scan(&results)
 	return results
 }
@@ -207,7 +204,6 @@ func (r *KnowledgeRetriever) searchLike(keywords []string, topK int) []model.Kno
 		results = append(results, batch...)
 	}
 
-	// 去重
 	seen := make(map[int]bool)
 	var unique []model.KnowledgeBase
 	for _, item := range results {
@@ -220,47 +216,58 @@ func (r *KnowledgeRetriever) searchLike(keywords []string, topK int) []model.Kno
 	return unique
 }
 
+// searchVector 使用 pgvector HNSW 索引进行 ANN 检索
+// <=> 是余弦距离算子，返回 0(完全相同) ~ 2(完全相反)
+// HNSW 索引保证 O(log n) 复杂度，而非暴力扫描
 func (r *KnowledgeRetriever) searchVector(queryEmbedding []float64, topK int) []scoredResult {
-	var all []model.KnowledgeBase
-	if err := r.db.Where("embedding IS NOT NULL AND JSON_LENGTH(embedding) > 0").Find(&all).Error; err != nil {
-		log.Printf("[向量检索] 查询失败: %v", err)
+	queryVec := pgvector.NewVector(llm.ToFloat32(queryEmbedding))
+
+	type vecResult struct {
+		model.KnowledgeBase
+		Distance float64 `gorm:"column:distance"`
+	}
+
+	var results []vecResult
+	err := r.db.Raw(`SELECT *, embedding <=> ? AS distance
+		FROM knowledge_base
+		WHERE embedding IS NOT NULL
+		ORDER BY embedding <=> ?
+		LIMIT ?`, queryVec, queryVec, topK).Scan(&results).Error
+
+	if err != nil {
+		log.Printf("[向量检索] pgvector 查询失败: %v", err)
 		return nil
 	}
 
-	scored := make([]scoredResult, 0)
-	for _, item := range all {
-		if len(item.Embedding) == 0 {
-			continue
-		}
-		sim := llm.CosineSimilarity(queryEmbedding, item.Embedding)
+	scored := make([]scoredResult, 0, len(results))
+	for _, res := range results {
+		// 余弦距离转相似度: similarity = 1 - distance
+		sim := 1.0 - res.Distance
 		if sim > 0 {
 			scored = append(scored, scoredResult{
-				item:     item,
+				item:     res.KnowledgeBase,
 				vecScore: sim,
 			})
 		}
 	}
 
+	// 将相似度转为排名用于 RRF
 	sort.Slice(scored, func(i, j int) bool {
 		return scored[i].vecScore > scored[j].vecScore
 	})
-
-	if len(scored) > topK {
-		scored = scored[:topK]
-	}
 
 	for i := range scored {
 		scored[i].vecScore = float64(i + 1)
 	}
 
-	log.Printf("[向量检索] 召回 %d 条 (cosine>0), topK=%d", len(scored), topK)
+	log.Printf("[向量检索] HNSW 召回 %d 条 (pgvector ANN)", len(scored))
 	return scored
 }
 
 func (r *KnowledgeRetriever) GetEmbeddingCount() (int64, error) {
 	var count int64
 	err := r.db.Model(&model.KnowledgeBase{}).
-		Where("embedding IS NOT NULL AND JSON_LENGTH(embedding) > 0").
+		Where("embedding IS NOT NULL").
 		Count(&count).Error
 	return count, err
 }

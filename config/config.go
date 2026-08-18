@@ -16,6 +16,7 @@ type Config struct {
 	DBUser          string
 	DBPassword      string
 	DBName          string
+	DBSSLMode       string
 	Port            string
 }
 
@@ -29,10 +30,11 @@ func LoadConfig() error {
 		EmbeddingAPIKey: getEnv("EMBEDDING_API_KEY", ""),
 		EmbeddingModel:  getEnv("EMBEDDING_MODEL", "BAAI/bge-m3"),
 		DBHost:          getEnv("DB_HOST", "127.0.0.1"),
-		DBPort:          getEnv("DB_PORT", "3306"),
-		DBUser:          getEnv("DB_USER", "root"),
+		DBPort:          getEnv("DB_PORT", "5432"),
+		DBUser:          getEnv("DB_USER", "postgres"),
 		DBPassword:      getEnv("DB_PASSWORD", ""),
 		DBName:          getEnv("DB_NAME", "log_analysis"),
+		DBSSLMode:       getEnv("DB_SSLMODE", "disable"),
 		Port:            getEnv("PORT", "8080"),
 	}
 

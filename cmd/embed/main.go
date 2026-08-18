@@ -53,7 +53,7 @@ func main() {
 			continue
 		}
 
-		if err := repo.UpdateEmbedding(item.ID, embedding); err != nil {
+		if err := repo.UpdateEmbedding(item.ID, llm.ToFloat32(embedding)); err != nil {
 			fmt.Printf(" ❌ 保存失败: %v\n", err)
 			failed++
 		} else {

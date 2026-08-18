@@ -139,3 +139,12 @@ func (e *EmbeddingAdapter) EmbedBatch(texts []string) ([][]float64, error) {
 	}
 	return results, nil
 }
+
+// ToFloat32 将 float64 切片转为 float32（pgvector 原生类型）
+func ToFloat32(f64 []float64) []float32 {
+	f32 := make([]float32, len(f64))
+	for i, v := range f64 {
+		f32[i] = float32(v)
+	}
+	return f32
+}

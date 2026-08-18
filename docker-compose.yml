@@ -1,17 +1,17 @@
 version: "3.8"
 
 services:
-  mysql:
-    image: mysql:8.0
+  postgres:
+    image: pgvector/pgvector:pg16
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-loganalyzer123}
-      MYSQL_DATABASE: ${DB_NAME:-log_analysis}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-loganalyzer123}
+      POSTGRES_DB: ${DB_NAME:-log_analysis}
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -22,16 +22,19 @@ services:
       - "8080:8080"
     environment:
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_USER: root
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-BAAI/bge-m3}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD:-loganalyzer123}
       DB_NAME: ${DB_NAME:-log_analysis}
+      DB_SSLMODE: disable
       PORT: 8080
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
     restart: unless-stopped
 
 volumes:
-  mysql_data:
+  pg_data:

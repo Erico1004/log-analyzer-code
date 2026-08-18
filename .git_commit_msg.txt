@@ -1,0 +1,36 @@
+refactor: MySQL 迁移至 PostgreSQL + pgvector，实现真正 ANN 向量索引
+
+## 核心变更：暴力扫描 -> HNSW 索引
+
+之前的向量检索是 O(n) 暴力扫描（加载全部 embedding 到内存逐条计算余弦相似度），
+迁移到 PostgreSQL + pgvector 后使用 HNSW 索引实现 O(log n) 的 ANN 检索。
+
+## 改动文件
+
+### 数据库驱动
+- go.mod: gorm.io/driver/mysql -> gorm.io/driver/postgres + github.com/pgvector/pgvector-go
+- database/db.go: PostgreSQL 连接，CREATE EXTENSION vector，创建 HNSW + GIN 索引
+- docker-compose.yml: MySQL 镜像 -> pgvector/pgvector:pg16
+
+### 数据模型
+- model/knowledge.go: Embedding []float64 -> pgvector.Vector (gorm:"type:vector(1024)")
+- database/knowledge_repo.go: FindWithoutEmbedding/UpdateEmbedding 适配 pgvector 类型
+
+### 检索器
+- retriever/knowledge_retriever.go: 核心改造
+  - 全文检索: MySQL MATCH...AGAINST -> PostgreSQL to_tsvector + plainto_tsquery (GIN 索引)
+  - 向量检索: 暴力扫描 -> embedding <=> ? (pgvector HNSW ANN 查询)
+  - 余弦距离(0~2)转相似度: similarity = 1 - distance
+
+### 适配层
+- llm/embedding_adapter.go: 新增 ToFloat32() 转换函数（pgvector 原生 float32）
+- handler/diagnose.go: 自动学习时使用 pgvector.NewVector() 赋值
+- handler/knowledge.go: CRUD 时使用 pgvector.NewVector() 赋值
+- cmd/embed/main.go: 回填脚本适配新签名
+
+### 配置
+- config/config.go: 默认端口 3306->5432，默认用户 root->postgres，新增 DB_SSLMode
+- .env / .env.example: PostgreSQL 连接参数
+
+### 迁移脚本
+- migrations/001_init_pgvector.sql: 建表 + HNSW 索引 + GIN 索引

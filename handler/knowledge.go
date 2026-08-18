@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pgvector/pgvector-go"
 
 	"log-analyzer/database"
 	"log-analyzer/llm"
@@ -13,8 +14,8 @@ import (
 )
 
 type KnowledgeHandler struct {
-	repo      *database.KnowledgeRepo
-	embedder  *llm.EmbeddingAdapter
+	repo     *database.KnowledgeRepo
+	embedder *llm.EmbeddingAdapter
 }
 
 func NewKnowledgeHandler(embedder *llm.EmbeddingAdapter) *KnowledgeHandler {
@@ -84,7 +85,7 @@ func (h *KnowledgeHandler) Create(c *gin.Context) {
 		if err != nil {
 			log.Printf("[知识库] embedding 生成失败: %v", err)
 		} else {
-			item.Embedding = embedding
+			item.Embedding = pgvector.NewVector(llm.ToFloat32(embedding))
 			log.Printf("[知识库] embedding 生成成功, 维度: %d", len(embedding))
 		}
 	}
@@ -94,7 +95,7 @@ func (h *KnowledgeHandler) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"id": item.ID, "message": "创建成功", "has_embedding": len(item.Embedding) > 0})
+	c.JSON(http.StatusOK, gin.H{"id": item.ID, "message": "创建成功", "has_embedding": len(item.Embedding.Slice()) > 0})
 }
 
 func (h *KnowledgeHandler) Update(c *gin.Context) {
@@ -128,7 +129,7 @@ func (h *KnowledgeHandler) Update(c *gin.Context) {
 		if err != nil {
 			log.Printf("[知识库] embedding 重新生成失败: %v", err)
 		} else {
-			existing.Embedding = embedding
+			existing.Embedding = pgvector.NewVector(llm.ToFloat32(embedding))
 			log.Printf("[知识库] embedding 重新生成成功, 维度: %d", len(embedding))
 		}
 	}
@@ -138,7 +139,7 @@ func (h *KnowledgeHandler) Update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "更新成功", "has_embedding": len(existing.Embedding) > 0})
+	c.JSON(http.StatusOK, gin.H{"message": "更新成功", "has_embedding": len(existing.Embedding.Slice()) > 0})
 }
 
 func (h *KnowledgeHandler) Delete(c *gin.Context) {

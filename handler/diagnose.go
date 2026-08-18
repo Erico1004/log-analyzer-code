@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/pgvector/pgvector-go"
 
 	"log-analyzer/database"
 	"log-analyzer/llm"
@@ -172,7 +173,7 @@ func (h *DiagnoseHandler) Handle(c *gin.Context) {
 			if err != nil {
 				log.Printf("[自动学习] embedding 生成失败: %v", err)
 			} else {
-				kbEntry.Embedding = embedding
+				kbEntry.Embedding = pgvector.NewVector(llm.ToFloat32(embedding))
 			}
 		}
 
@@ -181,7 +182,7 @@ func (h *DiagnoseHandler) Handle(c *gin.Context) {
 		} else {
 			autoLearned = true
 			learnedID = kbEntry.ID
-			log.Printf("[自动学习] 新知识已保存, ID: %d, 分类: %s, 有embedding: %v", learnedID, kbEntry.Category, len(kbEntry.Embedding) > 0)
+			log.Printf("[自动学习] 新知识已保存, ID: %d, 分类: %s, 有embedding: %v", learnedID, kbEntry.Category, len(kbEntry.Embedding.Slice()) > 0)
 		}
 	}
 
