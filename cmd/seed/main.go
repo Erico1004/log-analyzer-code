@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 
@@ -111,23 +110,29 @@ func main() {
 	fmt.Printf("========================================\n")
 }
 
-// resolveCasesPath 始终基于源文件位置定位 testdata/cases.json
-// 与 experiment 包的多候选路径策略一致（详见 experiment/runner.go）
+// resolveCasesPath 定位 testdata/cases.json
+// 与 experiment/runner.go 的多候选路径策略一致：
+//
+//	方案1：os.Executable() 可执行文件目录及上级（部署后依然有效）
+//	方案2：os.Getwd() 当前工作目录（兼容 go run）
+//	方案3：兜底相对路径
 func resolveCasesPath() string {
-	// 方案1：基于当前文件（编译时）定位项目根
-	_, filename, _, ok := runtime.Caller(0)
-	if ok {
-		// cmd/seed/main.go -> 项目根
-		root := filepath.Dir(filepath.Dir(filepath.Dir(filename)))
-		p := filepath.Join(root, "testdata", "cases.json")
-		if _, err := os.Stat(p); err == nil {
-			return p
+	// 方案1：基于可执行文件位置（部署后依然有效，与 experiment 一致）
+	if exe, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exe)
+		candidates := []string{
+			filepath.Join(exeDir, "testdata", "cases.json"),
+			filepath.Join(exeDir, "..", "testdata", "cases.json"),
+		}
+		for _, p := range candidates {
+			if _, err := os.Stat(p); err == nil {
+				return p
+			}
 		}
 	}
 
-	// 方案2：从 cwd 向上查找（兼容各种运行方式）
-	cwd, err := os.Getwd()
-	if err == nil {
+	// 方案2：从 cwd 向上查找（兼容 go run 等多种运行方式）
+	if cwd, err := os.Getwd(); err == nil {
 		dir := cwd
 		for i := 0; i < 5; i++ {
 			p := filepath.Join(dir, "testdata", "cases.json")
@@ -195,13 +200,16 @@ func buildContent(tc TestCase) string {
 }
 
 // inferTrigger 从关键词推断触发条件
+// 注意：分支顺序按"特异性从高到低"排列（与 inferSolution 一致）
 func inferTrigger(tc TestCase) string {
 	kwStr := strings.ToLower(strings.Join(tc.ExpectedKeywords, " "))
 	switch {
 	case strings.Contains(kwStr, "oom") || strings.Contains(kwStr, "memory"):
 		return "内存使用率持续超过阈值（通常 >90%）；进程 RSS 接近物理内存上限；Swap 几乎耗尽。"
-	case strings.Contains(kwStr, "disk") || strings.Contains(kwStr, "ntfs") || strings.Contains(kwStr, "raid"):
-		return "磁盘剩余空间低于 5%；或文件系统索引出现损坏；或 RAID 阵列中 >=2 块盘离线。"
+	case strings.Contains(kwStr, "raid"):
+		return "RAID 阵列中 >=2 块盘离线；或热备盘未自动激活；阵列降级。"
+	case strings.Contains(kwStr, "disk") || strings.Contains(kwStr, "ntfs"):
+		return "磁盘剩余空间低于 5%；或文件系统索引出现损坏；CHKDSK 反复触发。"
 	case strings.Contains(kwStr, "dns") || strings.Contains(kwStr, "network") || strings.Contains(kwStr, "connection"):
 		return "DNS 解析失败率 >10%；或关键端口监听消失；或跨节点连通性超时。"
 	case strings.Contains(kwStr, "token") || strings.Contains(kwStr, "authentication") || strings.Contains(kwStr, "permission"):
@@ -238,15 +246,22 @@ func inferImpact(tc TestCase) string {
 }
 
 // inferSolution 从分类和关键词推断修复步骤
+// 注意：分支顺序按"特异性从高到低"排列，避免通用关键词遮蔽具体场景
+// 例如 RAID 关键词同时含 disk，必须把 RAID 分支放在通用 disk 分支之前
 func inferSolution(tc TestCase) string {
 	kwStr := strings.ToLower(strings.Join(tc.ExpectedKeywords, " "))
 	switch {
+	// 特异性最高：RAID 阵列场景（关键词同时含 disk，需优先匹配）
+	case strings.Contains(kwStr, "raid"):
+		return "1. 标识故障盘：megacli / storcli 查看状态\n2. 激活热备盘：确认配置权限充足\n3. 重建阵列：监控 rebuild 进度\n4. 复盘：校验热备盘策略和告警通道"
+	// 特异性次高：NTFS/文件系统损坏（关键词含 ntfs，不同于通用 disk 满）
+	case strings.Contains(kwStr, "ntfs"):
+		return "1. 紧急清理：删除过期日志/临时文件\n2. 修复文件系统：umount 后运行 chkdsk / xfs_repair\n3. 如有累积更新：回滚 KB 补丁\n4. 长期：配置日志轮转和磁盘容量告警"
+	// 通用磁盘满/损坏场景
+	case strings.Contains(kwStr, "disk"):
+		return "1. 紧急清理：删除过期日志/临时文件\n2. 扩容：增加磁盘空间或挂载新卷\n3. 修复文件系统：umount 后运行 xfs_repair\n4. 长期：配置日志轮转和磁盘容量告警"
 	case strings.Contains(kwStr, "oom") || strings.Contains(kwStr, "memory"):
 		return "1. 临时扩容：kubectl scale 增加副本数或垂直扩容内存\n2. 定位内存泄漏：抓取 pprof heap dump 分析\n3. 调整 OOM 评分：sysctl vm.swappiness 或调整 oom_score_adj\n4. 复盘：补内存告警阈值，设置提前预警"
-	case strings.Contains(kwStr, "disk") || strings.Contains(kwStr, "ntfs"):
-		return "1. 紧急清理：删除过期日志/临时文件\n2. 修复文件系统：umount 后运行 xfs_repair / chkdsk\n3. 如 RAID：替换故障盘并重建阵列\n4. 长期：配置日志轮转和磁盘容量告警"
-	case strings.Contains(kwStr, "disk") || strings.Contains(kwStr, "raid"):
-		return "1. 标识故障盘：megacli / storcli 查看状态\n2. 激活热备盘：确认配置权限充足\n3. 重建阵列：监控 rebuild 进度\n4. 复盘：校验热备盘策略和告警通道"
 	case strings.Contains(kwStr, "dns"):
 		return "1. 临时规避：切换到备用 DNS（如 1.1.1.1）\n2. 抓包定位：tcpdump port 53 分析请求\n3. 修复客户端：升级固件或重启 DNS 服务\n4. 复盘：配置多级 DNS 冗余"
 	case strings.Contains(kwStr, "token") || strings.Contains(kwStr, "authentication"):
